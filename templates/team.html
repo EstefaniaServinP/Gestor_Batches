@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Equipo de Segmentación</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body { 
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    .team-container {
+      padding: 2rem 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .team-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 20px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      padding: 3rem;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .member-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .member-card {
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border-radius: 15px;
+      padding: 2rem 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 2px solid transparent;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .member-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+      transition: left 0.5s;
+    }
+    
+    .member-card:hover {
+      transform: translateY(-10px);
+      border-color: #667eea;
+      box-shadow: 0 15px 30px rgba(102, 126, 234, 0.2);
+    }
+    
+    .member-card:hover::before {
+      left: 100%;
+    }
+    
+    .member-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      color: white;
+      font-size: 2rem;
+      font-weight: bold;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .member-name {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 0.5rem;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .member-role {
+      color: #666;
+      font-size: 0.9rem;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .member-stats {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #dee2e6;
+      position: relative;
+      z-index: 1;
+    }
+    
+    .stat-item {
+      display: inline-block;
+      margin: 0 0.5rem;
+      font-size: 0.85rem;
+    }
+    
+    .stat-number {
+      font-weight: bold;
+      color: #667eea;
+    }
+    
+    .title-section {
+      margin-bottom: 2rem;
+    }
+    
+    .title-section h1 {
+      color: #333;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    
+    .title-section p {
+      color: #666;
+      font-size: 1.1rem;
+    }
+    
+    .instructions {
+      background: rgba(102, 126, 234, 0.1);
+      border-radius: 10px;
+      padding: 1rem;
+      margin-top: 2rem;
+      border-left: 4px solid #667eea;
+    }
+    
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(102, 126, 234, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      color: white;
+      font-size: 1.2rem;
+    }
+    
+    .spinner {
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top: 3px solid white;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin-right: 1rem;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .pulse {
+      animation: pulse-animation 2s infinite;
+    }
+    
+    @keyframes pulse-animation {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <span>Cargando dashboard...</span>
+  </div>
+
+  <div class="team-container">
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-10">
+          <div class="team-card">
+            <div class="title-section">
+              <h1><i class="fas fa-users"></i> Equipo de Segmentación</h1>
+              <p>Selecciona un miembro del equipo para ver sus batches asignados</p>
+            </div>
+            
+            <div class="member-grid" id="memberGrid">
+              <!-- Los miembros se cargarán dinámicamente -->
+            </div>
+            
+            <div class="instructions">
+              <i class="fas fa-info-circle"></i>
+              <strong>Instrucciones:</strong> Haz doble clic en cualquier miembro del equipo para ver sus batches de segmentación asignados.
+              <div class="mt-2">
+                <a href="/dashboard" class="btn btn-outline-primary btn-sm me-2">
+                  <i class="fas fa-th-large"></i> Ver Dashboard Completo
+                </a>
+                <a href="/masks" class="btn btn-outline-secondary btn-sm">
+                  <i class="fas fa-image"></i> Ver Máscaras MongoDB
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    let teamMembers = {{ crew | tojson }};
+    let batchStats = {};
+
+    $(document).ready(function() {
+      loadBatchStats();
+      renderTeamMembers();
+    });
+
+    function loadBatchStats() {
+      $.get('/api/batches')
+        .done(function(batches) {
+          // Calcular estadísticas por miembro
+          batchStats = {};
+          teamMembers.forEach(member => {
+            batchStats[member] = {
+              total: 0,
+              pendiente: 0,
+              'en-progreso': 0,
+              completado: 0
+            };
+          });
+
+          batches.forEach(batch => {
+            const assignee = batch.assignee;
+            if (batchStats[assignee]) {
+              batchStats[assignee].total++;
+              batchStats[assignee][batch.status]++;
+            }
+          });
+
+          renderTeamMembers();
+        })
+        .fail(function() {
+          console.error('Error cargando estadísticas de batches');
+          renderTeamMembers();
+        });
+    }
+
+    function renderTeamMembers() {
+      const grid = $('#memberGrid');
+      grid.empty();
+
+      teamMembers.forEach(member => {
+        const stats = batchStats[member] || { total: 0, pendiente: 0, 'en-progreso': 0, completado: 0 };
+        const initials = member.split(' ').map(name => name[0]).join('').toUpperCase();
+        
+        const memberCard = $(`
+          <div class="member-card" data-member="${member}">
+            <div class="member-avatar">${initials}</div>
+            <div class="member-name">${member}</div>
+            <div class="member-role">Especialista en Segmentación</div>
+            <div class="member-stats">
+              <div class="stat-item">
+                <span class="stat-number">${stats.total}</span>
+                <small class="text-muted">Total</small>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number text-warning">${stats.pendiente}</span>
+                <small class="text-muted">Pendientes</small>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number text-success">${stats.completado}</span>
+                <small class="text-muted">Completados</small>
+              </div>
+            </div>
+          </div>
+        `);
+
+        // Evento de doble clic
+        memberCard.on('dblclick', function() {
+          const memberName = $(this).data('member');
+          showLoadingOverlay();
+          window.location.href = `/dashboard/${encodeURIComponent(memberName)}`;
+        });
+
+        // Efecto hover con estadísticas
+        memberCard.on('mouseenter', function() {
+          $(this).addClass('pulse');
+        }).on('mouseleave', function() {
+          $(this).removeClass('pulse');
+        });
+
+        grid.append(memberCard);
+      });
+
+      // Si no hay miembros con batches, mostrar todos
+      if (grid.children().length === 0) {
+        teamMembers.forEach(member => {
+          const initials = member.split(' ').map(name => name[0]).join('').toUpperCase();
+          
+          const memberCard = $(`
+            <div class="member-card" data-member="${member}">
+              <div class="member-avatar">${initials}</div>
+              <div class="member-name">${member}</div>
+              <div class="member-role">Especialista en Segmentación</div>
+              <div class="member-stats">
+                <div class="stat-item">
+                  <span class="stat-number">0</span>
+                  <small class="text-muted">Batches</small>
+                </div>
+              </div>
+            </div>
+          `);
+
+          memberCard.on('dblclick', function() {
+            const memberName = $(this).data('member');
+            showLoadingOverlay();
+            window.location.href = `/dashboard/${encodeURIComponent(memberName)}`;
+          });
+
+          grid.append(memberCard);
+        });
+      }
+    }
+
+    function showLoadingOverlay() {
+      $('#loadingOverlay').css('display', 'flex');
+    }
+  </script>
+</body>
+</html>

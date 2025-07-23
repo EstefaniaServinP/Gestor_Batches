@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard de Batches</title>
+  <link
+    rel="stylesheet"
+    href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"
+  >
+  <style>
+    body { font-family: sans-serif; margin: 2rem; }
+    h1 { margin-bottom: 1rem; }
+  </style>
+</head>
+<body>
+  <h1>📦 Dashboard de Batches</h1>
+  <table id="batches" class="display" style="width:100%"></table>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('📑 Script arrancó correctamente');
+      fetch('batches.json')
+        .then(res => {
+          console.log('📡 Response de batches.json:', res.status, res.headers.get('content-type'));
+          return res.json();
+        })
+        .then(json => {
+          console.log('✅ JSON cargado:', json);
+          $('#batches').DataTable({
+            data: json.batches,
+            columns: [
+              { data: 'id', title: 'Batch' },
+              { data: 'assignee', title: 'Responsable' },
+              { data: 'folder', title: 'Carpeta' },
+              { data: 'metadata.assigned_at', title: 'Asignado' },
+              { data: 'metadata.due_date', title: 'Due Date' },
+              { data: 'metadata.priority', title: 'Prioridad' },
+              { data: 'status', title: 'Estado' },
+              { data: 'comments', title: 'Comentarios' }
+            ],
+            pageLength: 10,
+            language: {
+              url: 'https://cdn.datatables.net/plug‑ins/1.13.4/i18n/es‑ES.json'
+            }
+          });
+        })
+        .catch(err => console.error('❌ Error cargando batches.json:', err));
+    });
+  </script>
+</body>
+</html>
