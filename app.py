@@ -243,34 +243,69 @@ def delete_batch(batch_id):
 def check_mongo_files():
     """Verificar qué archivos están actualmente en MongoDB"""
     try:
+        print("🔍 Iniciando verificación de archivos en MongoDB...")
+        
+        # Verificar conexión primero
+        try:
+            # Test de conexión
+            masks_col.find_one({}, {"_id": 1})
+            print("✅ Conexión a MongoDB establecida")
+        except Exception as conn_error:
+            print(f"❌ Error de conexión a MongoDB: {conn_error}")
+            return jsonify({
+                "success": False, 
+                "error": f"Error de conexión a MongoDB: {str(conn_error)}"
+            }), 500
+        
         # Obtener lista de todos los archivos en la colección masks
-        files = list(masks_col.find(
-            {},
-            {"filename": 1, "uploadDate": 1, "metadata": 1, "length": 1}
-        ).sort("uploadDate", -1).limit(50))  # Últimos 50 archivos
+        try:
+            files = list(masks_col.find(
+                {},
+                {"filename": 1, "uploadDate": 1, "metadata": 1, "length": 1}
+            ).sort("uploadDate", -1).limit(100))  # Aumentar a 100 archivos
+            print(f"📊 Se encontraron {len(files)} archivos en total")
+        except Exception as query_error:
+            print(f"❌ Error consultando archivos: {query_error}")
+            return jsonify({
+                "success": False, 
+                "error": f"Error consultando archivos: {str(query_error)}"
+            }), 500
         
         files_info = []
         for file in files:
-            files_info.append({
-                "filename": file["filename"],
-                "uploadDate": file["uploadDate"].isoformat() if file.get("uploadDate") else None,
-                "size_mb": round(file.get("length", 0) / (1024*1024), 2),
-                "uploaded_by": file.get("metadata", {}).get("uploaded_by", "unknown")
-            })
+            try:
+                file_data = {
+                    "filename": file.get("filename", "Sin nombre"),
+                    "uploadDate": file.get("uploadDate").isoformat() if file.get("uploadDate") else None,
+                    "size_mb": round(file.get("length", 0) / (1024*1024), 2) if file.get("length") else 0,
+                    "uploaded_by": file.get("metadata", {}).get("uploaded_by", "unknown") if file.get("metadata") else "unknown"
+                }
+                files_info.append(file_data)
+            except Exception as file_error:
+                print(f"⚠️ Error procesando archivo {file.get('_id', 'unknown')}: {file_error}")
+                continue
         
         # Contar archivos por patrón de batch
         batch_patterns = {}
-        for file in files:
-            filename = file["filename"]
-            # Buscar patrones como batch_XX, Batch_XX, masks_batch_XX
+        try:
             import re
-            batch_match = re.search(r'[Bb]atch[_\-]?(\d+)', filename)
-            if batch_match:
-                batch_num = batch_match.group(1)
-                batch_key = f"batch_{batch_num}"
-                if batch_key not in batch_patterns:
-                    batch_patterns[batch_key] = []
-                batch_patterns[batch_key].append(filename)
+            for file in files:
+                filename = file.get("filename", "")
+                if not filename:
+                    continue
+                    
+                # Buscar patrones como batch_XX, Batch_XX, masks_batch_XX
+                batch_matches = re.findall(r'[Bb]atch[_\-]?(\d+)', filename)
+                for match in batch_matches:
+                    batch_key = f"batch_{match}"
+                    if batch_key not in batch_patterns:
+                        batch_patterns[batch_key] = []
+                    batch_patterns[batch_key].append(filename)
+        except Exception as pattern_error:
+            print(f"⚠️ Error procesando patrones: {pattern_error}")
+            batch_patterns = {}
+        
+        print(f"📊 Patrones encontrados: {len(batch_patterns)} batches diferentes")
         
         return jsonify({
             "success": True,
@@ -281,8 +316,14 @@ def check_mongo_files():
         })
         
     except Exception as e:
-        print(f"❌ Error verificando archivos en MongoDB: {e}")
-        return jsonify({"success": False, "error": str(e)}), 500
+        error_msg = str(e)
+        print(f"❌ Error general en check_mongo_files: {error_msg}")
+        print(f"❌ Tipo de error: {type(e).__name__}")
+        return jsonify({
+            "success": False, 
+            "error": f"Error verificando MongoDB: {error_msg}",
+            "error_type": type(e).__name__
+        }), 500
 
 @app.route("/api/batch-files/<batch_id>", methods=["GET"])
 def get_batch_files(batch_id):

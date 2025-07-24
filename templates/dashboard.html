@@ -1338,6 +1338,7 @@ Esta función va a:
       $.ajax({
         url: '/api/check-mongo-files',
         method: 'GET',
+        timeout: 30000, // 30 segundos de timeout
         success: function(response) {
           if (response.success) {
             // Crear modal con información de archivos
@@ -1448,12 +1449,33 @@ Esta función va a:
             showNotification(`Verificación completa: ${response.total_files} archivos encontrados`, 'success');
             
           } else {
-            showNotification('Error verificando MongoDB: ' + response.error, 'error');
+            console.error('Error response:', response);
+            const errorMsg = response.error || 'Error desconocido';
+            const errorType = response.error_type || 'Unknown';
+            showNotification(`Error verificando MongoDB (${errorType}): ${errorMsg}`, 'error');
           }
         },
-        error: function(xhr) {
-          const errorMsg = xhr.responseJSON?.error || 'Error desconocido';
-          showNotification('Error verificando MongoDB: ' + errorMsg, 'error');
+        error: function(xhr, status, error) {
+          console.error('AJAX Error:', {xhr, status, error});
+          console.error('Response Text:', xhr.responseText);
+          
+          let errorMsg = 'Error de conexión';
+          if (xhr.responseJSON && xhr.responseJSON.error) {
+            errorMsg = xhr.responseJSON.error;
+          } else if (xhr.responseText) {
+            try {
+              const parsed = JSON.parse(xhr.responseText);
+              errorMsg = parsed.error || errorMsg;
+            } catch (e) {
+              errorMsg = xhr.responseText;
+            }
+          } else if (status === 'timeout') {
+            errorMsg = 'Timeout - La operación tardó demasiado';
+          } else if (error) {
+            errorMsg = error;
+          }
+          
+          showNotification(`Error verificando MongoDB: ${errorMsg}`, 'error');
         }
       });
     }
