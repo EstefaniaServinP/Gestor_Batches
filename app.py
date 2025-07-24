@@ -141,23 +141,60 @@ def update_batch(batch_id):
     data = request.json
     
     update_data = {}
+    
+    # Campos directos
     if "assignee" in data:
         update_data["assignee"] = data["assignee"]
     if "status" in data:
         update_data["status"] = data["status"]
     if "comments" in data:
         update_data["comments"] = data["comments"]
+    if "folder" in data:
+        update_data["folder"] = data["folder"]
+    
+    # Campos de metadata - nueva forma estructurada
+    if "metadata" in data:
+        metadata = data["metadata"]
+        for key, value in metadata.items():
+            update_data[f"metadata.{key}"] = value
+    
+    # Campos individuales de metadata (retrocompatibilidad)
     if "due_date" in data:
         update_data["metadata.due_date"] = data["due_date"]
     if "priority" in data:
         update_data["metadata.priority"] = data["priority"]
-    if "folder" in data:
-        update_data["folder"] = data["folder"]
+    if "reviewed_at" in data:
+        update_data["metadata.reviewed_at"] = data["reviewed_at"]
     
     result = batches_col.update_one({"id": batch_id}, {"$set": update_data})
     
     if result.modified_count > 0:
         return jsonify({"success": True})
+    else:
+        return jsonify({"success": False, "error": "Batch no encontrado"}), 404
+
+@app.route("/api/batches/<batch_id>/change-id", methods=["PUT"])
+def change_batch_id(batch_id):
+    """Cambiar el ID de un batch"""
+    data = request.json
+    new_id = data.get("new_id", "").strip()
+    
+    if not new_id:
+        return jsonify({"success": False, "error": "Nuevo ID requerido"}), 400
+    
+    # Verificar que el nuevo ID no exista ya
+    existing = batches_col.find_one({"id": new_id})
+    if existing:
+        return jsonify({"success": False, "error": f"El ID '{new_id}' ya existe"}), 400
+    
+    # Actualizar el ID
+    result = batches_col.update_one(
+        {"id": batch_id}, 
+        {"$set": {"id": new_id}}
+    )
+    
+    if result.modified_count > 0:
+        return jsonify({"success": True, "message": f"ID actualizado de {batch_id} a {new_id}"})
     else:
         return jsonify({"success": False, "error": "Batch no encontrado"}), 404
 

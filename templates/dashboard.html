@@ -162,10 +162,20 @@
         <div class="modal-body">
           <form id="newBatchForm">
             <div class="row">
-              <div class="col-md-6">
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label class="form-label">Batch ID</label>
+                  <input type="text" class="form-control" id="batch_id" name="batch_id" placeholder="Ej: batch_400, Batch_400" required>
+                  <div class="form-text">
+                    <i class="fas fa-hashtag"></i> 
+                    ID único para el batch (puede ser personalizado)
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
                 <div class="mb-3">
                   <label class="form-label">Responsable</label>
-                  <select class="form-select" name="assignee" required>
+                  <select class="form-select" id="assignee" name="assignee" required>
                     <option value="">Seleccionar...</option>
                     {% for member in crew %}
                     <option value="{{ member }}">{{ member }}</option>
@@ -173,13 +183,13 @@
                   </select>
                 </div>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-4">
                 <div class="mb-3">
                   <label class="form-label">Carpeta de Imágenes</label>
-                  <input type="text" class="form-control" name="folder" required>
+                  <input type="text" class="form-control" id="folder" name="folder" required>
                   <div class="form-text">
-                    <i class="fas fa-info-circle"></i> 
-                    Nombre de la carpeta que contiene las imágenes a segmentar
+                    <i class="fas fa-folder"></i> 
+                    Nombre/ruta de la carpeta
                   </div>
                 </div>
               </div>
@@ -480,14 +490,31 @@
                     style="min-width: 200px;">${batch.comments || ''}</textarea>
         `;
         
+        // Selector de prioridad editable
+        const prioritySelect = `
+          <select class="form-select form-select-sm priority-select" data-batch-id="${batch.id}" style="min-width: 90px;">
+            <option value="baja" ${batch.metadata.priority === 'baja' ? 'selected' : ''}>Baja</option>
+            <option value="media" ${batch.metadata.priority === 'media' ? 'selected' : ''}>Media</option>
+            <option value="alta" ${batch.metadata.priority === 'alta' ? 'selected' : ''}>Alta</option>
+          </select>
+        `;
+        
+        // Input de Batch ID editable
+        const batchIdInput = `
+          <input type="text" class="form-control form-control-sm batch-id-input" 
+                 data-batch-id="${batch.id}" 
+                 value="${batch.id}" 
+                 style="min-width: 120px;">
+        `;
+        
         const row = [
-          batch.id,
+          batchIdInput,
           batch.assignee,
           mongoStatus,
           statusSelect,
           batch.metadata.assigned_at,
           reviewDateInput,
-          `<span class="${priorityClass}">${batch.metadata.priority}</span>`,
+          prioritySelect,
           commentsInput,
           `
             <button class="btn btn-sm btn-outline-success" onclick="saveBatchChanges('${batch.id}')" title="Guardar cambios">
@@ -535,20 +562,38 @@
         return;
       }
       
+      if (!data.batch_id) {
+        showNotification('Por favor ingresa un Batch ID', 'warning');
+        return;
+      }
+      
       if (!data.folder) {
         showNotification('Por favor ingresa la carpeta de imágenes', 'warning');
         return;
       }
       
-      // Generar un ID único para el batch
-      const nextId = 'batch_' + (Math.max(...batches.map(b => parseInt(b.id.replace('batch_', '')))) + 1);
-      console.log('🆔 ID generado:', nextId);
+      // Limpiar y formatear el Batch ID
+      let batchId = data.batch_id.trim();
+      // Si no empieza con "batch" o "Batch", agregarlo
+      if (!batchId.toLowerCase().startsWith('batch')) {
+        batchId = 'batch_' + batchId;
+      }
+      // Reemplazar espacios con guiones bajos
+      batchId = batchId.replace(/\s+/g, '_');
+      
+      console.log('🆔 ID del batch:', batchId);
+      
+      // Verificar que el ID no exista ya
+      if (batches.find(b => b.id === batchId)) {
+        showNotification(`El Batch ID "${batchId}" ya existe. Por favor usa otro ID.`, 'warning');
+        return;
+      }
       
       // Estructurar los datos según el nuevo formato
       const batchData = {
-        id: nextId,
+        id: batchId,
         assignee: data.assignee,
-        folder: data.folder || `/data/${nextId}`,
+        folder: data.folder || `/data/${batchId}`,
         tasks: ["segmentar", "subir_mascaras", "revisar"],
         metadata: {
           assigned_at: new Date().toISOString().split('T')[0], // Fecha actual
@@ -596,6 +641,7 @@
         timestamp: new Date().toISOString(),
         total_batches: batches.length,
         form_data: {
+          batch_id: document.getElementById('batch_id').value,
           assignee: document.getElementById('assignee').value,
           folder: document.getElementById('folder').value,
           due_date: document.getElementById('due_date').value,
@@ -624,6 +670,7 @@
 📝 Filas Mostradas: ${debugData.page_state.total_displayed_rows}
 
 📋 DATOS DEL FORMULARIO:
+- Batch ID: "${debugData.form_data.batch_id}"
 - Responsable: "${debugData.form_data.assignee}"
 - Carpeta: "${debugData.form_data.folder}"
 - Fecha Límite: "${debugData.form_data.due_date}"
@@ -904,20 +951,42 @@
     }
 
     function addInlineEditEvents() {
-      // Evento para cambio de estado
-      $('.status-select').off('change').on('change', function() {
+      // Evento para cambio de estado de segmentación
+      $('.segmentation-status-select').off('change').on('change', function() {
         const batchId = $(this).data('batch-id');
         const newStatus = $(this).val();
-        
         updateBatchField(batchId, 'status', newStatus, $(this));
       });
       
-      // Evento para cambio de fecha límite
-      $('.due-date-input').off('change').on('change', function() {
+      // Evento para cambio de prioridad
+      $('.priority-select').off('change').on('change', function() {
         const batchId = $(this).data('batch-id');
-        const newDueDate = $(this).val();
+        const newPriority = $(this).val();
+        updateBatchField(batchId, 'priority', newPriority, $(this));
+      });
+      
+      // Evento para cambio de fecha de revisión
+      $('.review-date-input').off('change').on('change', function() {
+        const batchId = $(this).data('batch-id');
+        const newReviewDate = $(this).val();
+        updateBatchField(batchId, 'reviewed_at', newReviewDate, $(this));
+      });
+      
+      // Evento para cambio de Batch ID
+      $('.batch-id-input').off('blur').on('blur', function() {
+        const oldBatchId = $(this).data('batch-id');
+        const newBatchId = $(this).val().trim();
         
-        updateBatchField(batchId, 'due_date', newDueDate, $(this));
+        if (newBatchId !== oldBatchId) {
+          updateBatchId(oldBatchId, newBatchId, $(this));
+        }
+      });
+      
+      // Evento para cambio de comentarios (al perder el foco)
+      $('.comments-input').off('blur').on('blur', function() {
+        const batchId = $(this).data('batch-id');
+        const newComments = $(this).val();
+        updateBatchField(batchId, 'comments', newComments, $(this));
       });
     }
 
@@ -927,7 +996,13 @@
       element.css('background-color', '#fff3cd');
       
       const updateData = {};
-      updateData[field] = value;
+      if (field === 'reviewed_at') {
+        updateData.metadata = { reviewed_at: value };
+      } else if (field === 'priority') {
+        updateData.metadata = { priority: value };
+      } else {
+        updateData[field] = value;
+      }
       
       $.ajax({
         url: `/api/batches/${batchId}`,
@@ -944,8 +1019,10 @@
           // Actualizar datos locales
           const batch = batches.find(b => b.id === batchId);
           if (batch) {
-            if (field === 'due_date') {
-              batch.metadata.due_date = value;
+            if (field === 'reviewed_at') {
+              batch.metadata.reviewed_at = value;
+            } else if (field === 'priority') {
+              batch.metadata.priority = value;
             } else {
               batch[field] = value;
             }
@@ -953,6 +1030,7 @@
           }
           
           console.log(`✅ ${field} actualizado para ${batchId}: ${value}`);
+          showNotification(`Campo ${field} actualizado exitosamente`, 'success');
         },
         error: function(xhr) {
           // Mostrar error
@@ -961,8 +1039,72 @@
             element.css('background-color', originalBg);
           }, 2000);
           
-          alert(`Error actualizando ${field}: ${xhr.responseJSON?.error || 'Error desconocido'}`);
+          const errorMsg = xhr.responseJSON?.error || 'Error desconocido';
+          showNotification(`Error actualizando ${field}: ${errorMsg}`, 'error');
           console.error(`❌ Error actualizando ${field}:`, xhr);
+        }
+      });
+    }
+    
+    function updateBatchId(oldId, newId, element) {
+      // Validar que el nuevo ID no esté vacío
+      if (!newId) {
+        showNotification('El Batch ID no puede estar vacío', 'warning');
+        element.val(oldId); // Restaurar valor anterior
+        return;
+      }
+      
+      // Validar que el nuevo ID no exista ya
+      if (batches.find(b => b.id === newId && b.id !== oldId)) {
+        showNotification(`El Batch ID "${newId}" ya existe. Por favor usa otro ID.`, 'warning');
+        element.val(oldId); // Restaurar valor anterior
+        return;
+      }
+      
+      // Mostrar indicador de guardado
+      const originalBg = element.css('background-color');
+      element.css('background-color', '#fff3cd');
+      
+      $.ajax({
+        url: `/api/batches/${oldId}/change-id`,
+        method: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify({ new_id: newId }),
+        success: function(response) {
+          // Mostrar éxito
+          element.css('background-color', '#d4edda');
+          setTimeout(() => {
+            element.css('background-color', originalBg);
+          }, 1000);
+          
+          // Actualizar datos locales
+          const batch = batches.find(b => b.id === oldId);
+          if (batch) {
+            batch.id = newId;
+          }
+          
+          // Actualizar el data-batch-id del elemento
+          element.data('batch-id', newId);
+          
+          console.log(`✅ Batch ID actualizado de ${oldId} a ${newId}`);
+          showNotification(`Batch ID actualizado a "${newId}"`, 'success');
+          
+          // Recargar tabla para actualizar todas las referencias
+          loadBatches();
+        },
+        error: function(xhr) {
+          // Mostrar error
+          element.css('background-color', '#f8d7da');
+          setTimeout(() => {
+            element.css('background-color', originalBg);
+          }, 2000);
+          
+          // Restaurar valor anterior
+          element.val(oldId);
+          
+          const errorMsg = xhr.responseJSON?.error || 'Error desconocido';
+          showNotification(`Error actualizando Batch ID: ${errorMsg}`, 'error');
+          console.error(`❌ Error actualizando Batch ID:`, xhr);
         }
       });
     }
