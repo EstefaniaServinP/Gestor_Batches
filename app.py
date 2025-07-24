@@ -1,3 +1,22 @@
+#!/usr/bin/env python3
+"""
+Dashboard de Segmentación de Imágenes Médicas
+============================================
+
+Sistema web para gestionar la asignación y seguimiento de batches de segmentación.
+
+Funcionalidades principales:
+- Vista de equipo con tarjetas interactivas  
+- Dashboard con edición inline de estados y fechas
+- Filtrado automático por responsable
+- API RESTful completa
+- Integración con MongoDB
+
+Versión: 1.0.0 - Sistema completamente funcional
+Fecha: Julio 23, 2025
+Equipo: Mauricio, Maggie, Ceci, Flor, Ignacio
+"""
+
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 from pymongo import MongoClient
 import json

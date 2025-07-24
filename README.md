@@ -1,5 +1,9 @@
 # 🏥 Dashboard de Segmentación de Imágenes Médicas
 
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Status](https://img.shields.io/badge/status-stable-green.svg)
+![Python](https://img.shields.io/badge/python-3.x-blue.svg)
+
 Sistema web para gestionar la asignación y seguimiento de batches de segmentación de imágenes médicas.
 
 ## 🎯 Características Principales
