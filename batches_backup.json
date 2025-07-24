@@ -1,0 +1,205 @@
+{
+  "program": "Gestor de Batches de Segmentación",
+  "created_at": "2025-07-23T00:00:00-06:00",
+  "crew": ["Flor", "Ignacio"],
+  "batches": [
+    {
+      "id": "batch_9",
+      "assignee": "Flor",
+      "folder": "/data/batch_9",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "alta"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Flor"
+    },
+    {
+      "id": "batch_11",
+      "assignee": "Flor",
+      "folder": "/data/batch_11",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "alta"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Flor"
+    },
+    {
+      "id": "batch_13",
+      "assignee": "Flor",
+      "folder": "/data/batch_13",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "alta"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Flor"
+    },
+    {
+      "id": "batch_14",
+      "assignee": "Flor",
+      "folder": "/data/batch_14",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "alta"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Flor"
+    },
+    {
+      "id": "batch_28",
+      "assignee": "Flor",
+      "folder": "/data/batch_28",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "media"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Flor"
+    },
+    {
+      "id": "batch_34",
+      "assignee": "Flor",
+      "folder": "/data/batch_34",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "media"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Flor"
+    },
+    {
+      "id": "batch_36",
+      "assignee": "Flor",
+      "folder": "/data/batch_36",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "media"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Flor"
+    },
+    {
+      "id": "batch_38",
+      "assignee": "Flor",
+      "folder": "/data/batch_38",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "media"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Flor"
+    },
+    {
+      "id": "batch_39",
+      "assignee": "Flor",
+      "folder": "/data/batch_39",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "media"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Flor"
+    },
+    {
+      "id": "batch_41",
+      "assignee": "Flor",
+      "folder": "/data/batch_41",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "baja"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Flor"
+    },
+    {
+      "id": "batch_42",
+      "assignee": "Flor",
+      "folder": "/data/batch_42",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "baja"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Flor"
+    },
+    {
+      "id": "batch_15",
+      "assignee": "Ignacio",
+      "folder": "/data/batch_15",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "alta"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Ignacio"
+    },
+    {
+      "id": "batch_16",
+      "assignee": "Ignacio",
+      "folder": "/data/batch_16",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "alta"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Ignacio"
+    },
+    {
+      "id": "batch_17",
+      "assignee": "Ignacio",
+      "folder": "/data/batch_17",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "alta"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Ignacio"
+    },
+    {
+      "id": "batch_21",
+      "assignee": "Ignacio",
+      "folder": "/data/batch_21",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "alta"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Ignacio"
+    },
+    {
+      "id": "batch_46",
+      "assignee": "Ignacio",
+      "folder": "/data/batch_46",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "media"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Ignacio"
+    },
+    {
+      "id": "batch_47",
+      "assignee": "Ignacio",
+      "folder": "/data/batch_47",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "media"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Ignacio"
+    },
+    {
+      "id": "batch_48",
+      "assignee": "Ignacio",
+      "folder": "/data/batch_48",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "media"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Ignacio"
+    },
+    {
+      "id": "batch_49",
+      "assignee": "Ignacio",
+      "folder": "/data/batch_49",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "media"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Ignacio"
+    },
+    {
+      "id": "batch_50",
+      "assignee": "Ignacio",
+      "folder": "/data/batch_50",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "baja"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Ignacio"
+    },
+    {
+      "id": "batch_51",
+      "assignee": "Ignacio",
+      "folder": "/data/batch_51",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "baja"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Ignacio"
+    },
+    {
+      "id": "batch_52",
+      "assignee": "Ignacio",
+      "folder": "/data/batch_52",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "baja"},
+      "status": "pendiente",
+      "comments": "Batch asignado a Ignacio"
+    }
+  ]
+}

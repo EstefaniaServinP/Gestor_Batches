@@ -6,7 +6,7 @@ import requests
 import json
 
 def test_api():
-    base_url = "http://localhost:5001"
+    base_url = "http://localhost:5002"
     
     print("🧪 Probando API del Dashboard de Segmentación")
     print("=" * 50)

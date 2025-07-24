@@ -1,0 +1,205 @@
+{
+  "program": "Segmentación de imágenes",
+  "created_at": "2025-07-23T00:00:00-06:00",
+  "crew": ["Mauricio","Maggie","Ceci","Flor","Ignacio"],
+  "batches": [
+    {
+      "id": "batch_9",
+      "assignee": "Flor",
+      "folder": "/imagenes/tomografias/lote_9",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"2025-07-30","priority":"alta"},
+      "status":"pendiente",
+      "comments":"Batch de imágenes para segmentación - Prioridad alta"
+    },
+    {
+      "id": "batch_11",
+      "assignee": "Flor",
+      "folder": "/imagenes/resonancias/lote_11",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"2025-07-28","priority":"alta"},
+      "status":"en-progreso",
+      "comments":"Batch de imágenes para segmentación - Asignado a Flor"
+    },
+    {
+      "id": "batch_13",
+      "assignee": "Flor",
+      "folder": "batch_13_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"alta"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    },
+    {
+      "id": "batch_14",
+      "assignee": "Flor",
+      "folder": "batch_14_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"alta"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    },
+    {
+      "id": "batch_28",
+      "assignee": "Flor",
+      "folder": "batch_28_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"media"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    },
+    {
+      "id": "batch_34",
+      "assignee": "Flor",
+      "folder": "batch_34_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"media"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    },
+    {
+      "id": "batch_36",
+      "assignee": "Flor",
+      "folder": "batch_36_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"media"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    },
+    {
+      "id": "batch_38",
+      "assignee": "Flor",
+      "folder": "batch_38_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"media"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    },
+    {
+      "id": "batch_39",
+      "assignee": "Flor",
+      "folder": "batch_39_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"media"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    },
+    {
+      "id": "batch_41",
+      "assignee": "Flor",
+      "folder": "batch_41_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"media"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    },
+    {
+      "id": "batch_42",
+      "assignee": "Flor",
+      "folder": "batch_42_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"media"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    },
+    {
+      "id": "batch_15",
+      "assignee": "Ignacio",
+      "folder": "/imagenes/ultrasonidos/lote_15",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"2025-07-25","priority":"alta"},
+      "status":"completado",
+      "comments":"Batch completado - Listo para revisión"
+    },
+    {
+      "id": "batch_16",
+      "assignee": "Ignacio",
+      "folder": "/imagenes/rayos_x/lote_16",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"2025-07-26","priority":"alta"},
+      "status":"en-progreso",
+      "comments":"Batch en proceso - Verificar progreso"
+    },
+    {
+      "id": "batch_17",
+      "assignee": "Ignacio",
+      "folder": "batch_17_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"alta"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    },
+    {
+      "id": "batch_21",
+      "assignee": "Ignacio",
+      "folder": "batch_21_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"alta"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    },
+    {
+      "id": "batch_46",
+      "assignee": "Ignacio",
+      "folder": "batch_46_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"media"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    },
+    {
+      "id": "batch_47",
+      "assignee": "Ignacio",
+      "folder": "batch_47_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"media"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    },
+    {
+      "id": "batch_48",
+      "assignee": "Ignacio",
+      "folder": "batch_48_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"media"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    },
+    {
+      "id": "batch_49",
+      "assignee": "Ignacio",
+      "folder": "batch_49_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"media"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    },
+    {
+      "id": "batch_50",
+      "assignee": "Ignacio",
+      "folder": "batch_50_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"media"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    },
+    {
+      "id": "batch_51",
+      "assignee": "Ignacio",
+      "folder": "batch_51_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"media"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    },
+    {
+      "id": "batch_52",
+      "assignee": "Ignacio",
+      "folder": "batch_52_images",
+      "tasks": ["segmentar","insertar metadata","guardar"],
+      "metadata": {"assigned_at":"2025-07-23","due_date":"","priority":"media"},
+      "status":"pendiente",
+      "comments":"Carpeta de imágenes para segmentación"
+    }
+  ]
+}

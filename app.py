@@ -59,6 +59,27 @@ def masks():
 def get_batches():
     # Obtiene todos los batches de MongoDB
     batches = list(batches_col.find({}, {"_id": 0}))
+    
+    # Enriquecer con información de archivos
+    for batch in batches:
+        batch_number = batch["id"].replace("batch_", "")
+        pattern = f"masks_batch_{batch_number}"
+        
+        # Contar archivos para este batch
+        files = list(masks_col.find(
+            {"filename": {"$regex": pattern}},
+            {"filename": 1, "uploadDate": 1, "metadata": 1, "length": 1}
+        ).sort("uploadDate", -1))
+        
+        # Agregar información de archivos al batch
+        batch["file_info"] = {
+            "count": len(files),
+            "latest_upload": files[0]["uploadDate"] if files else None,
+            "uploaded_by": files[0].get("metadata", {}).get("uploaded_by", "unknown") if files else None,
+            "file_size": files[0].get("length", 0) if files else 0,
+            "has_files": len(files) > 0
+        }
+    
     return jsonify(batches)
 
 @app.route("/api/batches", methods=["POST"])
@@ -123,6 +144,92 @@ def delete_batch(batch_id):
     else:
         return jsonify({"success": False, "error": "Batch no encontrado"}), 404
 
+@app.route("/api/batch-files/<batch_id>", methods=["GET"])
+def get_batch_files(batch_id):
+    """Obtener información de archivos subidos para un batch específico"""
+    try:
+        # Buscar archivos que coincidan con el patrón batch_XX
+        pattern = f"masks_batch_{batch_id.replace('batch_', '')}"
+        files = list(masks_col.find(
+            {"filename": {"$regex": pattern}},
+            {"filename": 1, "uploadDate": 1, "metadata": 1, "length": 1}
+        ).sort("uploadDate", -1))
+        
+        # Procesar información
+        file_info = {
+            "batch_id": batch_id,
+            "total_files": len(files),
+            "latest_upload": None,
+            "uploaded_by": None,
+            "file_size": 0,
+            "all_uploads": []
+        }
+        
+        if files:
+            latest = files[0]
+            file_info["latest_upload"] = latest["uploadDate"]
+            file_info["uploaded_by"] = latest.get("metadata", {}).get("uploaded_by", "unknown")
+            file_info["file_size"] = latest.get("length", 0)
+            
+            # Lista de todas las subidas
+            for file in files:
+                file_info["all_uploads"].append({
+                    "filename": file["filename"],
+                    "uploadDate": file["uploadDate"],
+                    "uploaded_by": file.get("metadata", {}).get("uploaded_by", "unknown"),
+                    "size": file.get("length", 0)
+                })
+        
+        return jsonify(file_info)
+        
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/sync-batch-files", methods=["POST"])
+def sync_batch_files():
+    """Sincronizar todos los batches con archivos subidos"""
+    try:
+        batches = list(batches_col.find({}, {"id": 1}))
+        sync_results = []
+        
+        for batch in batches:
+            batch_id = batch["id"]
+            batch_number = batch_id.replace("batch_", "")
+            
+            # Buscar archivos para este batch
+            pattern = f"masks_batch_{batch_number}"
+            files = list(masks_col.find(
+                {"filename": {"$regex": pattern}},
+                {"filename": 1, "uploadDate": 1, "metadata": 1}
+            ).sort("uploadDate", -1))
+            
+            # Actualizar información del batch
+            update_data = {
+                "file_count": len(files),
+                "last_file_upload": files[0]["uploadDate"] if files else None,
+                "has_files": len(files) > 0
+            }
+            
+            batches_col.update_one(
+                {"id": batch_id},
+                {"$set": {"file_info": update_data}}
+            )
+            
+            sync_results.append({
+                "batch_id": batch_id,
+                "files_found": len(files),
+                "latest_upload": files[0]["uploadDate"] if files else None
+            })
+        
+        return jsonify({
+            "success": True,
+            "synced_batches": len(sync_results),
+            "results": sync_results
+        })
+        
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 @app.route("/api/init-batches", methods=["POST"])
 def init_batches():
     # Limpia la colección existente y carga datos desde batches.json
@@ -152,4 +259,4 @@ def reset_batches():
         return jsonify({"success": False, "error": str(e)})
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5001)
+    app.run(debug=True, host="0.0.0.0", port=5002)

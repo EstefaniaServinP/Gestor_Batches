@@ -1,0 +1,61 @@
+{
+  "program": "Gestor de Batches de Segmentación",
+  "created_at": "2025-07-23T00:00:00-06:00",
+  "crew": ["Flor", "Ignacio"],
+  "batches": [
+    {
+      "id": "batch-001",
+      "assignee": "Flor",
+      "folder": "/data/batch-001",
+      "tasks": ["segmentar", "revisar", "exportar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-30", "priority": "alta"},
+      "status": "pendiente",
+      "comments": "Batch inicial para procesamiento"
+    },
+    {
+      "id": "batch-002",
+      "assignee": "Flor",
+      "folder": "/data/batch-002",
+      "tasks": ["segmentar", "revisar", "exportar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-28", "priority": "media"},
+      "status": "en-progreso",
+      "comments": "En proceso de segmentación"
+    },
+    {
+      "id": "batch-003",
+      "assignee": "Ignacio",
+      "folder": "/data/batch-003",
+      "tasks": ["segmentar", "revisar", "exportar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-08-01", "priority": "baja"},
+      "status": "pendiente",
+      "comments": "Pendiente de iniciar"
+    },
+    {
+      "id": "batch-004",
+      "assignee": "Ignacio",
+      "folder": "/data/batch-004",
+      "tasks": ["segmentar", "revisar", "exportar"],
+      "metadata": {"assigned_at": "2025-07-22", "due_date": "2025-07-25", "priority": "alta"},
+      "status": "completado",
+      "comments": "Completado y revisado"
+    },
+    {
+      "id": "batch-005",
+      "assignee": "Flor",
+      "folder": "/data/batch-005",
+      "tasks": ["segmentar", "revisar", "exportar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-07-29", "priority": "media"},
+      "status": "en-progreso",
+      "comments": "50% completado"
+    },
+    {
+      "id": "batch-006",
+      "assignee": "Ignacio",
+      "folder": "/data/batch-006",
+      "tasks": ["segmentar", "revisar", "exportar"],
+      "metadata": {"assigned_at": "2025-07-23", "due_date": "2025-08-02", "priority": "baja"},
+      "status": "pendiente",
+      "comments": "Programado para la próxima semana"
+    }
+  ]
+}

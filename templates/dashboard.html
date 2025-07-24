@@ -60,6 +60,9 @@
         <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#newBatchModal">
           <i class="fas fa-plus"></i> Nuevo Batch
         </button>
+        <button class="btn btn-info ms-2" onclick="syncBatchFiles()">
+          <i class="fas fa-sync-alt"></i> Sincronizar Archivos
+        </button>
         <button class="btn btn-warning ms-2" onclick="resetBatches()">
           <i class="fas fa-sync"></i> Recargar Datos
         </button>
@@ -108,7 +111,10 @@
     <div class="card">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0"><i class="fas fa-list"></i> Gestión de Batches - Carpetas de Segmentación</h5>
-        <div class="d-flex align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#statusLegendModal">
+            <i class="fas fa-info-circle"></i> Leyenda
+          </button>
           <label class="me-2">Filtrar por responsable:</label>
           <select id="assigneeFilter" class="form-select form-select-sm" style="width: auto;">
             <option value="">Todos</option>
@@ -130,11 +136,11 @@
             <tr>
               <th>Batch ID</th>
               <th>Responsable</th>
-              <th>Carpeta de Imágenes</th>
+              <th>Cargado a Mongo</th>
+              <th>Estatus Segmentación</th>
               <th>Fecha Asignación</th>
-              <th>Fecha Límite</th>
+              <th>Fecha Revisión</th>
               <th>Prioridad</th>
-              <th>Estado</th>
               <th>Comentarios</th>
               <th>Acciones</th>
             </tr>
@@ -384,40 +390,66 @@
       batches.forEach(function(batch, index) {
         console.log(`Procesando batch ${index + 1}:`, batch);
         const priorityClass = `priority-${batch.metadata.priority}`;
-        const statusClass = `status-${batch.status}`;
         
-        // Crear selector de estado
+        // Estado de MongoDB (Cargado a Mongo)
+        const mongoStatus = batch.mongo_uploaded ? 
+          `<i class="fas fa-check-circle text-success" title="Sí"></i> Sí` : 
+          `<i class="fas fa-times-circle text-danger" title="No"></i> No`;
+        
+        // Selector de estatus de segmentación
         const statusSelect = `
-          <select class="form-select form-select-sm status-select" data-batch-id="${batch.id}" style="min-width: 120px;">
-            <option value="pendiente" ${batch.status === 'pendiente' ? 'selected' : ''}>Pendiente</option>
-            <option value="en-progreso" ${batch.status === 'en-progreso' ? 'selected' : ''}>En Progreso</option>
-            <option value="completado" ${batch.status === 'completado' ? 'selected' : ''}>Completado</option>
+          <select class="form-select form-select-sm segmentation-status-select" data-batch-id="${batch.id}" style="min-width: 80px;">
+            <option value="S" ${batch.status === 'S' ? 'selected' : ''}>S - Segmentado</option>
+            <option value="FS" ${batch.status === 'FS' ? 'selected' : ''}>FS - Falta Segmentar</option>
+            <option value="NS" ${batch.status === 'NS' ? 'selected' : ''}>NS - No Segmentado</option>
           </select>
         `;
         
-        // Crear input de fecha límite editable
-        const dueDateInput = `
-          <input type="date" class="form-control form-control-sm due-date-input" 
+        // Badge del estatus para mejor visualización
+        let statusBadge = '';
+        switch(batch.status) {
+          case 'S':
+            statusBadge = '<span class="badge bg-success">S</span>';
+            break;
+          case 'FS':
+            statusBadge = '<span class="badge bg-warning">FS</span>';
+            break;
+          case 'NS':
+            statusBadge = '<span class="badge bg-secondary">NS</span>';
+            break;
+        }
+        
+        // Input de fecha de revisión editable
+        const reviewDateInput = `
+          <input type="date" class="form-control form-control-sm review-date-input" 
                  data-batch-id="${batch.id}" 
-                 value="${batch.metadata.due_date || ''}" 
+                 value="${batch.metadata.reviewed_at || ''}" 
                  style="min-width: 130px;">
+        `;
+        
+        // Campo de comentarios editable
+        const commentsInput = `
+          <textarea class="form-control form-control-sm comments-input" 
+                    data-batch-id="${batch.id}" 
+                    rows="2" 
+                    style="min-width: 200px;">${batch.comments || ''}</textarea>
         `;
         
         const row = [
           batch.id,
           batch.assignee,
-          batch.folder || `<em class="text-muted">Carpeta: ${batch.id}_images</em>`,
-          batch.metadata.assigned_at,
-          dueDateInput,
-          `<span class="${priorityClass}">${batch.metadata.priority}</span>`,
+          mongoStatus,
           statusSelect,
-          batch.comments || '<em class="text-muted">Sin comentarios</em>',
+          batch.metadata.assigned_at,
+          reviewDateInput,
+          `<span class="${priorityClass}">${batch.metadata.priority}</span>`,
+          commentsInput,
           `
-            <button class="btn btn-sm btn-outline-primary" onclick="editBatch('${batch.id}')" title="Editar batch">
-              <i class="fas fa-edit"></i>
+            <button class="btn btn-sm btn-outline-success" onclick="saveBatchChanges('${batch.id}')" title="Guardar cambios">
+              <i class="fas fa-save"></i>
             </button>
-            <button class="btn btn-sm btn-outline-danger" onclick="deleteBatch('${batch.id}')" title="Eliminar batch">
-              <i class="fas fa-trash"></i>
+            <button class="btn btn-sm btn-outline-info" onclick="viewBatchDetails('${batch.id}')" title="Ver detalles">
+              <i class="fas fa-eye"></i>
             </button>
           `
         ];
@@ -496,6 +528,177 @@
         }
       });
     }
+    
+    // Función para guardar cambios de un batch
+    function saveBatchChanges(batchId) {
+      const batch = batches.find(b => b.id === batchId);
+      if (!batch) return;
+      
+      // Obtener valores de los campos editables
+      const segmentationStatus = $(`.segmentation-status-select[data-batch-id="${batchId}"]`).val();
+      const reviewDate = $(`.review-date-input[data-batch-id="${batchId}"]`).val();
+      const comments = $(`.comments-input[data-batch-id="${batchId}"]`).val();
+      
+      // Actualizar el objeto batch
+      batch.status = segmentationStatus;
+      batch.metadata.reviewed_at = reviewDate;
+      batch.comments = comments;
+      
+      // Enviar actualización al servidor
+      $.ajax({
+        url: `/api/batches/${batchId}`,
+        method: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          status: segmentationStatus,
+          metadata: batch.metadata,
+          comments: comments
+        }),
+        success: function(response) {
+          if (response.success) {
+            showNotification('Batch actualizado exitosamente', 'success');
+            // Actualizar estadísticas
+            updateStatistics();
+          } else {
+            showNotification('Error actualizando batch: ' + response.message, 'error');
+          }
+        },
+        error: function(xhr) {
+          showNotification('Error actualizando batch: ' + (xhr.responseJSON?.error || 'Error desconocido'), 'error');
+        }
+      });
+    }
+    
+    // Función para ver detalles de un batch
+    function viewBatchDetails(batchId) {
+      const batch = batches.find(b => b.id === batchId);
+      if (!batch) return;
+      
+      const mongoStatusText = batch.mongo_uploaded ? 'Sí' : 'No';
+      const statusText = {
+        'S': 'Segmentado Completo',
+        'FS': 'Falta Segmentar',
+        'NS': 'No Segmentado'
+      }[batch.status] || batch.status;
+      
+      const modalContent = `
+        <div class="row">
+          <div class="col-md-6">
+            <h6>Información General</h6>
+            <p><strong>ID:</strong> ${batch.id}</p>
+            <p><strong>Responsable:</strong> ${batch.assignee}</p>
+            <p><strong>Carpeta:</strong> ${batch.folder}</p>
+            <p><strong>Prioridad:</strong> ${batch.metadata.priority}</p>
+          </div>
+          <div class="col-md-6">
+            <h6>Estado y Fechas</h6>
+            <p><strong>Cargado a MongoDB:</strong> ${mongoStatusText}</p>
+            <p><strong>Estatus:</strong> ${statusText}</p>
+            <p><strong>Fecha Asignación:</strong> ${batch.metadata.assigned_at || 'No asignada'}</p>
+            <p><strong>Fecha Revisión:</strong> ${batch.metadata.reviewed_at || 'Pendiente'}</p>
+          </div>
+        </div>
+        <div class="row mt-3">
+          <div class="col-12">
+            <h6>Comentarios</h6>
+            <p class="text-muted">${batch.comments || 'Sin comentarios'}</p>
+          </div>
+        </div>
+      `;
+      
+      // Mostrar modal con información
+      const modal = `
+        <div class="modal fade" id="batchDetailsModal" tabindex="-1">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">Detalles del Batch ${batchId}</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                ${modalContent}
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Remover modal anterior si existe
+      $('#batchDetailsModal').remove();
+      
+      // Agregar y mostrar modal
+      $('body').append(modal);
+      $('#batchDetailsModal').modal('show');
+    }
+    
+    // Función para ver archivos de un batch
+    function viewBatchFiles(batchId) {
+      $.ajax({
+        url: `/api/batch-files/${batchId}`,
+        method: 'GET',
+        success: function(response) {
+          if (response.success) {
+            const fileInfo = response.file_info;
+            let modalContent = '';
+            
+            if (fileInfo.count > 0) {
+              modalContent = `
+                <p><strong>Archivos encontrados:</strong> ${fileInfo.count}</p>
+                <p><strong>Última subida:</strong> ${new Date(fileInfo.latest_upload).toLocaleString('es-ES')}</p>
+                <p><strong>Subido por:</strong> ${fileInfo.uploaded_by}</p>
+                <p><strong>Tamaño total:</strong> ${(fileInfo.total_size / (1024*1024)).toFixed(2)} MB</p>
+                <hr>
+                <p><a href="/masks" target="_blank" class="btn btn-primary">Ver todos los archivos en MongoDB</a></p>
+              `;
+            } else {
+              modalContent = `
+                <div class="alert alert-warning">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  No se encontraron archivos para el batch <strong>${batchId}</strong> en MongoDB.
+                </div>
+                <p>Los archivos deben seguir el patrón: <code>masks_batch_${batchId.replace('batch-', '')}.tar.xz</code></p>
+              `;
+            }
+            
+            // Mostrar modal con información
+            const modal = `
+              <div class="modal fade" id="fileInfoModal" tabindex="-1">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">Archivos del Batch ${batchId}</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      ${modalContent}
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+            
+            // Remover modal anterior si existe
+            $('#fileInfoModal').remove();
+            
+            // Agregar y mostrar modal
+            $('body').append(modal);
+            $('#fileInfoModal').modal('show');
+            
+          } else {
+            showNotification('Error al obtener información de archivos: ' + response.message, 'error');
+          }
+        },
+        error: function() {
+          showNotification('Error al conectar con el servidor', 'error');
+        }
+      });
+    }
 
     function deleteBatch(batchId) {
       if (!confirm('¿Estás seguro de que quieres eliminar este batch?')) return;
@@ -509,6 +712,27 @@
         },
         error: function(xhr) {
           alert('Error eliminando batch: ' + xhr.responseJSON.error);
+        }
+      });
+    }
+    
+    // Función para sincronizar archivos entre batches y MongoDB
+    function syncBatchFiles() {
+      showNotification('Sincronizando archivos con MongoDB...', 'info');
+      
+      $.ajax({
+        url: '/api/sync-batch-files',
+        method: 'POST',
+        success: function(response) {
+          if (response.success) {
+            showNotification(`Sincronización completa. ${response.batches_updated} batches actualizados.`, 'success');
+            loadBatches(); // Recargar la tabla
+          } else {
+            showNotification('Error en la sincronización: ' + response.message, 'error');
+          }
+        },
+        error: function() {
+          showNotification('Error al conectar con el servidor para sincronización', 'error');
         }
       });
     }
@@ -593,5 +817,53 @@
       });
     }
   </script>
+  <!-- Modal de Leyenda de Estatus -->
+  <div class="modal fade" id="statusLegendModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><i class="fas fa-info-circle"></i> Leyenda de Estatus de Segmentación</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-12">
+              <h6 class="fw-bold mb-3">Estatus de Segmentación:</h6>
+              <ul class="list-unstyled">
+                <li class="mb-2">
+                  <span class="badge bg-success me-2">S</span>
+                  <strong>Segmentado:</strong> Batch completamente segmentado
+                </li>
+                <li class="mb-2">
+                  <span class="badge bg-warning me-2">FS</span>
+                  <strong>Falta Segmentar:</strong> Faltan algunas imágenes por segmentar
+                </li>
+                <li class="mb-2">
+                  <span class="badge bg-secondary me-2">NS</span>
+                  <strong>No Segmentado:</strong> Batch sin iniciar segmentación
+                </li>
+              </ul>
+              
+              <h6 class="fw-bold mb-3 mt-4">MongoDB:</h6>
+              <ul class="list-unstyled">
+                <li class="mb-2">
+                  <i class="fas fa-check-circle text-success me-2"></i>
+                  <strong>Sí:</strong> Archivos subidos a MongoDB
+                </li>
+                <li class="mb-2">
+                  <i class="fas fa-times-circle text-danger me-2"></i>
+                  <strong>No:</strong> Sin archivos en MongoDB
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 </html>
