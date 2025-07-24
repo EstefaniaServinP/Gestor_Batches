@@ -40,6 +40,23 @@
       background-color: #f8d7da !important;
     }
     
+    /* Estilos para botones de acción */
+    .action-buttons .btn {
+      margin-right: 2px;
+      transition: all 0.2s ease;
+    }
+    
+    .action-buttons .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .btn-outline-danger:hover {
+      background-color: #dc3545;
+      border-color: #dc3545;
+      color: white;
+    }
+    
     /* Estilos para los campos de fecha */
     input[type="date"] {
       position: relative;
@@ -95,8 +112,17 @@
         <button class="btn btn-info ms-2" onclick="syncBatchFiles()">
           <i class="fas fa-sync-alt"></i> Sincronizar Archivos
         </button>
+        <button class="btn btn-success ms-2" onclick="autoCreateBatches()">
+          <i class="fas fa-magic"></i> Crear Batches Auto
+        </button>
+        <button class="btn btn-secondary ms-2" onclick="checkMongoFiles()">
+          <i class="fas fa-database"></i> Verificar MongoDB
+        </button>
         <button class="btn btn-warning ms-2" onclick="resetBatches()">
           <i class="fas fa-sync"></i> Recargar Datos
+        </button>
+        <button class="btn btn-danger ms-2" onclick="forceInitBatches()" title="Forzar recarga desde archivo JSON">
+          <i class="fas fa-database"></i> Reinicializar desde JSON
         </button>
         <button class="btn btn-info ms-2" onclick="showTeamMetrics()">
           <i class="fas fa-chart-bar"></i> Métricas del Equipo
@@ -467,12 +493,19 @@
     });
 
     function initBatches() {
+      console.log('🔄 Verificando inicialización de batches...');
       $.post('/api/init-batches')
         .done(function(response) {
-          console.log('Batches inicializados:', response.message);
+          console.log('✅ Resultado de inicialización:', response);
+          if (response.loaded) {
+            showNotification(`${response.loaded_count} nuevos batches cargados desde archivo`, 'success');
+          } else if (response.existing_count > 0) {
+            console.log(`📊 ${response.existing_count} batches ya existentes - no se requiere inicialización`);
+          }
         })
         .fail(function(xhr) {
-          console.error('Error inicializando batches:', xhr.responseJSON);
+          console.error('❌ Error en inicialización:', xhr.responseJSON);
+          showNotification('Error verificando inicialización de batches: ' + (xhr.responseJSON?.error || 'Error desconocido'), 'warning');
         });
     }
 
@@ -739,12 +772,17 @@
           prioritySelect,
           commentsInput,
           `
-            <button class="btn btn-sm btn-outline-success" onclick="saveBatchChanges('${batch.id}')" title="Guardar cambios">
-              <i class="fas fa-save"></i>
-            </button>
-            <button class="btn btn-sm btn-outline-info" onclick="viewBatchDetails('${batch.id}')" title="Ver detalles">
-              <i class="fas fa-eye"></i>
-            </button>
+            <div class="action-buttons">
+              <button class="btn btn-sm btn-outline-success" onclick="saveBatchChanges('${batch.id}')" title="Guardar cambios">
+                <i class="fas fa-save"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-info" onclick="viewBatchDetails('${batch.id}')" title="Ver detalles">
+                <i class="fas fa-eye"></i>
+              </button>
+              <button class="btn btn-sm btn-outline-danger" onclick="deleteBatchConfirm('${batch.id}')" title="Eliminar batch">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
           `
         ];
         
@@ -1119,18 +1157,93 @@
       });
     }
 
+    function deleteBatchConfirm(batchId) {
+      const batch = batches.find(b => b.id === batchId);
+      if (!batch) {
+        showNotification('Batch no encontrado', 'error');
+        return;
+      }
+      
+      // Crear modal de confirmación personalizado
+      const confirmationModal = `
+        <div class="modal fade" id="deleteBatchModal" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                  <i class="fas fa-exclamation-triangle"></i> Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <div class="alert alert-warning">
+                  <i class="fas fa-warning"></i>
+                  <strong>¡Atención!</strong> Esta acción no se puede deshacer.
+                </div>
+                <p><strong>¿Estás seguro de que quieres eliminar el siguiente batch?</strong></p>
+                <div class="card bg-light">
+                  <div class="card-body">
+                    <p class="mb-1"><strong>Batch ID:</strong> ${batch.id}</p>
+                    <p class="mb-1"><strong>Responsable:</strong> ${batch.assignee}</p>
+                    <p class="mb-1"><strong>Estado:</strong> ${batch.status}</p>
+                    <p class="mb-0"><strong>Comentarios:</strong> ${batch.comments || 'Sin comentarios'}</p>
+                  </div>
+                </div>
+                <p class="mt-3 text-muted">
+                  <small>
+                    <i class="fas fa-info-circle"></i>
+                    El batch será eliminado permanentemente del sistema y de la base de datos.
+                  </small>
+                </p>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                  <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" onclick="deleteBatch('${batchId}')">
+                  <i class="fas fa-trash"></i> Sí, Eliminar Batch
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Remover modal anterior si existe
+      $('#deleteBatchModal').remove();
+      
+      // Agregar y mostrar modal
+      $('body').append(confirmationModal);
+      $('#deleteBatchModal').modal('show');
+      
+      // Auto-remover modal cuando se cierre
+      $('#deleteBatchModal').on('hidden.bs.modal', function() {
+        $(this).remove();
+      });
+    }
+
     function deleteBatch(batchId) {
-      if (!confirm('¿Estás seguro de que quieres eliminar este batch?')) return;
+      console.log(`🗑️ Eliminando batch: ${batchId}`);
+      showNotification('Eliminando batch...', 'info');
       
       $.ajax({
         url: `/api/batches/${batchId}`,
         method: 'DELETE',
         success: function(response) {
-          loadBatches();
-          alert('Batch eliminado exitosamente');
+          $('#deleteBatchModal').modal('hide');
+          
+          if (response.success) {
+            showNotification(`Batch ${batchId} eliminado exitosamente`, 'success');
+            loadBatches(); // Recargar la tabla
+          } else {
+            showNotification('Error eliminando batch: ' + response.message, 'error');
+          }
         },
         error: function(xhr) {
-          alert('Error eliminando batch: ' + xhr.responseJSON.error);
+          $('#deleteBatchModal').modal('hide');
+          const errorMsg = xhr.responseJSON?.error || 'Error desconocido';
+          showNotification('Error eliminando batch: ' + errorMsg, 'error');
+          console.error(`❌ Error eliminando batch ${batchId}:`, xhr);
         }
       });
     }
@@ -1146,12 +1259,201 @@
           if (response.success) {
             showNotification(`Sincronización completa. ${response.batches_updated} batches actualizados.`, 'success');
             loadBatches(); // Recargar la tabla
+            
+            // Mostrar detalles si hay cambios
+            if (response.batches_updated > 0) {
+              console.log('📊 Resultados de sincronización:', response.results);
+              
+              // Mostrar batches que cambiaron
+              const updatedBatches = response.results.filter(r => r.updated);
+              if (updatedBatches.length > 0) {
+                const batchNames = updatedBatches.map(b => b.batch_id).join(', ');
+                showNotification(`Batches actualizados: ${batchNames}`, 'info');
+              }
+            }
           } else {
-            showNotification('Error en la sincronización: ' + response.message, 'error');
+            showNotification('Error en la sincronización: ' + response.error, 'error');
           }
         },
-        error: function() {
-          showNotification('Error al conectar con el servidor para sincronización', 'error');
+        error: function(xhr) {
+          const errorMsg = xhr.responseJSON?.error || 'Error desconocido';
+          showNotification('Error al conectar con el servidor para sincronización: ' + errorMsg, 'error');
+        }
+      });
+    }
+
+    // Nueva función para crear batches automáticamente
+    function autoCreateBatches() {
+      const confirmMessage = `🤖 Creación Automática de Batches
+
+Esta función va a:
+• Escanear todos los archivos en MongoDB
+• Extraer números de batch de los nombres de archivos
+• Crear automáticamente los batches que falten
+• Asignarlos por defecto a "Maggie" (puedes cambiar después)
+
+¿Quieres continuar?`;
+
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+      
+      showNotification('Creando batches automáticamente...', 'info');
+      
+      $.ajax({
+        url: '/api/auto-create-batches',
+        method: 'POST',
+        success: function(response) {
+          if (response.success) {
+            showNotification(`¡Éxito! ${response.created_batches} nuevos batches creados de ${response.total_found} encontrados`, 'success');
+            loadBatches(); // Recargar la tabla
+            
+            // Mostrar detalles
+            if (response.created_batches > 0) {
+              const createdBatches = response.results.filter(r => r.created);
+              const batchNames = createdBatches.map(b => b.batch_id).join(', ');
+              showNotification(`Batches creados: ${batchNames}`, 'info');
+              
+              // Ejecutar sincronización automáticamente después
+              setTimeout(() => {
+                showNotification('Sincronizando archivos...', 'info');
+                syncBatchFiles();
+              }, 2000);
+            }
+          } else {
+            showNotification('Error en creación automática: ' + response.error, 'error');
+          }
+        },
+        error: function(xhr) {
+          const errorMsg = xhr.responseJSON?.error || 'Error desconocido';
+          showNotification('Error en creación automática: ' + errorMsg, 'error');
+        }
+      });
+    }
+
+    // Nueva función para verificar archivos en MongoDB
+    function checkMongoFiles() {
+      showNotification('Verificando archivos en MongoDB...', 'info');
+      
+      $.ajax({
+        url: '/api/check-mongo-files',
+        method: 'GET',
+        success: function(response) {
+          if (response.success) {
+            // Crear modal con información de archivos
+            let modalContent = `
+              <div class="alert alert-info">
+                <i class="fas fa-database"></i>
+                <strong>Total de archivos en MongoDB:</strong> ${response.total_files}
+              </div>
+              
+              <h6>📁 Archivos por Batch:</h6>
+              <div class="row">
+            `;
+            
+            if (Object.keys(response.batch_patterns).length > 0) {
+              Object.keys(response.batch_patterns).sort().forEach(batchKey => {
+                const files = response.batch_patterns[batchKey];
+                modalContent += `
+                  <div class="col-md-6 mb-2">
+                    <div class="card card-body bg-light">
+                      <h6 class="text-primary">${batchKey}</h6>
+                      <small>${files.length} archivo(s):</small>
+                      <ul class="list-unstyled mb-0">
+                `;
+                files.slice(0, 3).forEach(filename => {
+                  modalContent += `<li><small><i class="fas fa-file"></i> ${filename}</small></li>`;
+                });
+                if (files.length > 3) {
+                  modalContent += `<li><small class="text-muted">... y ${files.length - 3} más</small></li>`;
+                }
+                modalContent += `
+                      </ul>
+                    </div>
+                  </div>
+                `;
+              });
+            } else {
+              modalContent += `
+                <div class="col-12">
+                  <div class="alert alert-warning">
+                    No se encontraron archivos con patrones de batch reconocibles.
+                  </div>
+                </div>
+              `;
+            }
+            
+            modalContent += `
+              </div>
+              
+              <h6 class="mt-3">📄 Archivos Recientes:</h6>
+              <div class="table-responsive" style="max-height: 300px;">
+                <table class="table table-sm">
+                  <thead>
+                    <tr>
+                      <th>Archivo</th>
+                      <th>Fecha</th>
+                      <th>Tamaño (MB)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+            `;
+            
+            response.recent_files.slice(0, 10).forEach(file => {
+              modalContent += `
+                <tr>
+                  <td><small>${file.filename}</small></td>
+                  <td><small>${file.uploadDate ? new Date(file.uploadDate).toLocaleString('es-ES') : 'N/A'}</small></td>
+                  <td><small>${file.size_mb}</small></td>
+                </tr>
+              `;
+            });
+            
+            modalContent += `
+                  </tbody>
+                </table>
+              </div>
+            `;
+            
+            // Mostrar modal
+            const modal = `
+              <div class="modal fade" id="mongoFilesModal" tabindex="-1">
+                <div class="modal-dialog modal-xl">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title">
+                        <i class="fas fa-database"></i> Archivos en MongoDB
+                      </h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                      ${modalContent}
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-primary" onclick="syncBatchFiles(); $('#mongoFilesModal').modal('hide');">
+                        <i class="fas fa-sync-alt"></i> Sincronizar Ahora
+                      </button>
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            `;
+            
+            // Remover modal anterior y mostrar nuevo
+            $('#mongoFilesModal').remove();
+            $('body').append(modal);
+            $('#mongoFilesModal').modal('show');
+            
+            showNotification(`Verificación completa: ${response.total_files} archivos encontrados`, 'success');
+            
+          } else {
+            showNotification('Error verificando MongoDB: ' + response.error, 'error');
+          }
+        },
+        error: function(xhr) {
+          const errorMsg = xhr.responseJSON?.error || 'Error desconocido';
+          showNotification('Error verificando MongoDB: ' + errorMsg, 'error');
         }
       });
     }
@@ -1168,6 +1470,48 @@
         },
         error: function(xhr) {
           alert('Error recargando datos: ' + xhr.responseJSON.error);
+        }
+      });
+    }
+
+    // Nueva función para forzar la inicialización
+    function forceInitBatches() {
+      const confirmMessage = `⚠️ ADVERTENCIA ⚠️
+
+Esta acción va a:
+• Eliminar TODOS los batches existentes en la base de datos
+• Cargar los batches desde el archivo batches.json
+• Perder cualquier batch creado que no esté en el archivo JSON
+
+¿Estás completamente seguro de que quieres continuar?
+
+Escribe "CONFIRMAR" para proceder:`;
+
+      const userInput = prompt(confirmMessage);
+      
+      if (userInput !== "CONFIRMAR") {
+        showNotification('Operación cancelada', 'info');
+        return;
+      }
+      
+      showNotification('Forzando reinicialización desde archivo JSON...', 'warning');
+      
+      $.ajax({
+        url: '/api/init-batches',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ force: true }),
+        success: function(response) {
+          if (response.success) {
+            showNotification(`Reinicialización completa: ${response.loaded_count} batches cargados desde JSON`, 'success');
+            loadBatches(); // Recargar la tabla
+          } else {
+            showNotification('Error en reinicialización: ' + response.error, 'error');
+          }
+        },
+        error: function(xhr) {
+          const errorMsg = xhr.responseJSON?.error || 'Error desconocido';
+          showNotification('Error forzando reinicialización: ' + errorMsg, 'error');
         }
       });
     }

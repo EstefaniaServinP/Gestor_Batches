@@ -200,12 +200,89 @@ def change_batch_id(batch_id):
 
 @app.route("/api/batches/<batch_id>", methods=["DELETE"])
 def delete_batch(batch_id):
-    result = batches_col.delete_one({"id": batch_id})
-    
-    if result.deleted_count > 0:
-        return jsonify({"success": True})
-    else:
-        return jsonify({"success": False, "error": "Batch no encontrado"}), 404
+    try:
+        print(f"🗑️ Eliminando batch: {batch_id}")
+        
+        # Verificar que el batch existe antes de eliminarlo
+        existing_batch = batches_col.find_one({"id": batch_id})
+        if not existing_batch:
+            return jsonify({
+                "success": False, 
+                "error": f"Batch '{batch_id}' no encontrado"
+            }), 404
+        
+        # Eliminar el batch
+        result = batches_col.delete_one({"id": batch_id})
+        
+        if result.deleted_count > 0:
+            print(f"✅ Batch {batch_id} eliminado exitosamente")
+            return jsonify({
+                "success": True, 
+                "message": f"Batch {batch_id} eliminado exitosamente",
+                "deleted_batch": {
+                    "id": batch_id,
+                    "assignee": existing_batch.get("assignee", ""),
+                    "status": existing_batch.get("status", "")
+                }
+            })
+        else:
+            print(f"❌ Error eliminando batch {batch_id}")
+            return jsonify({
+                "success": False, 
+                "error": "Error al eliminar el batch"
+            }), 500
+            
+    except Exception as e:
+        print(f"❌ Error en delete_batch: {e}")
+        return jsonify({
+            "success": False, 
+            "error": str(e)
+        }), 500
+
+@app.route("/api/check-mongo-files", methods=["GET"])
+def check_mongo_files():
+    """Verificar qué archivos están actualmente en MongoDB"""
+    try:
+        # Obtener lista de todos los archivos en la colección masks
+        files = list(masks_col.find(
+            {},
+            {"filename": 1, "uploadDate": 1, "metadata": 1, "length": 1}
+        ).sort("uploadDate", -1).limit(50))  # Últimos 50 archivos
+        
+        files_info = []
+        for file in files:
+            files_info.append({
+                "filename": file["filename"],
+                "uploadDate": file["uploadDate"].isoformat() if file.get("uploadDate") else None,
+                "size_mb": round(file.get("length", 0) / (1024*1024), 2),
+                "uploaded_by": file.get("metadata", {}).get("uploaded_by", "unknown")
+            })
+        
+        # Contar archivos por patrón de batch
+        batch_patterns = {}
+        for file in files:
+            filename = file["filename"]
+            # Buscar patrones como batch_XX, Batch_XX, masks_batch_XX
+            import re
+            batch_match = re.search(r'[Bb]atch[_\-]?(\d+)', filename)
+            if batch_match:
+                batch_num = batch_match.group(1)
+                batch_key = f"batch_{batch_num}"
+                if batch_key not in batch_patterns:
+                    batch_patterns[batch_key] = []
+                batch_patterns[batch_key].append(filename)
+        
+        return jsonify({
+            "success": True,
+            "total_files": len(files_info),
+            "recent_files": files_info,
+            "batch_patterns": batch_patterns,
+            "message": f"Se encontraron {len(files_info)} archivos en MongoDB"
+        })
+        
+    except Exception as e:
+        print(f"❌ Error verificando archivos en MongoDB: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route("/api/batch-files/<batch_id>", methods=["GET"])
 def get_batch_files(batch_id):
@@ -250,62 +327,247 @@ def get_batch_files(batch_id):
 
 @app.route("/api/sync-batch-files", methods=["POST"])
 def sync_batch_files():
-    """Sincronizar todos los batches con archivos subidos"""
+    """Sincronizar todos los batches con archivos subidos y actualizar mongo_uploaded"""
     try:
-        batches = list(batches_col.find({}, {"id": 1}))
+        print("🔄 Iniciando sincronización de archivos con batches...")
+        batches = list(batches_col.find({}, {"id": 1, "mongo_uploaded": 1}))
+        updated_batches = 0
         sync_results = []
         
         for batch in batches:
             batch_id = batch["id"]
-            batch_number = batch_id.replace("batch_", "")
+            current_mongo_status = batch.get("mongo_uploaded", False)
+            batch_number = batch_id.replace("batch_", "").replace("Batch_", "")
             
-            # Buscar archivos para este batch
-            pattern = f"masks_batch_{batch_number}"
-            files = list(masks_col.find(
-                {"filename": {"$regex": pattern}},
-                {"filename": 1, "uploadDate": 1, "metadata": 1}
-            ).sort("uploadDate", -1))
+            # Buscar archivos para este batch con múltiples patrones más específicos
+            # Basado en los nombres reales encontrados en MongoDB
+            patterns = [
+                f"masks_batch_{batch_number}",          # masks_batch_400
+                f"masks_Batch_{batch_number}",          # masks_Batch_400  
+                f"batch_{batch_number}",                # batch_400
+                f"Batch_{batch_number}",                # Batch_400
+                f"batch_{batch_number} \\(",            # batch_400 (100) - patrón con paréntesis
+                f"Batch_{batch_number} \\(",            # Batch_400 (100)
+                f"^batch_{batch_number}$",              # batch_400 exacto
+                f"^{batch_number}$",                    # solo el número 400
+                batch_id,                               # batch_400 exacto
+            ]
+            
+            files_found = []
+            for pattern in patterns:
+                # Buscar con diferentes extensiones comunes
+                search_patterns = [
+                    pattern,
+                    f"{pattern}.tar.xz",
+                    f"{pattern}.tar.gz", 
+                    f"{pattern}.zip",
+                    f"{pattern}.tar"
+                ]
+                
+                for search_pattern in search_patterns:
+                    files = list(masks_col.find(
+                        {"filename": {"$regex": search_pattern, "$options": "i"}},  # Case insensitive
+                        {"filename": 1, "uploadDate": 1, "metadata": 1, "length": 1}
+                    ).sort("uploadDate", -1))
+                    files_found.extend(files)
+                    
+                    # Log para debug de batches específicos
+                    if files and (batch_id == "batch_400" or batch_number in ["4250", "4251", "4252"]):
+                        print(f"🔍 ENCONTRADO para {batch_id} con patrón '{search_pattern}': {[f['filename'] for f in files]}")
+            
+            # Remover duplicados
+            seen_filenames = set()
+            unique_files = []
+            for file in files_found:
+                if file["filename"] not in seen_filenames:
+                    unique_files.append(file)
+                    seen_filenames.add(file["filename"])
+            
+            has_files = len(unique_files) > 0
+            
+            # Log específico para batches de debug
+            if batch_id == "batch_400" or batch_number in ["4250", "4251", "4252"]:
+                print(f"📊 DEBUG {batch_id}:")
+                print(f"   - Número extraído: {batch_number}")
+                print(f"   - Archivos encontrados: {len(unique_files)}")
+                print(f"   - Nombres: {[f['filename'] for f in unique_files]}")
+                print(f"   - Estado actual mongo_uploaded: {current_mongo_status}")
+                print(f"   - Nuevo estado: {has_files}")
             
             # Actualizar información del batch
             update_data = {
-                "file_count": len(files),
-                "last_file_upload": files[0]["uploadDate"] if files else None,
-                "has_files": len(files) > 0
+                "mongo_uploaded": has_files,  # Actualizar el estado principal
+                "file_info": {
+                    "file_count": len(unique_files),
+                    "last_file_upload": unique_files[0]["uploadDate"] if unique_files else None,
+                    "has_files": has_files,
+                    "files": [f["filename"] for f in unique_files[:5]]  # Primeros 5 archivos
+                }
             }
             
-            batches_col.update_one(
-                {"id": batch_id},
-                {"$set": {"file_info": update_data}}
-            )
+            # Solo actualizar si hay cambios
+            if current_mongo_status != has_files or not batch.get("file_info"):
+                batches_col.update_one(
+                    {"id": batch_id},
+                    {"$set": update_data}
+                )
+                updated_batches += 1
+                print(f"✅ Batch {batch_id}: mongo_uploaded actualizado de {current_mongo_status} a {has_files}")
             
             sync_results.append({
                 "batch_id": batch_id,
-                "files_found": len(files),
-                "latest_upload": files[0]["uploadDate"] if files else None
+                "files_found": len(unique_files),
+                "mongo_uploaded": has_files,
+                "latest_upload": unique_files[0]["uploadDate"] if unique_files else None,
+                "updated": current_mongo_status != has_files
             })
+        
+        print(f"🔄 Sincronización completa: {updated_batches} batches actualizados")
         
         return jsonify({
             "success": True,
-            "synced_batches": len(sync_results),
+            "batches_updated": updated_batches,
+            "total_batches": len(sync_results),
+            "message": f"Sincronización completa: {updated_batches} batches actualizados",
             "results": sync_results
         })
         
     except Exception as e:
+        print(f"❌ Error en sincronización: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/auto-create-batches", methods=["POST"])
+def auto_create_batches():
+    """Crear batches automáticamente basándose en archivos encontrados en MongoDB"""
+    try:
+        print("🤖 Iniciando creación automática de batches...")
+        
+        # Obtener todos los archivos de MongoDB
+        files = list(masks_col.find(
+            {},
+            {"filename": 1, "uploadDate": 1, "metadata": 1, "length": 1}
+        ).sort("uploadDate", -1))
+        
+        # Extraer números de batch de los nombres de archivos
+        import re
+        batch_numbers = set()
+        for file in files:
+            filename = file["filename"]
+            # Buscar patrones como batch_XXXX, Batch_XXXX
+            batch_matches = re.findall(r'[Bb]atch[_\-]?(\d+)', filename)
+            for match in batch_matches:
+                batch_numbers.add(match)
+        
+        print(f"📊 Números de batch encontrados en archivos: {sorted(list(batch_numbers))}")
+        
+        # Verificar qué batches ya existen
+        existing_batches = list(batches_col.find({}, {"id": 1}))
+        existing_ids = {b["id"] for b in existing_batches}
+        
+        created_batches = 0
+        results = []
+        
+        for batch_num in sorted(batch_numbers):
+            batch_id = f"batch_{batch_num}"
+            
+            if batch_id not in existing_ids:
+                # Crear el batch
+                batch = {
+                    "id": batch_id,
+                    "assignee": "Maggie",  # Asignar por defecto, se puede cambiar después
+                    "folder": f"/data/{batch_id}",
+                    "tasks": ["segmentar", "subir_mascaras", "revisar"],
+                    "metadata": {
+                        "assigned_at": datetime.now().strftime("%Y-%m-%d"),
+                        "due_date": "",
+                        "priority": "media",
+                        "reviewed_at": None
+                    },
+                    "status": "NS",  # No segmentado por defecto
+                    "mongo_uploaded": True,  # Ya que el archivo existe
+                    "comments": f"Batch creado automáticamente - archivo detectado en MongoDB"
+                }
+                
+                batches_col.insert_one(batch)
+                created_batches += 1
+                results.append({
+                    "batch_id": batch_id,
+                    "created": True,
+                    "assignee": "Maggie"
+                })
+                print(f"✅ Batch {batch_id} creado automáticamente")
+            else:
+                results.append({
+                    "batch_id": batch_id,
+                    "created": False,
+                    "reason": "Ya existe"
+                })
+                print(f"⚠️ Batch {batch_id} ya existe")
+        
+        return jsonify({
+            "success": True,
+            "created_batches": created_batches,
+            "total_found": len(batch_numbers),
+            "message": f"Se crearon {created_batches} nuevos batches automáticamente",
+            "results": results
+        })
+        
+    except Exception as e:
+        print(f"❌ Error en auto_create_batches: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route("/api/init-batches", methods=["POST"])
 def init_batches():
-    # Limpia la colección existente y carga datos desde batches.json
+    """Inicializar batches SOLO si la colección está vacía o si se especifica forzar"""
     try:
-        # Limpiar colección existente
-        batches_col.delete_many({})
+        force_reload = request.json.get("force", False) if request.json else False
+        
+        # Verificar si ya hay batches en la colección
+        existing_count = batches_col.count_documents({})
+        
+        if existing_count > 0 and not force_reload:
+            print(f"📊 Ya existen {existing_count} batches en la colección, omitiendo inicialización")
+            return jsonify({
+                "success": True, 
+                "message": f"Batches ya inicializados: {existing_count} batches existentes",
+                "existing_count": existing_count,
+                "loaded": False
+            })
+        
+        # Solo cargar desde JSON si no hay datos o si se fuerza
+        if force_reload:
+            print("🔄 Forzando reinicialización - limpiando datos existentes")
+            batches_col.delete_many({})
         
         with open("batches,json", "r", encoding="utf-8") as f:
             data = json.load(f)
             if data.get("batches"):
-                batches_col.insert_many(data["batches"])
-        return jsonify({"success": True, "message": f"Batches reinicializados: {len(data['batches'])} batches cargados"})
+                # Verificar duplicados antes de insertar
+                loaded_count = 0
+                for batch in data["batches"]:
+                    existing = batches_col.find_one({"id": batch["id"]})
+                    if not existing:
+                        batches_col.insert_one(batch)
+                        loaded_count += 1
+                        print(f"➕ Batch {batch['id']} cargado")
+                    else:
+                        print(f"⚠️ Batch {batch['id']} ya existe, omitiendo")
+                
+                return jsonify({
+                    "success": True, 
+                    "message": f"Inicialización completa: {loaded_count} nuevos batches cargados",
+                    "loaded_count": loaded_count,
+                    "total_in_file": len(data["batches"]),
+                    "loaded": True
+                })
+            else:
+                return jsonify({
+                    "success": False, 
+                    "error": "No se encontraron batches en el archivo JSON"
+                })
+                
     except Exception as e:
+        print(f"❌ Error en init_batches: {e}")
         return jsonify({"success": False, "error": str(e)})
 
 @app.route("/api/reset-batches", methods=["POST"])
@@ -322,4 +584,4 @@ def reset_batches():
         return jsonify({"success": False, "error": str(e)})
 
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5002)
+    app.run(debug=True, host="0.0.0.0", port=5001)
