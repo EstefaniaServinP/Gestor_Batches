@@ -209,6 +209,9 @@
           </form>
         </div>
         <div class="modal-footer">
+          <button type="button" class="btn btn-warning btn-sm me-auto" onclick="debugInfo()">
+            <i class="fas fa-bug"></i> Debug Info
+          </button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
           <button type="button" class="btn btn-primary" onclick="createBatch()">Crear Batch</button>
         </div>
@@ -299,6 +302,48 @@
     let batchesTable;
     let batches = [];
     let filterAssignee = '{{ filter_assignee or "" }}';
+    
+    // Función para mostrar notificaciones
+    function showNotification(message, type = 'info') {
+      // Crear el contenedor de notificaciones si no existe
+      if (!document.getElementById('notificationContainer')) {
+        const container = document.createElement('div');
+        container.id = 'notificationContainer';
+        container.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 9999;
+          max-width: 400px;
+        `;
+        document.body.appendChild(container);
+      }
+      
+      // Crear la notificación
+      const notification = document.createElement('div');
+      const alertClass = type === 'success' ? 'alert-success' : 
+                        type === 'error' ? 'alert-danger' : 
+                        type === 'warning' ? 'alert-warning' : 'alert-info';
+      
+      notification.className = `alert ${alertClass} alert-dismissible fade show`;
+      notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 
+                           type === 'error' ? 'exclamation-circle' : 
+                           type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      `;
+      
+      // Agregar al contenedor
+      document.getElementById('notificationContainer').appendChild(notification);
+      
+      // Auto-remover después de 5 segundos
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.remove();
+        }
+      }, 5000);
+    }
 
     $(document).ready(function() {
       // Inicializar batches desde JSON si es necesario
@@ -471,24 +516,129 @@
     }
 
     function createBatch() {
-      const formData = new FormData(document.getElementById('newBatchForm'));
+      console.log('🆕 Iniciando creación de batch...');
+      
+      const form = document.getElementById('newBatchForm');
+      if (!form) {
+        console.error('❌ No se encontró el formulario newBatchForm');
+        showNotification('Error: Formulario no encontrado', 'error');
+        return;
+      }
+      
+      const formData = new FormData(form);
       const data = Object.fromEntries(formData.entries());
+      console.log('📋 Datos del formulario:', data);
+      
+      // Validar campos requeridos
+      if (!data.assignee) {
+        showNotification('Por favor selecciona un responsable', 'warning');
+        return;
+      }
+      
+      if (!data.folder) {
+        showNotification('Por favor ingresa la carpeta de imágenes', 'warning');
+        return;
+      }
+      
+      // Generar un ID único para el batch
+      const nextId = 'batch_' + (Math.max(...batches.map(b => parseInt(b.id.replace('batch_', '')))) + 1);
+      console.log('🆔 ID generado:', nextId);
+      
+      // Estructurar los datos según el nuevo formato
+      const batchData = {
+        id: nextId,
+        assignee: data.assignee,
+        folder: data.folder || `/data/${nextId}`,
+        tasks: ["segmentar", "subir_mascaras", "revisar"],
+        metadata: {
+          assigned_at: new Date().toISOString().split('T')[0], // Fecha actual
+          due_date: data.due_date || '',
+          priority: data.priority || 'media',
+          reviewed_at: null
+        },
+        status: 'NS', // No segmentado por defecto
+        mongo_uploaded: false, // No subido por defecto
+        comments: data.comments || 'Batch creado desde dashboard'
+      };
+      
+      console.log('📤 Enviando datos:', batchData);
+      showNotification('Creando batch...', 'info');
       
       $.ajax({
         url: '/api/batches',
         method: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify(data),
+        data: JSON.stringify(batchData),
         success: function(response) {
-          $('#newBatchModal').modal('hide');
-          document.getElementById('newBatchForm').reset();
-          loadBatches();
-          alert('Batch creado exitosamente');
+          console.log('✅ Respuesta del servidor:', response);
+          if (response.success) {
+            $('#newBatchModal').modal('hide');
+            document.getElementById('newBatchForm').reset();
+            showNotification(`¡Batch ${response.batch.id} creado exitosamente!`, 'success');
+            loadBatches(); // Recargar la tabla
+          } else {
+            console.error('❌ Error en respuesta:', response);
+            showNotification('Error creando batch: ' + response.message, 'error');
+          }
         },
-        error: function(xhr) {
-          alert('Error creando batch: ' + xhr.responseJSON.error);
+        error: function(xhr, status, error) {
+          console.error('❌ Error AJAX:', {xhr, status, error});
+          console.error('❌ Respuesta del servidor:', xhr.responseText);
+          const errorMsg = xhr.responseJSON?.error || xhr.responseText || 'Error desconocido';
+          showNotification('Error creando batch: ' + errorMsg, 'error');
         }
       });
+    }
+
+    // Función de debug para mostrar información del sistema
+    function debugInfo() {
+      const debugData = {
+        timestamp: new Date().toISOString(),
+        total_batches: batches.length,
+        form_data: {
+          assignee: document.getElementById('assignee').value,
+          folder: document.getElementById('folder').value,
+          due_date: document.getElementById('due_date').value,
+          priority: document.getElementById('priority').value,
+          comments: document.getElementById('comments').value
+        },
+        browser_info: {
+          userAgent: navigator.userAgent,
+          language: navigator.language,
+          cookieEnabled: navigator.cookieEnabled
+        },
+        page_state: {
+          current_filter: $('#responsibleFilter').val(),
+          total_displayed_rows: $('#batchesTable tbody tr').length
+        },
+        recent_console_logs: 'Revisa la consola del navegador (F12) para más detalles'
+      };
+
+      console.log('🐛 DEBUG INFO COMPLETA:', debugData);
+      
+      // Mostrar en un modal o alert
+      const debugText = `DEBUG INFO (${new Date().toLocaleString()}):
+      
+📊 Total Batches: ${debugData.total_batches}
+🎯 Filtro Actual: ${debugData.page_state.current_filter}
+📝 Filas Mostradas: ${debugData.page_state.total_displayed_rows}
+
+📋 DATOS DEL FORMULARIO:
+- Responsable: "${debugData.form_data.assignee}"
+- Carpeta: "${debugData.form_data.folder}"
+- Fecha Límite: "${debugData.form_data.due_date}"
+- Prioridad: "${debugData.form_data.priority}"
+- Comentarios: "${debugData.form_data.comments}"
+
+🌐 NAVEGADOR:
+- ${debugData.browser_info.userAgent}
+- Idioma: ${debugData.browser_info.language}
+- Cookies: ${debugData.browser_info.cookieEnabled ? 'Habilitadas' : 'Deshabilitadas'}
+
+💡 NOTA: Información completa disponible en la consola del navegador (presiona F12)`;
+
+      alert(debugText);
+      showNotification('Información de debug generada - revisa la consola (F12)', 'info');
     }
 
     function editBatch(batchId) {

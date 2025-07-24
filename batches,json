@@ -1,7 +1,7 @@
 {
   "program": "Gestor de Batches de Segmentación",
   "created_at": "2025-07-24T00:00:00-06:00",
-  "crew": ["Flor", "Ignacio"],
+  "crew": ["Flor", "Ignacio", "Maggie"],
   "batches": [
     {
       "id": "batch_9",

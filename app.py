@@ -84,31 +84,57 @@ def get_batches():
 
 @app.route("/api/batches", methods=["POST"])
 def create_batch():
-    data = request.json
-    
-    # Genera un nuevo ID de batch
-    existing_batches = list(batches_col.find({}, {"id": 1}))
-    existing_ids = [int(b["id"].replace("batch_", "")) for b in existing_batches if "batch_" in b["id"]]
-    new_id = max(existing_ids) + 1 if existing_ids else 1
-    
-    batch = {
-        "id": f"batch_{new_id}",
-        "assignee": data.get("assignee", ""),
-        "folder": data.get("folder", ""),
-        "tasks": data.get("tasks", ["segmentar", "insertar metadata", "guardar"]),
-        "metadata": {
-            "assigned_at": datetime.now().strftime("%Y-%m-%d"),
-            "due_date": data.get("due_date", ""),
-            "priority": data.get("priority", "media")
-        },
-        "status": "pendiente",
-        "comments": data.get("comments", "")
-    }
-    
-    result = batches_col.insert_one(batch)
-    # Remover el ObjectId antes de devolver el resultado
-    batch_response = batch.copy()
-    return jsonify({"success": True, "batch": batch_response})
+    try:
+        data = request.json
+        print(f"📝 Datos recibidos para crear batch: {data}")
+        
+        # Generar nuevo ID si no se proporciona
+        if "id" not in data or not data["id"]:
+            existing_batches = list(batches_col.find({}, {"id": 1}))
+            existing_ids = [int(b["id"].replace("batch_", "")) for b in existing_batches if "batch_" in b["id"]]
+            new_id = max(existing_ids) + 1 if existing_ids else 1
+            batch_id = f"batch_{new_id}"
+        else:
+            batch_id = data["id"]
+        
+        # Crear el batch con la nueva estructura
+        batch = {
+            "id": batch_id,
+            "assignee": data.get("assignee", ""),
+            "folder": data.get("folder", f"/data/{batch_id}"),
+            "tasks": data.get("tasks", ["segmentar", "subir_mascaras", "revisar"]),
+            "metadata": {
+                "assigned_at": data.get("metadata", {}).get("assigned_at", datetime.now().strftime("%Y-%m-%d")),
+                "due_date": data.get("metadata", {}).get("due_date", ""),
+                "priority": data.get("metadata", {}).get("priority", "media"),
+                "reviewed_at": data.get("metadata", {}).get("reviewed_at", None)
+            },
+            "status": data.get("status", "NS"),  # NS = No Segmentado por defecto
+            "mongo_uploaded": data.get("mongo_uploaded", False),
+            "comments": data.get("comments", "")
+        }
+        
+        print(f"✅ Batch creado: {batch}")
+        
+        result = batches_col.insert_one(batch)
+        
+        # Remover el ObjectId para la respuesta JSON
+        batch_response = batch.copy()
+        if '_id' in batch_response:
+            del batch_response['_id']
+        
+        return jsonify({
+            "success": True,
+            "message": f"Batch {batch_id} creado exitosamente",
+            "batch": batch_response
+        })
+        
+    except Exception as e:
+        print(f"❌ Error creando batch: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
 
 @app.route("/api/batches/<batch_id>", methods=["PUT"])
 def update_batch(batch_id):
