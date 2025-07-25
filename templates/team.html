@@ -7,7 +7,7 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
     body { 
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #B794F6 0%, #F687B3 100%);
       min-height: 100vh;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
@@ -23,11 +23,11 @@
     .team-card {
       background: rgba(255, 255, 255, 0.95);
       border-radius: 20px;
-      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 20px 60px rgba(183, 148, 246, 0.2);
       padding: 3rem;
       text-align: center;
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(15px);
+      border: 2px solid rgba(255, 255, 255, 0.3);
     }
     
     .member-grid {
@@ -38,14 +38,15 @@
     }
     
     .member-card {
-      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      background: linear-gradient(135deg, rgba(233, 216, 253, 0.7) 0%, rgba(254, 215, 226, 0.7) 100%);
       border-radius: 15px;
       padding: 2rem 1rem;
       cursor: pointer;
-      transition: all 0.3s ease;
-      border: 2px solid transparent;
+      transition: all 0.4s ease;
+      border: 2px solid rgba(183, 148, 246, 0.3);
       position: relative;
       overflow: hidden;
+      backdrop-filter: blur(10px);
     }
     
     .member-card::before {
@@ -55,14 +56,15 @@
       left: -100%;
       width: 100%;
       height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+      background: linear-gradient(90deg, transparent, rgba(183, 148, 246, 0.4), transparent);
       transition: left 0.5s;
     }
     
     .member-card:hover {
-      transform: translateY(-10px);
-      border-color: #667eea;
-      box-shadow: 0 15px 30px rgba(102, 126, 234, 0.2);
+      transform: translateY(-15px);
+      border-color: #B794F6;
+      box-shadow: 0 25px 50px rgba(183, 148, 246, 0.3);
+      background: linear-gradient(135deg, rgba(183, 148, 246, 0.8) 0%, rgba(246, 135, 179, 0.8) 100%);
     }
     
     .member-card:hover::before {
@@ -73,7 +75,7 @@
       width: 80px;
       height: 80px;
       border-radius: 50%;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #B794F6 0%, #F687B3 100%);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -83,19 +85,23 @@
       font-weight: bold;
       position: relative;
       z-index: 1;
+      box-shadow: 0 8px 20px rgba(183, 148, 246, 0.3);
     }
     
     .member-name {
       font-size: 1.3rem;
       font-weight: 600;
-      color: #333;
+      background: linear-gradient(135deg, #6B46C1, #BE185D);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
       margin-bottom: 0.5rem;
       position: relative;
       z-index: 1;
     }
     
     .member-role {
-      color: #666;
+      color: #8B5CF6;
       font-size: 0.9rem;
       position: relative;
       z-index: 1;
@@ -137,11 +143,55 @@
     }
     
     .instructions {
-      background: rgba(102, 126, 234, 0.1);
-      border-radius: 10px;
-      padding: 1rem;
+      background: linear-gradient(135deg, rgba(233, 216, 253, 0.6) 0%, rgba(254, 215, 226, 0.6) 100%);
+      border-radius: 15px;
+      padding: 1.5rem;
       margin-top: 2rem;
-      border-left: 4px solid #667eea;
+      border-left: 4px solid #B794F6;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(183, 148, 246, 0.3);
+    }
+    
+    .btn-outline-primary {
+      border: 2px solid #B794F6;
+      color: #B794F6;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-outline-primary:hover {
+      background: linear-gradient(135deg, #B794F6 0%, #F687B3 100%);
+      border-color: #B794F6;
+      color: white;
+      transform: translateY(-2px);
+    }
+    
+    .btn-outline-secondary {
+      border: 2px solid #A78BFA;
+      color: #A78BFA;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-outline-secondary:hover {
+      background: linear-gradient(135deg, #A78BFA 0%, #C084FC 100%);
+      border-color: #A78BFA;
+      color: white;
+      transform: translateY(-2px);
+    }
+    
+    .btn-outline-success {
+      border: 2px solid #F687B3;
+      color: #F687B3;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+    
+    .btn-outline-success:hover {
+      background: linear-gradient(135deg, #F687B3 0%, #FB7185 100%);
+      border-color: #F687B3;
+      color: white;
+      transform: translateY(-2px);
     }
     
     .loading-overlay {
