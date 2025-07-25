@@ -112,9 +112,6 @@
         <button class="btn btn-info ms-2" onclick="syncBatchFiles()">
           <i class="fas fa-sync-alt"></i> Sincronizar Archivos
         </button>
-        <button class="btn btn-success ms-2" onclick="autoCreateBatches()">
-          <i class="fas fa-magic"></i> Crear Batches Auto
-        </button>
         <button class="btn btn-secondary ms-2" onclick="checkMongoFiles()">
           <i class="fas fa-database"></i> Verificar MongoDB
         </button>
@@ -145,16 +142,16 @@
       <div class="col-md-3">
         <div class="card text-center">
           <div class="card-body">
-            <h5 class="card-title text-warning">No Segmentados (NS)</h5>
-            <h2 id="pendingBatches" class="text-warning">0</h2>
+            <h5 class="card-title text-secondary">No Segmentados (NS)</h5>
+            <h2 id="pendingBatches" class="text-secondary">0</h2>
           </div>
         </div>
       </div>
       <div class="col-md-3">
         <div class="card text-center">
           <div class="card-body">
-            <h5 class="card-title text-info">Falta Segmentar (FS)</h5>
-            <h2 id="inProgressBatches" class="text-info">0</h2>
+            <h5 class="card-title text-warning">Incompletas (In)</h5>
+            <h2 id="inProgressBatches" class="text-warning">0</h2>
           </div>
         </div>
       </div>
@@ -471,6 +468,17 @@
       $('#assigneeFilter').on('change', function() {
         const selectedAssignee = this.value;
         batchesTable.column(1).search(selectedAssignee).draw();
+        
+        // Actualizar estadísticas según el filtro
+        if (selectedAssignee) {
+          // Mostrar estadísticas específicas del responsable seleccionado
+          filterAssignee = selectedAssignee;
+          updateStats(); // Esto llamará a updateAssigneeStats con el filtro activo
+        } else {
+          // Mostrar estadísticas generales
+          filterAssignee = '';
+          updateStats(); // Esto mostrará las estadísticas generales
+        }
       });
 
       // Aplicar filtro automático si se especifica en la URL
@@ -628,10 +636,17 @@
 
     function updateStats() {
       const total = batches.length;
-      // Usar el nuevo sistema de estados: S, FS, NS
+      // Usar el nuevo sistema de estados: S, In, NS
       const completed = batches.filter(b => b.status === 'S').length; // S = Segmentado (completado)
-      const inProgress = batches.filter(b => b.status === 'FS').length; // FS = Falta Segmentar (en progreso)
+      const inProgress = batches.filter(b => b.status === 'In').length; // In = Incompletas
       const pending = batches.filter(b => b.status === 'NS').length; // NS = No Segmentado (pendiente)
+
+      // Verificar que la suma sea correcta
+      const calculatedTotal = completed + inProgress + pending;
+      if (calculatedTotal !== total) {
+        console.warn(`⚠️ INCONSISTENCIA: Total calculado (${calculatedTotal}) ≠ Total real (${total})`);
+        console.warn('Estados de los batches:', batches.map(b => ({id: b.id, status: b.status})));
+      }
 
       $('#totalBatches').text(total);
       $('#pendingBatches').text(pending);
@@ -645,17 +660,22 @@
           byAssignee[b.assignee] = { 
             total: 0, 
             pending: 0,     // NS
-            inProgress: 0,  // FS  
+            inProgress: 0,  // In - Incompletas
             completed: 0    // S
           };
         }
         byAssignee[b.assignee].total++;
         if (b.status === 'NS') byAssignee[b.assignee].pending++;
-        else if (b.status === 'FS') byAssignee[b.assignee].inProgress++;
+        else if (b.status === 'In') byAssignee[b.assignee].inProgress++;
         else if (b.status === 'S') byAssignee[b.assignee].completed++;
       });
 
-      console.log('📊 Estadísticas generales:', {total, pending, inProgress, completed});
+      console.log('📊 Estadísticas generales:', {
+        total, 
+        pending: `${pending} (NS - No Segmentado)`, 
+        inProgress: `${inProgress} (In - Incompletas)`, 
+        completed: `${completed} (S - Segmentado)`
+      });
       console.log('👥 Estadísticas por responsable:', byAssignee);
       
       // Actualizar métricas por responsable en la UI si estamos en una vista específica
@@ -682,6 +702,15 @@
         });
         
         console.log(`📊 Estadísticas de ${filterAssignee}:`, assigneeStats);
+      } else {
+        // Si no hay filtro, asegurar que se muestren los títulos originales sin nombre de responsable
+        $('.card-title').each(function() {
+          const $title = $(this);
+          const originalText = $title.text().split(' - ')[0]; // Remover cualquier " - NombreResponsable"
+          $title.text(originalText);
+        });
+        
+        console.log('📊 Mostrando estadísticas generales (sin filtro)');
       }
       
       // Crear un resumen por responsable en la consola
@@ -689,7 +718,7 @@
       Object.keys(byAssignee).forEach(assignee => {
         const stats = byAssignee[assignee];
         const completionRate = ((stats.completed / stats.total) * 100).toFixed(1);
-        console.log(`👤 ${assignee}: ${stats.total} total, ${stats.completed} completados (${completionRate}%), ${stats.inProgress} en progreso, ${stats.pending} pendientes`);
+        console.log(`👤 ${assignee}: ${stats.total} total, ${stats.completed} completados (${completionRate}%), ${stats.inProgress} incompletas, ${stats.pending} pendientes`);
       });
     }
 
@@ -710,7 +739,7 @@
         const statusSelect = `
           <select class="form-select form-select-sm segmentation-status-select" data-batch-id="${batch.id}" style="min-width: 80px;">
             <option value="S" ${batch.status === 'S' ? 'selected' : ''}>S - Segmentado</option>
-            <option value="FS" ${batch.status === 'FS' ? 'selected' : ''}>FS - Falta Segmentar</option>
+            <option value="In" ${batch.status === 'In' ? 'selected' : ''}>In - Incompleta</option>
             <option value="NS" ${batch.status === 'NS' ? 'selected' : ''}>NS - No Segmentado</option>
           </select>
         `;
@@ -721,8 +750,8 @@
           case 'S':
             statusBadge = '<span class="badge bg-success">S</span>';
             break;
-          case 'FS':
-            statusBadge = '<span class="badge bg-warning">FS</span>';
+          case 'In':
+            statusBadge = '<span class="badge bg-warning">In</span>';
             break;
           case 'NS':
             statusBadge = '<span class="badge bg-secondary">NS</span>';
@@ -1034,7 +1063,7 @@
       const mongoStatusText = batch.mongo_uploaded ? 'Sí' : 'No';
       const statusText = {
         'S': 'Segmentado Completo',
-        'FS': 'Falta Segmentar',
+        'In': 'Incompleta',
         'NS': 'No Segmentado'
       }[batch.status] || batch.status;
       
@@ -1278,55 +1307,6 @@
         error: function(xhr) {
           const errorMsg = xhr.responseJSON?.error || 'Error desconocido';
           showNotification('Error al conectar con el servidor para sincronización: ' + errorMsg, 'error');
-        }
-      });
-    }
-
-    // Nueva función para crear batches automáticamente
-    function autoCreateBatches() {
-      const confirmMessage = `🤖 Creación Automática de Batches
-
-Esta función va a:
-• Escanear todos los archivos en MongoDB
-• Extraer números de batch de los nombres de archivos
-• Crear automáticamente los batches que falten
-• Asignarlos por defecto a "Maggie" (puedes cambiar después)
-
-¿Quieres continuar?`;
-
-      if (!confirm(confirmMessage)) {
-        return;
-      }
-      
-      showNotification('Creando batches automáticamente...', 'info');
-      
-      $.ajax({
-        url: '/api/auto-create-batches',
-        method: 'POST',
-        success: function(response) {
-          if (response.success) {
-            showNotification(`¡Éxito! ${response.created_batches} nuevos batches creados de ${response.total_found} encontrados`, 'success');
-            loadBatches(); // Recargar la tabla
-            
-            // Mostrar detalles
-            if (response.created_batches > 0) {
-              const createdBatches = response.results.filter(r => r.created);
-              const batchNames = createdBatches.map(b => b.batch_id).join(', ');
-              showNotification(`Batches creados: ${batchNames}`, 'info');
-              
-              // Ejecutar sincronización automáticamente después
-              setTimeout(() => {
-                showNotification('Sincronizando archivos...', 'info');
-                syncBatchFiles();
-              }, 2000);
-            }
-          } else {
-            showNotification('Error en creación automática: ' + response.error, 'error');
-          }
-        },
-        error: function(xhr) {
-          const errorMsg = xhr.responseJSON?.error || 'Error desconocido';
-          showNotification('Error en creación automática: ' + errorMsg, 'error');
         }
       });
     }
@@ -1585,7 +1565,7 @@ Escribe "CONFIRMAR" para proceder:`;
                 <div class="card bg-warning text-white">
                   <div class="card-body text-center">
                     <h4>${batches.filter(b => b.status === 'FS').length}</h4>
-                    <small>En Progreso (FS)</small>
+                    <small>Incompletas (FS)</small>
                   </div>
                 </div>
               </div>
@@ -1632,7 +1612,7 @@ Escribe "CONFIRMAR" para proceder:`;
                   <div class="col-3">
                     <div class="text-warning">
                       <h5>${stats.inProgress}</h5>
-                      <small>En Progreso</small>
+                      <small>Incompletas</small>
                       <br><small class="text-muted">${progressRate}%</small>
                     </div>
                   </div>
@@ -1653,7 +1633,7 @@ Escribe "CONFIRMAR" para proceder:`;
                 <!-- Barra de progreso -->
                 <div class="progress mt-3" style="height: 20px;">
                   <div class="progress-bar bg-success" style="width: ${completionRate}%" title="Completados: ${completionRate}%"></div>
-                  <div class="progress-bar bg-warning" style="width: ${progressRate}%" title="En Progreso: ${progressRate}%"></div>
+                  <div class="progress-bar bg-warning" style="width: ${progressRate}%" title="Incompletas: ${progressRate}%"></div>
                 </div>
                 <small class="text-muted mt-1 d-block">
                   Progreso: ${completionRate}% completado, ${progressRate}% en proceso
@@ -1695,7 +1675,7 @@ Escribe "CONFIRMAR" para proceder:`;
                 <th>Responsable</th>
                 <th>Total</th>
                 <th>Completados</th>
-                <th>En Progreso</th>
+                <th>Incompletas</th>
                 <th>Pendientes</th>
                 <th>% Completado</th>
                 <th>Último Batch</th>
@@ -1748,7 +1728,7 @@ Escribe "CONFIRMAR" para proceder:`;
       });
 
       // Crear CSV
-      let csvContent = "Responsable,Total,Completados,En Progreso,Pendientes,Porcentaje Completado\\n";
+      let csvContent = "Responsable,Total,Completados,Incompletas,Pendientes,Porcentaje Completado\\n";
       Object.keys(byAssignee).sort().forEach(assignee => {
         const stats = byAssignee[assignee];
         const completionRate = ((stats.completed / stats.total) * 100).toFixed(1);
@@ -1945,7 +1925,7 @@ Escribe "CONFIRMAR" para proceder:`;
                 </li>
                 <li class="mb-2">
                   <span class="badge bg-warning me-2">FS</span>
-                  <strong>Falta Segmentar:</strong> Faltan algunas imágenes por segmentar
+                  <strong>Incompleta:</strong> Faltan algunas imágenes por segmentar
                 </li>
                 <li class="mb-2">
                   <span class="badge bg-secondary me-2">NS</span>

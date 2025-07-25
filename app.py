@@ -239,6 +239,79 @@ def delete_batch(batch_id):
             "error": str(e)
         }), 500
 
+@app.route("/api/add-segmentador", methods=["POST"])
+def add_segmentador():
+    """Agregar un nuevo segmentador al equipo"""
+    global CREW_MEMBERS
+    
+    try:
+        data = request.get_json()
+        
+        if not data:
+            return jsonify({
+                "success": False,
+                "error": "No se enviaron datos"
+            }), 400
+        
+        name = data.get("name", "").strip()
+        role = data.get("role", "Segmentador General")
+        email = data.get("email", "")
+        
+        # Validar que se proporcione un nombre
+        if not name:
+            return jsonify({
+                "success": False,
+                "error": "El nombre del segmentador es requerido"
+            }), 400
+        
+        # Verificar que no exista ya
+        if name in CREW_MEMBERS:
+            return jsonify({
+                "success": False,
+                "error": f"El segmentador '{name}' ya existe en el equipo"
+            }), 400
+        
+        # Agregar al equipo
+        CREW_MEMBERS.append(name)
+        
+        print(f"👤 Nuevo segmentador agregado: {name} ({role})")
+        
+        # Log para debugging
+        print(f"📋 Equipo actualizado: {CREW_MEMBERS}")
+        
+        return jsonify({
+            "success": True,
+            "message": f"Segmentador '{name}' agregado exitosamente",
+            "segmentador": {
+                "name": name,
+                "role": role,
+                "email": email
+            },
+            "team_size": len(CREW_MEMBERS)
+        })
+        
+    except Exception as e:
+        print(f"❌ Error agregando segmentador: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+@app.route("/api/segmentadores", methods=["GET"])
+def get_segmentadores():
+    """Obtener la lista actual de segmentadores"""
+    try:
+        return jsonify({
+            "success": True,
+            "segmentadores": CREW_MEMBERS,
+            "total": len(CREW_MEMBERS)
+        })
+    except Exception as e:
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
 @app.route("/api/check-mongo-files", methods=["GET"])
 def check_mongo_files():
     """Verificar qué archivos están actualmente en MongoDB"""
