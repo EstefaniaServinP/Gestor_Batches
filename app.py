@@ -697,5 +697,75 @@ def reset_batches():
     except Exception as e:
         return jsonify({"success": False, "error": str(e)})
 
+@app.route("/api/missing-batches", methods=["GET"])
+def get_missing_batches():
+    """Obtener batches que FALTAN por segmentar (no están en MongoDB)"""
+    try:
+        # Estos son los batches que FALTAN por segmentar según tu lista
+        missing_batches = [
+            'batch_16', 'batch_17', 'batch_21', 'batch_53', 'batch_54', 'batch_55', 'batch_56', 'batch_57',
+            'batch_58', 'batch_59', 'batch_60', 'batch_61', 'batch_62', 'batch_63', 'batch_64', 'batch_65',
+            'batch_66', 'batch_67', 'batch_68', 'batch_69', 'batch_70', 'batch_71', 'batch_72', 'batch_73',
+            'batch_74', 'batch_75', 'batch_76', 'batch_77', 'batch_78', 'batch_79', 'batch_80', 'batch_81',
+            'batch_82', 'batch_83', 'batch_84', 'batch_85', 'batch_86', 'batch_87', 'batch_88', 'batch_89',
+            'batch_90', 'batch_91', 'batch_92', 'batch_93', 'batch_94', 'batch_95', 'batch_96', 'batch_97',
+            'batch_98', 'batch_99', 'batch_100', 'batch_101', 'batch_102', 'batch_103', 'batch_104', 'batch_105',
+            'batch_106', 'batch_107', 'batch_108', 'batch_109', 'batch_110', 'batch_111', 'batch_112', 'batch_113',
+            'batch_114', 'batch_115', 'batch_116', 'batch_117', 'batch_118', 'batch_119', 'batch_120', 'batch_121',
+            'batch_122', 'batch_123', 'batch_124', 'batch_125', 'batch_126', 'batch_127', 'batch_128', 'batch_129',
+            'batch_130', 'batch_131', 'batch_132', 'batch_133', 'batch_134', 'batch_135', 'batch_136', 'batch_137',
+            'batch_138', 'batch_139', 'batch_140', 'batch_141', 'batch_142', 'batch_143', 'batch_144', 'batch_145',
+            'batch_146', 'batch_147', 'batch_148', 'batch_149', 'batch_150', 'batch_151', 'batch_152', 'batch_153',
+            'batch_154', 'batch_155', 'batch_156', 'batch_157', 'batch_158', 'batch_159', 'batch_160', 'batch_161',
+            'batch_162', 'batch_163', 'batch_164', 'batch_165', 'batch_166', 'batch_167', 'batch_168', 'batch_169',
+            'batch_170', 'batch_171', 'batch_172', 'batch_173', 'batch_174', 'batch_175', 'batch_176', 'batch_177',
+            'batch_178', 'batch_179', 'batch_180', 'batch_181', 'batch_182', 'batch_183', 'batch_184', 'batch_185',
+            'batch_186', 'batch_187', 'batch_188', 'batch_189', 'batch_190', 'batch_191', 'batch_192', 'batch_193',
+            'batch_194', 'batch_195', 'batch_196', 'batch_197', 'batch_198', 'batch_199', 'batch_200', 'batch_361',
+            'batch_362', 'batch_363', 'batch_364', 'batch_365', 'batch_366', 'batch_367', 'batch_368', 'batch_369',
+            'batch_370', 'batch_371', 'batch_372', 'batch_373', 'batch_374', 'batch_375', 'batch_376', 'batch_377',
+            'batch_378', 'batch_379', 'batch_380', 'batch_381', 'batch_382', 'batch_383', 'batch_384', 'batch_385',
+            'batch_386', 'batch_387', 'batch_388', 'batch_389', 'batch_390', 'batch_391', 'batch_393', 'batch_394',
+            'batch_395', 'batch_396', 'batch_397', 'batch_398', 'batch_399', 'batch_400', 'batch_401', 'batch_402',
+            'batch_403', 'batch_404', 'batch_405', 'batch_406', 'batch_407', 'batch_408', 'batch_409', 'batch_410',
+            'batch_411', 'batch_412', 'batch_413', 'batch_414', 'batch_415', 'batch_416', 'batch_417', 'batch_418',
+            'batch_419', 'batch_420', 'batch_421', 'batch_422', 'batch_423', 'batch_424', 'batch_425', 'batch_426',
+            'batch_427', 'batch_428', 'batch_429', 'batch_430', 'batch_431', 'batch_432', 'batch_433', 'batch_434',
+            'batch_435', 'batch_436', 'batch_437', 'batch_438', 'batch_439', 'batch_440', 'batch_441', 'batch_442',
+            'batch_443', 'batch_444', 'batch_445', 'batch_446', 'batch_447', 'batch_448', 'batch_449', 'batch_450',
+            'batch_451', 'batch_452', 'batch_453', 'batch_454', 'batch_455', 'batch_456', 'batch_457', 'batch_458',
+            'batch_459', 'batch_460', 'batch_461', 'batch_462', 'batch_463', 'batch_464', 'batch_465', 'batch_466',
+            'batch_467', 'batch_468', 'batch_469', 'batch_470', 'batch_471', 'batch_472', 'batch_473', 'batch_474',
+            'batch_475', 'batch_476', 'batch_477', 'batch_478', 'batch_479', 'batch_480', 'batch_481', 'batch_482',
+            'batch_483', 'batch_484', 'batch_485', 'batch_486', 'batch_487', 'batch_488', 'batch_2402', 'batch_2403',
+            'batch_2409', 'batch_2410', 'batch_2411', 'batch_2412', 'batch_2413', 'batch_2414', 'batch_2416', 'batch_2417',
+            'batch_2421', 'batch_2422', 'batch_2423', 'batch_2424', 'batch_2426', 'batch_2427', 'batch_2430', 'batch_2432',
+            'batch_2433', 'batch_2434', 'batch_2435', 'batch_2436', 'batch_2437', 'batch_2438', 'batch_2439', 'batch_2440',
+            'batch_2441', 'batch_2442', 'batch_2443', 'batch_2444', 'batch_2445', 'batch_2446', 'batch_2447', 'batch_2448',
+            'batch_2449', 'batch_2450', 'batch_2451', 'batch_2452', 'batch_2453', 'batch_2454', 'batch_2455', 'batch_2456',
+            'batch_2457', 'batch_2458', 'batch_2459', 'batch_2460', 'batch_2461', 'batch_2462', 'batch_2463', 'batch_2464',
+            'batch_2465', 'batch_2466', 'batch_2467', 'batch_2468', 'batch_2469', 'batch_2470', 'batch_2471', 'batch_2472',
+            'batch_2473', 'batch_2474', 'batch_2475', 'batch_2477', 'batch_2478', 'batch_2479', 'batch_2480', 'batch_2481',
+            'batch_2482', 'batch_2484', 'batch_2485', 'batch_2486', 'batch_2487', 'batch_2488', 'batch_2490', 'batch_2491',
+            'batch_2493', 'batch_2494', 'batch_2496', 'batch_2497', 'batch_2498', 'batch_2520', 'batch_2521', 'batch_2522',
+            'batch_2523', 'batch_2524', 'batch_2525', 'batch_2526', 'batch_2527', 'batch_2528', 'batch_2529', 'batch_2530',
+            'batch_2531', 'batch_2532', 'batch_2533', 'batch_2534', 'batch_2535', 'batch_2536', 'batch_2537', 'batch_2538',
+            'batch_2539', 'batch_2540', 'batch_2541', 'batch_2542', 'batch_2543', 'batch_2544', 'batch_2545', 'batch_2546',
+            'batch_2547', 'batch_2548', 'batch_2549', 'batch_2550', 'batch_2551', 'batch_2552', 'batch_2553', 'batch_2554',
+            'batch_2555', 'batch_2556', 'batch_2557', 'batch_2558', 'batch_2559', 'batch_2560', 'batch_2561', 'batch_2562',
+            'batch_2563', 'batch_2564'
+        ]
+        
+        return jsonify({
+            "success": True,
+            "missing_batches": missing_batches,
+            "total_missing": len(missing_batches),
+            "message": f"Se encontraron {len(missing_batches)} batches pendientes de segmentación"
+        })
+        
+    except Exception as e:
+        print(f"❌ Error obteniendo batches faltantes: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5001)
+    app.run(debug=True, host="0.0.0.0", port=5000)

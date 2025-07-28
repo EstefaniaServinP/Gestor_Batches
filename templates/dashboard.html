@@ -88,22 +88,6 @@
       padding: 4px 8px;
     }
     
-    .priority-alta { 
-      color: #DC2626;
-      font-weight: bold;
-      text-shadow: 0 1px 2px rgba(220, 38, 38, 0.2);
-    }
-    
-    .priority-media { 
-      color: #D97706;
-      text-shadow: 0 1px 2px rgba(217, 119, 6, 0.2);
-    }
-    
-    .priority-baja { 
-      color: #059669;
-      text-shadow: 0 1px 2px rgba(5, 150, 105, 0.2);
-    }
-    
     .status-select, .due-date-input {
       transition: all 0.3s ease;
       border-radius: 6px;
@@ -147,6 +131,39 @@
       background: linear-gradient(135deg, #FECACA 0%, #FCA5A5 100%);
       border-color: #FCA5A5;
       color: #991B1B;
+    }
+    
+    /* Estilos para el selector de revisión */
+    .review-select {
+      transition: all 0.3s ease;
+      border-radius: 6px;
+      border: 2px solid #E9D8FD;
+    }
+    
+    .review-select:focus {
+      box-shadow: 0 0 0 0.2rem rgba(183, 148, 246, 0.25);
+      border-color: #B794F6;
+      background: rgba(233, 216, 253, 0.1);
+    }
+    
+    .review-select option[value="aprobado"] {
+      background-color: #D1FAE5;
+      color: #065F46;
+    }
+    
+    .review-select option[value="no_aprobado"] {
+      background-color: #FEE2E2;
+      color: #991B1B;
+    }
+    
+    /* Estilo para filas de batches aprobados que aún están en cola */
+    .table-success-light {
+      background-color: rgba(209, 250, 229, 0.3) !important;
+      border-left: 4px solid #10B981 !important;
+    }
+    
+    .table-success-light td {
+      border-color: rgba(16, 185, 129, 0.2) !important;
     }
     
     /* Estilos para los campos de fecha */
@@ -290,7 +307,7 @@
   <nav class="navbar navbar-dark">
     <div class="container-fluid">
       <span class="navbar-brand mb-0 h1">
-        <i class="fas fa-tasks"></i> Dashboard de Segmentación
+        <i class="fas fa-tasks"></i> Gestión de Batches - Carpetas de Segmentación
         {% if filter_assignee %}
         <small class="text-light"> - {{ filter_assignee }}</small>
         {% endif %}
@@ -314,6 +331,11 @@
               </a>
             </li>
             <li>
+              <a class="dropdown-item" href="#" onclick="compareBatchesWithMongo()">
+                <i class="fas fa-balance-scale"></i> Comparar Batches vs MongoDB
+              </a>
+            </li>
+            <li>
               <a class="dropdown-item" href="#" onclick="syncBatchFiles()">
                 <i class="fas fa-sync-alt"></i> Sincronizar Archivos
               </a>
@@ -321,6 +343,11 @@
             <li>
               <a class="dropdown-item" href="#" onclick="showTeamMetrics()">
                 <i class="fas fa-chart-bar"></i> Métricas del Equipo
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#" onclick="showApprovedBatches()">
+                <i class="fas fa-check-circle"></i> Batches Aprobados
               </a>
             </li>
             <li><hr class="dropdown-divider"></li>
@@ -394,8 +421,12 @@
     <!-- Batches Table -->
     <div class="card">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0"><i class="fas fa-list"></i> Gestión de Batches - Carpetas de Segmentación</h5>
+        <h5 class="mb-0"><i class="fas fa-clipboard-check"></i> Cola de Revisión</h5>
         <div class="d-flex align-items-center gap-2">
+          <small class="text-muted me-3">
+            <i class="fas fa-info-circle"></i> 
+            Los batches aprobados permanecen aquí hasta cambiar manualmente el estado a "S"
+          </small>
           <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#statusLegendModal">
             <i class="fas fa-info-circle"></i> Leyenda
           </button>
@@ -409,12 +440,6 @@
         </div>
       </div>
       <div class="card-body">
-        <div class="alert alert-info">
-          <i class="fas fa-info-circle"></i> 
-          <strong>Información:</strong> Cada batch representa una carpeta de imágenes que debe ser procesada para segmentación. 
-          <br><strong>Carpeta:</strong> Nombre o ruta de la carpeta que contiene las imágenes a segmentar.
-          <br><strong>Edición rápida:</strong> Cambia el estado y fecha límite directamente en la tabla - se guardan automáticamente.
-        </div>
         <table id="batchesTable" class="table table-striped table-hover">
           <thead>
             <tr>
@@ -423,8 +448,7 @@
               <th>Cargado a Mongo</th>
               <th>Estatus Segmentación</th>
               <th>Fecha Asignación</th>
-              <th>Fecha Revisión</th>
-              <th>Prioridad</th>
+              <th>Revisión</th>
               <th>Comentarios</th>
               <th>Acciones</th>
             </tr>
@@ -449,10 +473,13 @@
               <div class="col-md-4">
                 <div class="mb-3">
                   <label class="form-label">Batch ID</label>
-                  <input type="text" class="form-control" id="batch_id" name="batch_id" placeholder="Ej: batch_400, Batch_400" required>
+                  <select class="form-select" id="batch_id" name="batch_id" required>
+                    <option value="">Seleccionar batch pendiente...</option>
+                    <!-- Los batches se cargarán dinámicamente -->
+                  </select>
                   <div class="form-text">
-                    <i class="fas fa-hashtag"></i> 
-                    ID único para el batch (puede ser personalizado)
+                    <i class="fas fa-list"></i> 
+                    Selecciona un batch pendiente de segmentación
                   </div>
                 </div>
               </div>
@@ -722,6 +749,9 @@
         $('#newBatchForm .form-control').removeClass('is-invalid is-valid');
         $('#newBatchForm .invalid-feedback').remove();
         
+        // Cargar batches pendientes
+        loadMissingBatches();
+        
         console.log('📅 Modal de nuevo batch abierto - fecha mínima actualizada:', today);
       });
     });
@@ -740,6 +770,46 @@
         .fail(function(xhr) {
           console.error('❌ Error en inicialización:', xhr.responseJSON);
           showNotification('Error verificando inicialización de batches: ' + (xhr.responseJSON?.error || 'Error desconocido'), 'warning');
+        });
+    }
+
+    // Función para cargar batches pendientes de segmentación
+    function loadMissingBatches() {
+      console.log('🔄 Cargando batches pendientes...');
+      const batchSelect = $('#batch_id');
+      
+      // Mostrar loading
+      batchSelect.html('<option value="">Cargando batches pendientes...</option>');
+      batchSelect.prop('disabled', true);
+      
+      $.get('/api/missing-batches')
+        .done(function(response) {
+          console.log('✅ Batches pendientes obtenidos:', response);
+          
+          if (response.success && response.missing_batches) {
+            // Limpiar el select
+            batchSelect.html('<option value="">Seleccionar batch pendiente...</option>');
+            
+            // Agregar los batches pendientes
+            response.missing_batches.forEach(function(batchId) {
+              batchSelect.append(`<option value="${batchId}">${batchId}</option>`);
+            });
+            
+            console.log(`📊 ${response.total_missing} batches pendientes cargados en el dropdown`);
+            showNotification(`${response.total_missing} batches pendientes disponibles para asignar`, 'info');
+          } else {
+            batchSelect.html('<option value="">No hay batches pendientes</option>');
+            console.warn('⚠️ No se encontraron batches pendientes');
+          }
+        })
+        .fail(function(xhr) {
+          console.error('❌ Error cargando batches pendientes:', xhr.responseJSON);
+          batchSelect.html('<option value="">Error cargando batches</option>');
+          showNotification('Error cargando batches pendientes: ' + (xhr.responseJSON?.error || 'Error desconocido'), 'danger');
+        })
+        .always(function() {
+          // Habilitar el select
+          batchSelect.prop('disabled', false);
         });
     }
 
@@ -794,8 +864,8 @@
 
     // Función para agregar validación del formulario
     function addFormValidation() {
-      // Validación del Batch ID en tiempo real
-      $('#batch_id').on('input', function() {
+      // Validación del Batch ID en tiempo real (ahora es un select)
+      $('#batch_id').on('change', function() {
         const value = $(this).val().trim();
         const $feedback = $(this).next('.invalid-feedback');
         
@@ -804,26 +874,15 @@
         $(this).removeClass('is-invalid is-valid');
         
         if (value) {
-          // Verificar si ya existe
-          const exists = batches.find(b => b.id === value || 
-                                         b.id === `batch_${value}` || 
-                                         b.id === value.replace(/^batch_?/i, ''));
+          // Verificar si ya existe en la tabla actual
+          const exists = batches.find(b => b.id === value);
           
           if (exists) {
             $(this).addClass('is-invalid');
-            $(this).after('<div class="invalid-feedback">Este Batch ID ya existe</div>');
+            $(this).after('<div class="invalid-feedback">Este Batch ya está asignado</div>');
           } else {
             $(this).addClass('is-valid');
           }
-        }
-      });
-      
-      // Auto-formato del Batch ID
-      $('#batch_id').on('blur', function() {
-        let value = $(this).val().trim();
-        if (value && !value.toLowerCase().startsWith('batch')) {
-          value = 'batch_' + value;
-          $(this).val(value);
         }
       });
     }
@@ -952,9 +1011,15 @@
       console.log('📋 Actualizando tabla con', batches.length, 'batches');
       batchesTable.clear();
       
-      batches.forEach(function(batch, index) {
+      // Filtrar solo batches que necesitan revisión (In y NS)
+      const batchesForReview = batches.filter(batch => 
+        batch.status === 'In' || batch.status === 'NS'
+      );
+      
+      console.log(`📊 Mostrando ${batchesForReview.length} batches pendientes de revisión de ${batches.length} totales`);
+      
+      batchesForReview.forEach(function(batch, index) {
         console.log(`Procesando batch ${index + 1}:`, batch);
-        const priorityClass = `priority-${batch.metadata.priority}`;
         
         // Estado de MongoDB (Cargado a Mongo)
         const mongoStatus = batch.mongo_uploaded ? 
@@ -963,33 +1028,23 @@
         
         // Selector de estatus de segmentación
         const statusSelect = `
-          <select class="form-select form-select-sm segmentation-status-select" data-batch-id="${batch.id}" style="min-width: 80px;">
-            <option value="S" ${batch.status === 'S' ? 'selected' : ''}>S - Segmentado</option>
+          <select class="form-select form-select-sm segmentation-status-select" data-batch-id="${batch.id}" style="min-width: 120px;">
             <option value="In" ${batch.status === 'In' ? 'selected' : ''}>In - Incompleta</option>
             <option value="NS" ${batch.status === 'NS' ? 'selected' : ''}>NS - No Segmentado</option>
+            <option value="S" ${batch.status === 'S' ? 'selected' : ''}>S - Segmentado (QUITAR DE COLA)</option>
           </select>
         `;
         
-        // Badge del estatus para mejor visualización
-        let statusBadge = '';
-        switch(batch.status) {
-          case 'S':
-            statusBadge = '<span class="badge bg-success">S</span>';
-            break;
-          case 'In':
-            statusBadge = '<span class="badge bg-warning">In</span>';
-            break;
-          case 'NS':
-            statusBadge = '<span class="badge bg-secondary">NS</span>';
-            break;
-        }
-        
-        // Input de fecha de revisión editable
-        const reviewDateInput = `
-          <input type="date" class="form-control form-control-sm review-date-input" 
-                 data-batch-id="${batch.id}" 
-                 value="${batch.metadata.reviewed_at || ''}" 
-                 style="min-width: 130px;">
+        // Selector de revisión con Aprobado/No Aprobado e indicador visual
+        const reviewStatus = batch.metadata.review_status || '';
+        const approvedBadge = reviewStatus === 'aprobado' ? ' ✅' : reviewStatus === 'no_aprobado' ? ' ❌' : '';
+        const reviewSelect = `
+          <select class="form-select form-select-sm review-select ${reviewStatus === 'aprobado' ? 'border-success' : reviewStatus === 'no_aprobado' ? 'border-danger' : ''}" 
+                  data-batch-id="${batch.id}" style="min-width: 120px;">
+            <option value="">Pendiente</option>
+            <option value="aprobado" ${reviewStatus === 'aprobado' ? 'selected' : ''}>✅ Aprobado</option>
+            <option value="no_aprobado" ${reviewStatus === 'no_aprobado' ? 'selected' : ''}>❌ No Aprobado</option>
+          </select>
         `;
         
         // Campo de comentarios editable
@@ -998,15 +1053,6 @@
                     data-batch-id="${batch.id}" 
                     rows="2" 
                     style="min-width: 200px;">${batch.comments || ''}</textarea>
-        `;
-        
-        // Selector de prioridad editable
-        const prioritySelect = `
-          <select class="form-select form-select-sm priority-select" data-batch-id="${batch.id}" style="min-width: 90px;">
-            <option value="baja" ${batch.metadata.priority === 'baja' ? 'selected' : ''}>Baja</option>
-            <option value="media" ${batch.metadata.priority === 'media' ? 'selected' : ''}>Media</option>
-            <option value="alta" ${batch.metadata.priority === 'alta' ? 'selected' : ''}>Alta</option>
-          </select>
         `;
         
         // Input de Batch ID editable
@@ -1023,8 +1069,7 @@
           mongoStatus,
           statusSelect,
           batch.metadata.assigned_at,
-          reviewDateInput,
-          prioritySelect,
+          reviewSelect,
           commentsInput,
           `
             <div class="action-buttons">
@@ -1042,6 +1087,13 @@
         ];
         
         batchesTable.row.add(row);
+        
+        // Agregar clase especial si el batch está aprobado pero aún en cola
+        if (reviewStatus === 'aprobado') {
+          setTimeout(() => {
+            $(`[data-batch-id="${batch.id}"]`).closest('tr').addClass('table-success-light');
+          }, 100);
+        }
       });
       
       batchesTable.draw();
@@ -1248,13 +1300,23 @@
       
       // Obtener valores de los campos editables
       const segmentationStatus = $(`.segmentation-status-select[data-batch-id="${batchId}"]`).val();
-      const reviewDate = $(`.review-date-input[data-batch-id="${batchId}"]`).val();
+      const reviewStatus = $(`.review-select[data-batch-id="${batchId}"]`).val();
       const comments = $(`.comments-input[data-batch-id="${batchId}"]`).val();
       
       // Actualizar el objeto batch
       batch.status = segmentationStatus;
-      batch.metadata.reviewed_at = reviewDate;
+      batch.metadata.review_status = reviewStatus;
       batch.comments = comments;
+      
+      // Si el batch fue aprobado, solo agregar fecha de aprobación (NO cambiar status automáticamente)
+      if (reviewStatus === 'aprobado') {
+        batch.metadata.approved_at = new Date().toISOString().split('T')[0];
+        batch.metadata.reviewed_at = new Date().toISOString().split('T')[0];
+      } else if (reviewStatus === 'no_aprobado') {
+        batch.metadata.reviewed_at = new Date().toISOString().split('T')[0];
+        // Limpiar fecha de aprobación si se rechaza
+        batch.metadata.approved_at = null;
+      }
       
       // Enviar actualización al servidor
       $.ajax({
@@ -1262,15 +1324,22 @@
         method: 'PUT',
         contentType: 'application/json',
         data: JSON.stringify({
-          status: segmentationStatus,
+          status: batch.status,
           metadata: batch.metadata,
           comments: comments
         }),
         success: function(response) {
           if (response.success) {
-            showNotification('Batch actualizado exitosamente', 'success');
-            // Actualizar estadísticas
-            updateStatistics();
+            if (reviewStatus === 'aprobado') {
+              showNotification(`¡Batch ${batchId} APROBADO! Permanece en cola hasta cambiar estado manualmente.`, 'success');
+            } else if (reviewStatus === 'no_aprobado') {
+              showNotification(`Batch ${batchId} marcado como NO APROBADO.`, 'warning');
+            } else {
+              showNotification('Batch actualizado exitosamente', 'success');
+            }
+            
+            // Recargar la tabla para reflejar los cambios
+            loadBatches();
           } else {
             showNotification('Error actualizando batch: ' + response.message, 'error');
           }
@@ -1300,7 +1369,6 @@
             <p><strong>ID:</strong> ${batch.id}</p>
             <p><strong>Responsable:</strong> ${batch.assignee}</p>
             <p><strong>Carpeta:</strong> ${batch.folder}</p>
-            <p><strong>Prioridad:</strong> ${batch.metadata.priority}</p>
           </div>
           <div class="col-md-6">
             <h6>Estado y Fechas</h6>
@@ -1742,6 +1810,627 @@ Escribe "CONFIRMAR" para proceder:`;
           showNotification('Error forzando reinicialización: ' + errorMsg, 'error');
         }
       });
+    }
+
+    // Función para mostrar batches aprobados
+    function showApprovedBatches() {
+      // Filtrar batches aprobados
+      const approvedBatches = batches.filter(batch => batch.status === 'S');
+      
+      let approvedHtml = `
+        <div class="mb-3">
+          <h6><i class="fas fa-check-circle text-success"></i> Batches Aprobados (${approvedBatches.length})</h6>
+        </div>
+      `;
+      
+      if (approvedBatches.length > 0) {
+        approvedHtml += `
+          <div class="table-responsive">
+            <table class="table table-sm table-striped">
+              <thead>
+                <tr>
+                  <th>Batch ID</th>
+                  <th>Responsable</th>
+                  <th>Fecha Aprobación</th>
+                  <th>Comentarios</th>
+                </tr>
+              </thead>
+              <tbody>
+        `;
+        
+        approvedBatches.forEach(batch => {
+          const approvedDate = batch.metadata.approved_at || batch.metadata.reviewed_at || 'No registrada';
+          
+          approvedHtml += `
+            <tr>
+              <td><code>${batch.id}</code></td>
+              <td><span class="badge bg-info">${batch.assignee}</span></td>
+              <td>${approvedDate}</td>
+              <td><small class="text-muted">${batch.comments || 'Sin comentarios'}</small></td>
+            </tr>
+          `;
+        });
+        
+        approvedHtml += `
+              </tbody>
+            </table>
+          </div>
+        `;
+      } else {
+        approvedHtml += `
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            No hay batches aprobados aún.
+          </div>
+        `;
+      }
+      
+      // Mostrar modal
+      const modal = `
+        <div class="modal fade" id="approvedBatchesModal" tabindex="-1">
+          <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">
+                  <i class="fas fa-check-circle text-success"></i> Historial de Batches Aprobados
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                ${approvedHtml}
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-success" onclick="exportApprovedBatches()">
+                  <i class="fas fa-download"></i> Exportar Lista
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Remover modal anterior si existe
+      $('#approvedBatchesModal').remove();
+      
+      // Agregar y mostrar modal
+      $('body').append(modal);
+      $('#approvedBatchesModal').modal('show');
+      
+      // Auto-remover modal cuando se cierre
+      $('#approvedBatchesModal').on('hidden.bs.modal', function() {
+        $(this).remove();
+      });
+    }
+
+    // Función para exportar batches aprobados
+    function exportApprovedBatches() {
+      const approvedBatches = batches.filter(batch => batch.status === 'S');
+      
+      if (approvedBatches.length === 0) {
+        showNotification('No hay batches aprobados para exportar', 'warning');
+        return;
+      }
+      
+      // Crear CSV
+      let csvContent = "Batch ID,Responsable,Fecha Aprobación,Comentarios\n";
+      
+      approvedBatches.forEach(batch => {
+        const approvedDate = batch.metadata.approved_at || batch.metadata.reviewed_at || '';
+        const comments = (batch.comments || '').replace(/"/g, '""'); // Escapar comillas
+        
+        csvContent += `"${batch.id}","${batch.assignee}","${approvedDate}","${comments}"\n`;
+      });
+      
+      // Descargar archivo
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `batches_aprobados_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      showNotification(`Exportados ${approvedBatches.length} batches aprobados`, 'success');
+    }
+
+    // Función para comparar batches con MongoDB y mostrar los faltantes
+    async function compareBatchesWithMongo() {
+      try {
+        console.log('🔍 Iniciando comparación de batches...');
+        
+        // Lista de todas las carpetas de batches disponibles localmente
+        const localBatches = [
+          'batch_20250624T191328', 'batch_20250624T191829', 'batch_20250624T191831', 'batch_20250624T191835',
+          'batch_20250624T191836', 'batch_20250624T191837', 'batch_20250624T191838', 'batch_20250624T191839',
+          'batch_20250624T191841', 'batch_20250624T191843', 'batch_20250624T191844', 'batch_20250624T191845',
+          'batch_20250624T191847', 'batch_20250624T191848', 'batch_20250624T191849', 'batch_20250624T191850',
+          'batch_20250624T191851', 'batch_20250624T191852', 'batch_20250624T191853', 'batch_20250624T191854',
+          'batch_20250624T191855', 'batch_20250624T191856', 'batch_20250624T191857', 'batch_20250624T191858',
+          'batch_20250624T191859', 'batch_20250624T191900', 'batch_20250624T191901', 'batch_20250624T191902',
+          'batch_20250624T191903', 'batch_20250624T191904', 'batch_20250624T191905', 'batch_20250624T191906',
+          'batch_20250624T191907', 'batch_20250624T191908', 'batch_20250624T191909', 'batch_20250624T191910',
+          'batch_20250624T191911', 'batch_20250624T191912', 'batch_20250624T191913', 'batch_20250624T191914',
+          'batch_20250624T191915', 'batch_20250624T191916', 'batch_20250624T191917', 'batch_20250624T191918',
+          'batch_20250624T191919', 'batch_20250624T191920', 'batch_20250624T191921', 'batch_20250624T191922',
+          'batch_20250624T191923', 'batch_20250624T191924', 'batch_20250624T191925', 'batch_20250624T191926',
+          'batch_20250624T191927', 'batch_20250624T191928', 'batch_20250624T191929', 'batch_4248', 'batch_4249',
+          'batch_4250', 'batch_4251', 'batch_4252', 'batch_4253', 'batch_4254', 'batch_4255', 'batch_4256',
+          'batch_4257', 'batch_4258', 'batch_4259', 'batch_4260', 'batch_4261', 'batch_2702', 'batch_2703',
+          'batch_2704', 'batch_2705', 'batch_2706', 'batch_2707', 'batch_2708', 'batch_2709', 'batch_2710',
+          'batch_2711', 'batch_2712', 'batch_2713', 'batch_2714', 'batch_2715', 'batch_2716', 'batch_2717',
+          'batch_2718', 'batch_2719', 'batch_2720', 'batch_2721', 'batch_2722', 'batch_2723', 'batch_2724',
+          'batch_2725', 'batch_2726', 'batch_2727', 'batch_2728', 'batch_2729', 'batch_2730', 'batch_2731',
+          'batch_2732', 'batch_2733', 'batch_2734', 'batch_2735', 'batch_2736', 'batch_2737', 'batch_2738',
+          'batch_2739', 'batch_2740', 'batch_2741', 'batch_2742', 'batch_2743', 'batch_2744', 'batch_2745',
+          'batch_2746', 'batch_2747', 'batch_2748', 'batch_2749', 'batch_2750', 'batch_1', 'batch_2', 'batch_3',
+          'batch_4', 'batch_5', 'batch_6', 'batch_7', 'batch_8', 'batch_9', 'batch_10', 'batch_11', 'batch_12',
+          'batch_13', 'batch_14', 'batch_15', 'batch_16', 'batch_17', 'batch_18', 'batch_19', 'batch_20',
+          'batch_21', 'batch_22', 'batch_23', 'batch_24', 'batch_25', 'batch_26', 'batch_27', 'batch_28',
+          'batch_29', 'batch_30', 'batch_31', 'batch_32', 'batch_33', 'batch_34', 'batch_35', 'batch_36',
+          'batch_37', 'batch_38', 'batch_39', 'batch_40', 'batch_41', 'batch_42', 'batch_43', 'batch_44',
+          'batch_45', 'batch_46', 'batch_47', 'batch_48', 'batch_49', 'batch_50', 'batch_51', 'batch_52',
+          'batch_53', 'batch_54', 'batch_55', 'batch_56', 'batch_57', 'batch_58', 'batch_59', 'batch_60',
+          'batch_61', 'batch_62', 'batch_63', 'batch_64', 'batch_65', 'batch_66', 'batch_67', 'batch_68',
+          'batch_69', 'batch_70', 'batch_71', 'batch_72', 'batch_73', 'batch_74', 'batch_75', 'batch_76',
+          'batch_77', 'batch_78', 'batch_79', 'batch_80', 'batch_81', 'batch_82', 'batch_83', 'batch_84',
+          'batch_85', 'batch_86', 'batch_87', 'batch_88', 'batch_89', 'batch_90', 'batch_91', 'batch_92',
+          'batch_93', 'batch_94', 'batch_95', 'batch_96', 'batch_97', 'batch_98', 'batch_99', 'batch_100',
+          'batch_101', 'batch_102', 'batch_103', 'batch_104', 'batch_105', 'batch_106', 'batch_107', 'batch_108',
+          'batch_109', 'batch_110', 'batch_111', 'batch_112', 'batch_113', 'batch_114', 'batch_115', 'batch_116',
+          'batch_117', 'batch_118', 'batch_119', 'batch_120', 'batch_121', 'batch_122', 'batch_123', 'batch_124',
+          'batch_125', 'batch_126', 'batch_127', 'batch_128', 'batch_129', 'batch_130', 'batch_131', 'batch_132',
+          'batch_133', 'batch_134', 'batch_135', 'batch_136', 'batch_137', 'batch_138', 'batch_139', 'batch_140',
+          'batch_141', 'batch_142', 'batch_143', 'batch_144', 'batch_145', 'batch_146', 'batch_147', 'batch_148',
+          'batch_149', 'batch_150', 'batch_151', 'batch_152', 'batch_153', 'batch_154', 'batch_155', 'batch_156',
+          'batch_157', 'batch_158', 'batch_159', 'batch_160', 'batch_161', 'batch_162', 'batch_163', 'batch_164',
+          'batch_165', 'batch_166', 'batch_167', 'batch_168', 'batch_169', 'batch_170', 'batch_171', 'batch_172',
+          'batch_173', 'batch_174', 'batch_175', 'batch_176', 'batch_177', 'batch_178', 'batch_179', 'batch_180',
+          'batch_181', 'batch_182', 'batch_183', 'batch_184', 'batch_185', 'batch_186', 'batch_187', 'batch_188',
+          'batch_189', 'batch_190', 'batch_191', 'batch_192', 'batch_193', 'batch_194', 'batch_195', 'batch_196',
+          'batch_197', 'batch_198', 'batch_199', 'batch_200', 'batch_361', 'batch_362', 'batch_363', 'batch_364',
+          'batch_365', 'batch_366', 'batch_367', 'batch_368', 'batch_369', 'batch_370', 'batch_371', 'batch_372',
+          'batch_373', 'batch_374', 'batch_375', 'batch_376', 'batch_377', 'batch_378', 'batch_379', 'batch_380',
+          'batch_381', 'batch_382', 'batch_383', 'batch_384', 'batch_385', 'batch_386', 'batch_387', 'batch_388',
+          'batch_389', 'batch_390', 'batch_391', 'batch_392', 'batch_393', 'batch_394', 'batch_395', 'batch_396',
+          'batch_397', 'batch_398', 'batch_399', 'batch_400', 'batch_401', 'batch_402', 'batch_403', 'batch_404',
+          'batch_405', 'batch_406', 'batch_407', 'batch_408', 'batch_409', 'batch_410', 'batch_411', 'batch_412',
+          'batch_413', 'batch_414', 'batch_415', 'batch_416', 'batch_417', 'batch_418', 'batch_419', 'batch_420',
+          'batch_421', 'batch_422', 'batch_423', 'batch_424', 'batch_425', 'batch_426', 'batch_427', 'batch_428',
+          'batch_429', 'batch_430', 'batch_431', 'batch_432', 'batch_433', 'batch_434', 'batch_435', 'batch_436',
+          'batch_437', 'batch_438', 'batch_439', 'batch_440', 'batch_441', 'batch_442', 'batch_443', 'batch_444',
+          'batch_445', 'batch_446', 'batch_447', 'batch_448', 'batch_449', 'batch_450', 'batch_451', 'batch_452',
+          'batch_453', 'batch_454', 'batch_455', 'batch_456', 'batch_457', 'batch_458', 'batch_459', 'batch_460',
+          'batch_461', 'batch_462', 'batch_463', 'batch_464', 'batch_465', 'batch_466', 'batch_467', 'batch_468',
+          'batch_469', 'batch_470', 'batch_471', 'batch_472', 'batch_473', 'batch_474', 'batch_475', 'batch_476',
+          'batch_477', 'batch_478', 'batch_479', 'batch_480', 'batch_481', 'batch_482', 'batch_483', 'batch_484',
+          'batch_485', 'batch_486', 'batch_487', 'batch_488', 'batch_489', 'batch_490', 'batch_491', 'batch_492',
+          'batch_493', 'batch_494', 'batch_495', 'batch_496', 'batch_497', 'batch_498', 'batch_499', 'batch_500',
+          'batch_501', 'batch_502', 'batch_503', 'batch_504', 'batch_505', 'batch_506', 'batch_507', 'batch_508',
+          'batch_509', 'batch_510', 'batch_511', 'batch_512', 'batch_513', 'batch_514', 'batch_515', 'batch_516',
+          'batch_517', 'batch_518', 'batch_519', 'batch_520', 'batch_521', 'batch_522', 'batch_523', 'batch_524',
+          'batch_525', 'batch_526', 'batch_527', 'batch_528', 'batch_529', 'batch_530', 'batch_531', 'batch_532',
+          'batch_533', 'batch_534', 'batch_535', 'batch_536', 'batch_537', 'batch_538', 'batch_539', 'batch_540',
+          'batch_541', 'batch_542', 'batch_543', 'batch_544', 'batch_545', 'batch_546', 'batch_547', 'batch_548',
+          'batch_549', 'batch_550', 'batch_551', 'batch_552', 'batch_553', 'batch_554', 'batch_555', 'batch_556',
+          'batch_557', 'batch_558', 'batch_559', 'batch_560', 'batch_561', 'batch_562', 'batch_563', 'batch_564',
+          'batch_565', 'batch_566', 'batch_567', 'batch_568', 'batch_569', 'batch_570', 'batch_571', 'batch_572',
+          'batch_573', 'batch_574', 'batch_575', 'batch_576', 'batch_577', 'batch_578', 'batch_579', 'batch_580',
+          'batch_581', 'batch_582', 'batch_583', 'batch_584', 'batch_585', 'batch_586', 'batch_587', 'batch_588',
+          'batch_589', 'batch_590', 'batch_591', 'batch_592', 'batch_593', 'batch_594', 'batch_595', 'batch_596',
+          'batch_597', 'batch_598', 'batch_599', 'batch_600', 'batch_mart'
+        ];
+
+        console.log(`📊 Total de batches locales: ${localBatches.length}`);
+
+        // Obtener batches existentes en MongoDB
+        showNotification('Consultando MongoDB...', 'info');
+        const response = await fetch('/api/batches');
+        if (!response.ok) {
+          throw new Error(`Error HTTP: ${response.status}`);
+        }
+        
+        const mongoBatches = await response.json();
+        const mongoBatchNames = mongoBatches.map(batch => batch.id);
+        
+        console.log(`📊 Total de batches en MongoDB: ${mongoBatchNames.length}`);
+        console.log('🔍 Primeros 10 batches en MongoDB:', mongoBatchNames.slice(0, 10));
+        
+        // Encontrar batches faltantes
+        const missingBatches = localBatches.filter(batch => !mongoBatchNames.includes(batch));
+        
+        // Encontrar batches que están en MongoDB pero no en local (para debugging)
+        const extraBatches = mongoBatchNames.filter(batch => !localBatches.includes(batch));
+        
+        console.log(`❌ Batches faltantes: ${missingBatches.length}`);
+        console.log(`➕ Batches extra en MongoDB: ${extraBatches.length}`);
+        
+        if (missingBatches.length === 0) {
+          showNotification('¡Todos los batches locales ya están en MongoDB!', 'success');
+          // Mostrar modal informativo aunque no haya faltantes
+          showComparisonResultsModal(localBatches, mongoBatchNames, [], extraBatches);
+          return;
+        }
+        
+        // Actualizar el dropdown de batches faltantes
+        updateMissingBatchesDropdown(missingBatches);
+        
+        // Mostrar notificación
+        showNotification(`Se encontraron ${missingBatches.length} batches faltantes de ${localBatches.length} totales`, 'warning');
+        
+        // Mostrar modal con detalles completos
+        showComparisonResultsModal(localBatches, mongoBatchNames, missingBatches, extraBatches);
+        
+      } catch (error) {
+        console.error('❌ Error al comparar batches:', error);
+        showNotification(`Error al comparar batches: ${error.message}`, 'error');
+      }
+    }
+
+    // Función para mostrar modal con resultados completos de la comparación
+    function showComparisonResultsModal(localBatches, mongoBatches, missingBatches, extraBatches) {
+      
+      // Crear secciones de contenido
+      const summaryHtml = `
+        <div class="row mb-4">
+          <div class="col-md-3">
+            <div class="card bg-info text-white text-center">
+              <div class="card-body">
+                <h3>${localBatches.length}</h3>
+                <small>Batches Locales Total</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card bg-success text-white text-center">
+              <div class="card-body">
+                <h3>${mongoBatches.length}</h3>
+                <small>En MongoDB</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card bg-warning text-white text-center">
+              <div class="card-body">
+                <h3>${missingBatches.length}</h3>
+                <small>Faltantes por Crear</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card bg-secondary text-white text-center">
+              <div class="card-body">
+                <h3>${extraBatches.length}</h3>
+                <small>Solo en MongoDB</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Crear lista de batches faltantes en columnas
+      let missingBatchesHtml = '';
+      if (missingBatches.length > 0) {
+        const batchesPerColumn = Math.ceil(missingBatches.length / 4);
+        
+        missingBatchesHtml = `
+          <h6 class="mb-3 text-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            Batches Faltantes (${missingBatches.length}) - Disponibles para Asignar:
+          </h6>
+          <div class="row">
+        `;
+        
+        for (let col = 0; col < 4; col++) {
+          const startIndex = col * batchesPerColumn;
+          const endIndex = Math.min(startIndex + batchesPerColumn, missingBatches.length);
+          const columnBatches = missingBatches.slice(startIndex, endIndex);
+          
+          if (columnBatches.length > 0) {
+            missingBatchesHtml += `
+              <div class="col-md-3">
+                <ul class="list-unstyled small">
+                  ${columnBatches.map(batch => `<li><code class="text-warning">${batch}</code></li>`).join('')}
+                </ul>
+              </div>
+            `;
+          }
+        }
+        missingBatchesHtml += '</div>';
+      } else {
+        missingBatchesHtml = `
+          <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            ¡Excelente! Todos los batches locales ya están registrados en MongoDB.
+          </div>
+        `;
+      }
+      
+      // Mostrar algunos batches que están en MongoDB (para verificación)
+      const existingBatchesHtml = `
+        <h6 class="mb-3 text-success">
+          <i class="fas fa-check-circle"></i>
+          Batches ya en MongoDB (primeros 20):
+        </h6>
+        <div class="row">
+          <div class="col-12">
+            <div class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
+              ${mongoBatches.slice(0, 20).map(batch => `<code class="text-success me-2">${batch}</code>`).join('')}
+              ${mongoBatches.length > 20 ? `<small class="text-muted">... y ${mongoBatches.length - 20} más</small>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+      
+      const modalHtml = `
+        <div class="modal fade" id="comparisonResultsModal" tabindex="-1">
+          <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">
+                  <i class="fas fa-chart-pie"></i>
+                  Comparación Completa: Batches Locales vs MongoDB
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                ${summaryHtml}
+                
+                <hr class="my-4">
+                
+                ${missingBatchesHtml}
+                
+                <hr class="my-4">
+                
+                ${existingBatchesHtml}
+                
+                <div class="alert alert-info mt-4">
+                  <h6><i class="fas fa-lightbulb"></i> Próximos Pasos:</h6>
+                  <ul class="mb-0">
+                    <li><strong>Asignar batches faltantes:</strong> Usa el botón "Crear Nuevo Batch" y verás sugerencias automáticas</li>
+                    <li><strong>Autocompletado activo:</strong> Al escribir en "Batch ID", aparecerán los batches faltantes</li>
+                    <li><strong>Distribución sugerida:</strong> Puedes asignar los batches entre ${CREW_MEMBERS ? CREW_MEMBERS.join(', ') : 'el equipo'}</li>
+                    <li><strong>Exportar lista:</strong> Descarga la lista completa para revisión offline</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="$('#newBatchModal').modal('show')">
+                  <i class="fas fa-plus"></i> Crear Nuevo Batch
+                </button>
+                <button type="button" class="btn btn-success" onclick="exportComparisonResults(${JSON.stringify(missingBatches).replace(/"/g, '&quot;')})">
+                  <i class="fas fa-download"></i> Exportar Faltantes
+                </button>
+                <button type="button" class="btn btn-info" onclick="console.log('Locales:', ${JSON.stringify(localBatches)}); console.log('MongoDB:', ${JSON.stringify(mongoBatches)})">
+                  <i class="fas fa-bug"></i> Debug Console
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Eliminar modal existente si existe
+      const existingModal = document.getElementById('comparisonResultsModal');
+      if (existingModal) {
+        existingModal.remove();
+      }
+      
+      // Agregar nuevo modal
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+      
+      // Mostrar modal
+      const modal = new bootstrap.Modal(document.getElementById('comparisonResultsModal'));
+      modal.show();
+    }
+
+    // Función para exportar resultados de comparación
+    function exportComparisonResults(missingBatches) {
+      if (!missingBatches || missingBatches.length === 0) {
+        showNotification('No hay batches faltantes para exportar', 'info');
+        return;
+      }
+      
+      // Crear CSV con información detallada
+      let csvContent = "Batch_ID,Estado,Sugerencia_Asignacion,Prioridad,Comentarios\n";
+      
+      missingBatches.forEach((batch, index) => {
+        // Sugerir asignación rotatoria entre el equipo
+        const assignees = ['Mauricio', 'Maggie', 'Ceci', 'Flor', 'Ignacio'];
+        const suggestedAssignee = assignees[index % assignees.length];
+        
+        // Determinar prioridad basada en el tipo de batch
+        let priority = 'media';
+        if (batch.includes('T19')) priority = 'alta'; // Batches con timestamp
+        if (parseInt(batch.replace('batch_', '')) > 4000) priority = 'alta'; // Batches numericos altos
+        
+        csvContent += `"${batch}","Pendiente de crear","${suggestedAssignee}","${priority}","Batch disponible localmente, pendiente de asignación al equipo"\n`;
+      });
+      
+      // Descargar archivo
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `batches_faltantes_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      showNotification(`Lista de ${missingBatches.length} batches faltantes exportada con sugerencias de asignación`, 'success');
+    }
+    function updateMissingBatchesDropdown(missingBatches) {
+      // Buscar el input de batch id
+      const batchInput = document.getElementById('batch_id');
+      if (!batchInput) return;
+      
+      // Crear un datalist para sugerencias de batches faltantes
+      let datalist = document.getElementById('missing-batches-datalist');
+      if (datalist) {
+        datalist.remove();
+      }
+      
+      if (missingBatches.length > 0) {
+        datalist = document.createElement('datalist');
+        datalist.id = 'missing-batches-datalist';
+        
+        missingBatches.forEach(batchName => {
+          const option = document.createElement('option');
+          option.value = batchName;
+          datalist.appendChild(option);
+        });
+        
+        // Agregar datalist al documento y conectar con el input
+        document.body.appendChild(datalist);
+        batchInput.setAttribute('list', 'missing-batches-datalist');
+        batchInput.setAttribute('placeholder', 'Ej: batch_400, Batch_400 (sugerencias disponibles)');
+      }
+    }
+
+    // Función para mostrar modal con batches faltantes
+    function showMissingBatchesModal(missingBatches) {
+      // Crear las columnas de batches
+      let batchColumns = '';
+      const batchesPerColumn = Math.ceil(missingBatches.length / 4);
+      
+      for (let col = 0; col < 4; col++) {
+        const startIndex = col * batchesPerColumn;
+        const endIndex = Math.min(startIndex + batchesPerColumn, missingBatches.length);
+        const columnBatches = missingBatches.slice(startIndex, endIndex);
+        
+        if (columnBatches.length > 0) {
+          batchColumns += `
+            <div class="col-md-3">
+              <ul class="list-unstyled">
+                ${columnBatches.map(batch => `<li><code>${batch}</code></li>`).join('')}
+              </ul>
+            </div>
+          `;
+        }
+      }
+      
+      const modalHtml = `
+        <div class="modal fade" id="missingBatchesModal" tabindex="-1">
+          <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">
+                  <i class="fas fa-exclamation-triangle text-warning"></i>
+                  Batches Faltantes en MongoDB
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <div class="alert alert-warning">
+                  <i class="fas fa-info-circle"></i>
+                  Se encontraron <strong>${missingBatches.length}</strong> batches que están disponibles localmente pero no están registrados en MongoDB.
+                </div>
+                
+                <h6 class="mb-3">📋 Lista de Batches Faltantes:</h6>
+                <div class="row">
+                  ${batchColumns}
+                </div>
+                
+                <div class="alert alert-info mt-4">
+                  <h6><i class="fas fa-lightbulb"></i> ¿Cómo usar esta información?</h6>
+                  <ul class="mb-0">
+                    <li>Los batches faltantes ahora aparecen como <strong>sugerencias automáticas</strong> en el campo "Batch ID" del formulario</li>
+                    <li>Al crear un nuevo batch, empieza a escribir y verás las sugerencias</li>
+                    <li>Puedes asignar estos batches a cualquier segmentador del equipo</li>
+                    <li>Una vez creados en el sistema, ya no aparecerán como faltantes</li>
+                  </ul>
+                </div>
+                
+                <div class="row mt-3">
+                  <div class="col-md-6">
+                    <div class="card border-success">
+                      <div class="card-body text-center">
+                        <h5 class="card-title text-success">
+                          <i class="fas fa-database"></i> En MongoDB
+                        </h5>
+                        <h2 class="text-success">${missingBatches.length > 0 ? (565 - missingBatches.length) : 565}</h2>
+                        <small class="text-muted">Batches registrados</small>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="card border-warning">
+                      <div class="card-body text-center">
+                        <h5 class="card-title text-warning">
+                          <i class="fas fa-folder"></i> Locales Faltantes
+                        </h5>
+                        <h2 class="text-warning">${missingBatches.length}</h2>
+                        <small class="text-muted">Por registrar</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" onclick="$('#newBatchModal').modal('show')">
+                  <i class="fas fa-plus"></i> Crear Nuevo Batch
+                </button>
+                <button type="button" class="btn btn-success" onclick="exportMissingBatches()">
+                  <i class="fas fa-download"></i> Exportar Lista
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Eliminar modal existente si existe
+      const existingModal = document.getElementById('missingBatchesModal');
+      if (existingModal) {
+        existingModal.remove();
+      }
+      
+      // Agregar nuevo modal
+      document.body.insertAdjacentHTML('beforeend', modalHtml);
+      
+      // Mostrar modal
+      const modal = new bootstrap.Modal(document.getElementById('missingBatchesModal'));
+      modal.show();
+    }
+
+    // Función para exportar la lista de batches faltantes
+    function exportMissingBatches() {
+      // Obtener la lista de batches faltantes desde el modal
+      const modalElement = document.getElementById('missingBatchesModal');
+      if (!modalElement) return;
+      
+      // Extraer los batches del modal
+      const batchElements = modalElement.querySelectorAll('code');
+      const missingBatches = Array.from(batchElements).map(el => el.textContent);
+      
+      if (missingBatches.length === 0) {
+        showNotification('No hay batches faltantes para exportar', 'warning');
+        return;
+      }
+      
+      // Crear CSV
+      let csvContent = "Batch_ID,Estado,Comentarios\n";
+      missingBatches.forEach(batch => {
+        csvContent += `"${batch}","Pendiente","Batch disponible localmente, pendiente de asignar"\n`;
+      });
+      
+      // Descargar archivo
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `batches_faltantes_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      showNotification(`Lista de ${missingBatches.length} batches faltantes exportada`, 'success');
     }
 
     // Función para mostrar métricas del equipo
