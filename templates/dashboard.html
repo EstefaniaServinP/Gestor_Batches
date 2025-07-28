@@ -318,6 +318,16 @@
       min-height: 100px;
     }
 
+    .pending-batch {
+      border-left: 4px solid #17a2b8 !important;
+      background-color: rgba(23, 162, 184, 0.05);
+    }
+
+    .pending-batch:hover {
+      background-color: rgba(23, 162, 184, 0.1);
+      border-color: #17a2b8 !important;
+    }
+
     .batch-count {
       font-size: 0.8em;
       min-width: 25px;
@@ -1121,24 +1131,68 @@
     function updateDragDropInterface() {
       console.log('🎯 Actualizando interfaz drag & drop...');
       
-      // Obtener batches no asignados
-      const unassignedBatches = batches.filter(batch => 
-        batch.status === 'NS' && !batch.assignee
-      );
-      
-      // Obtener batches asignados por responsable
-      const assignedBatches = batches.filter(batch => 
-        batch.assignee && (batch.status === 'In' || batch.status === 'NS')
-      );
-      
-      // Renderizar batches no asignados
-      renderUnassignedBatches(unassignedBatches);
-      
-      // Renderizar batches asignados por segmentador
-      renderAssignedBatches(assignedBatches);
-      
-      // Inicializar eventos de drag & drop
-      initializeDragAndDrop();
+      // Cargar batches pendientes desde el endpoint de missing-batches
+      $.get('/api/missing-batches')
+        .done(function(response) {
+          console.log('📥 Respuesta de missing-batches:', response);
+          
+          // Extraer el array de batches de la respuesta
+          const missingBatchesList = response.missing_batches || response || [];
+          console.log('📥 Batches pendientes cargados:', missingBatchesList.length);
+          
+          // Obtener batches no asignados de la base de datos
+          const unassignedBatchesFromDB = batches.filter(batch => 
+            batch.status === 'NS' && !batch.assignee
+          );
+          
+          // Combinar batches pendientes con batches no asignados de la DB
+          const allUnassignedBatches = [
+            // Batches pendientes (convertir a formato estándar)
+            ...missingBatchesList.map(batchId => ({
+              id: batchId,
+              assignee: null,
+              status: 'NS',
+              metadata: {
+                assigned_at: null,
+                due_date: null,
+                priority: 'media'
+              },
+              comments: 'Batch pendiente de asignación',
+              mongo_uploaded: false,
+              isPending: true // Marcador para identificar batches pendientes
+            })),
+            // Batches no asignados existentes en la DB
+            ...unassignedBatchesFromDB
+          ];
+          
+          // Obtener batches asignados por responsable
+          const assignedBatches = batches.filter(batch => 
+            batch.assignee && (batch.status === 'In' || batch.status === 'NS')
+          );
+          
+          // Renderizar batches no asignados
+          renderUnassignedBatches(allUnassignedBatches);
+          
+          // Renderizar batches asignados por segmentador
+          renderAssignedBatches(assignedBatches);
+          
+          // Inicializar eventos de drag & drop
+          initializeDragAndDrop();
+        })
+        .fail(function(xhr) {
+          console.error('❌ Error cargando batches pendientes:', xhr);
+          // Fallback: usar solo batches de la DB
+          const unassignedBatches = batches.filter(batch => 
+            batch.status === 'NS' && !batch.assignee
+          );
+          const assignedBatches = batches.filter(batch => 
+            batch.assignee && (batch.status === 'In' || batch.status === 'NS')
+          );
+          
+          renderUnassignedBatches(unassignedBatches);
+          renderAssignedBatches(assignedBatches);
+          initializeDragAndDrop();
+        });
     }
 
     function renderUnassignedBatches(unassignedBatches) {
@@ -1208,18 +1262,34 @@
       const reviewIcon = batch.metadata?.review_status === 'aprobado' ? '✅' :
                         batch.metadata?.review_status === 'no_aprobado' ? '❌' : '';
       
+      // Indicador especial para batches pendientes
+      const pendingIndicator = batch.isPending ? 
+        '<span class="badge bg-info ms-2"><i class="fas fa-inbox"></i> Pendiente</span>' : '';
+      
+      // Fecha de asignación o indicador de pendiente
+      const dateInfo = batch.metadata?.assigned_at ? 
+        `<i class="fas fa-calendar"></i> ${batch.metadata.assigned_at}` :
+        batch.isPending ? 
+          '<i class="fas fa-hourglass-start"></i> Sin asignar' : 
+          'Sin fecha';
+      
       return $(`
-        <div class="batch-item ${type}" draggable="true" data-batch-id="${batch.id}" data-assignee="${batch.assignee || ''}">
+        <div class="batch-item ${type} ${batch.isPending ? 'pending-batch' : ''}" 
+             draggable="true" 
+             data-batch-id="${batch.id}" 
+             data-assignee="${batch.assignee || ''}"
+             data-is-pending="${batch.isPending || false}">
           <div class="d-flex justify-content-between align-items-start">
             <div class="flex-grow-1">
               <div class="fw-bold text-primary mb-1">
                 <i class="fas fa-${statusIcon}"></i>
                 ${batch.id}
                 ${reviewIcon}
+                ${pendingIndicator}
               </div>
               <div class="batch-meta">
                 <small class="text-muted">
-                  <i class="fas fa-calendar"></i> ${batch.metadata?.assigned_at || 'Sin fecha'}
+                  ${dateInfo}
                 </small>
                 ${batch.metadata?.due_date ? `<br><small class="text-warning">
                   <i class="fas fa-clock"></i> Vence: ${batch.metadata.due_date}
@@ -1293,6 +1363,56 @@
     function assignBatchToSegmentador(batchId, newAssignee) {
       console.log(`🎯 Asignando batch ${batchId} a ${newAssignee || 'sin asignar'}`);
       
+      // Verificar si es un batch pendiente o uno existente en la DB
+      const isPendingBatch = !batches.find(b => b.id === batchId);
+      
+      if (isPendingBatch) {
+        // Crear nuevo batch desde pendiente
+        createBatchFromPending(batchId, newAssignee);
+      } else {
+        // Actualizar batch existente
+        updateExistingBatch(batchId, newAssignee);
+      }
+    }
+
+    function createBatchFromPending(batchId, assignee) {
+      console.log(`📝 Creando nuevo batch desde pendiente: ${batchId}`);
+      
+      const batchData = {
+        id: batchId,
+        assignee: assignee,
+        folder: `/data/${batchId}`,
+        tasks: ["segmentar", "subir_mascaras", "revisar"],
+        metadata: {
+          assigned_at: new Date().toISOString().split('T')[0],
+          due_date: '',
+          priority: 'media',
+          reviewed_at: null
+        },
+        status: 'NS',
+        mongo_uploaded: false,
+        comments: `Batch asignado a ${assignee} desde drag & drop`
+      };
+      
+      $.ajax({
+        url: '/api/batches',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(batchData),
+        success: function(response) {
+          console.log('✅ Nuevo batch creado:', response);
+          showNotification(`Batch ${batchId} creado y asignado a ${assignee}`, 'success');
+          loadBatches(); // Recargar todo para sincronizar
+        },
+        error: function(xhr) {
+          console.error('❌ Error creando batch:', xhr);
+          showNotification('Error creando batch: ' + (xhr.responseJSON?.error || 'Error desconocido'), 'error');
+          updateDragDropInterface(); // Restaurar interfaz
+        }
+      });
+    }
+
+    function updateExistingBatch(batchId, newAssignee) {
       const batch = batches.find(b => b.id === batchId);
       if (!batch) {
         showNotification('Batch no encontrado', 'error');

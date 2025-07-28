@@ -701,9 +701,15 @@ def reset_batches():
 def get_missing_batches():
     """Obtener batches que FALTAN por segmentar (no están en MongoDB)"""
     try:
-        # Estos son los batches que FALTAN por segmentar según tu lista
-        missing_batches = [
-            'batch_16', 'batch_17', 'batch_21', 'batch_53', 'batch_54', 'batch_55', 'batch_56', 'batch_57',
+        # Lista completa de todos los batches que deberían existir
+        all_possible_batches = [
+            'batch_9', 'batch_10', 'batch_11', 'batch_12', 'batch_13', 'batch_14', 'batch_15',
+            'batch_16', 'batch_17', 'batch_18', 'batch_19', 'batch_20', 'batch_21', 'batch_22',
+            'batch_23', 'batch_24', 'batch_25', 'batch_26', 'batch_27', 'batch_28', 'batch_29',
+            'batch_30', 'batch_31', 'batch_32', 'batch_33', 'batch_34', 'batch_35', 'batch_36',
+            'batch_37', 'batch_38', 'batch_39', 'batch_40', 'batch_41', 'batch_42', 'batch_43',
+            'batch_44', 'batch_45', 'batch_46', 'batch_47', 'batch_48', 'batch_49', 'batch_50',
+            'batch_51', 'batch_52', 'batch_53', 'batch_54', 'batch_55', 'batch_56', 'batch_57',
             'batch_58', 'batch_59', 'batch_60', 'batch_61', 'batch_62', 'batch_63', 'batch_64', 'batch_65',
             'batch_66', 'batch_67', 'batch_68', 'batch_69', 'batch_70', 'batch_71', 'batch_72', 'batch_73',
             'batch_74', 'batch_75', 'batch_76', 'batch_77', 'batch_78', 'batch_79', 'batch_80', 'batch_81',
@@ -756,10 +762,24 @@ def get_missing_batches():
             'batch_2563', 'batch_2564'
         ]
         
+        # Obtener batches que YA están en la base de datos
+        existing_batch_ids = set()
+        for batch in batches_col.find({}, {"id": 1, "_id": 0}):
+            existing_batch_ids.add(batch["id"])
+        
+        # Filtrar para obtener solo los que FALTAN (no están en la DB)
+        missing_batches = [batch_id for batch_id in all_possible_batches 
+                          if batch_id not in existing_batch_ids]
+        
+        print(f"📊 Total batches posibles: {len(all_possible_batches)}")
+        print(f"📊 Batches en DB: {len(existing_batch_ids)}")
+        print(f"📊 Batches faltantes: {len(missing_batches)}")
+        
         return jsonify({
             "success": True,
             "missing_batches": missing_batches,
             "total_missing": len(missing_batches),
+            "total_existing": len(existing_batch_ids),
             "message": f"Se encontraron {len(missing_batches)} batches pendientes de segmentación"
         })
         
