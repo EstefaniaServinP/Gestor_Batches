@@ -313,13 +313,13 @@
         {% endif %}
       </span>
       <div class="d-flex">
-        <!-- Menú desplegable de herramientas -->
+        <!-- Botón de Gestión de Datos -->
         <div class="dropdown me-2">
-          <button class="btn btn-outline-light dropdown-toggle" type="button" id="toolsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            <i class="fas fa-tools"></i> Tools
+          <button class="btn btn-outline-light dropdown-toggle" type="button" id="dataManagementDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-database"></i> Gestión de Datos
           </button>
-          <ul class="dropdown-menu" aria-labelledby="toolsDropdown">
-            <li><h6 class="dropdown-header"><i class="fas fa-database"></i> Gestión de Datos</h6></li>
+          <ul class="dropdown-menu" aria-labelledby="dataManagementDropdown">
+            <li><h6 class="dropdown-header"><i class="fas fa-database"></i> Base de Datos</h6></li>
             <li>
               <a class="dropdown-item" href="/masks">
                 <i class="fas fa-image"></i> Ver Máscaras
@@ -327,7 +327,7 @@
             </li>
             <li>
               <a class="dropdown-item" href="#" onclick="checkMongoFiles()">
-                <i class="fas fa-database"></i> Verificar MongoDB
+                <i class="fas fa-server"></i> Verificar MongoDB
               </a>
             </li>
             <li>
@@ -340,6 +340,8 @@
                 <i class="fas fa-sync-alt"></i> Sincronizar Archivos
               </a>
             </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header"><i class="fas fa-chart-line"></i> Reportes y Métricas</h6></li>
             <li>
               <a class="dropdown-item" href="#" onclick="showTeamMetrics()">
                 <i class="fas fa-chart-bar"></i> Métricas del Equipo
@@ -350,21 +352,41 @@
                 <i class="fas fa-check-circle"></i> Batches Aprobados
               </a>
             </li>
-            <li><hr class="dropdown-divider"></li>
-            <li><h6 class="dropdown-header"><i class="fas fa-cogs"></i> Operaciones de Batches</h6></li>
+          </ul>
+        </div>
+
+        <!-- Botón de Gestión de Batches -->
+        <div class="dropdown me-2">
+          <button class="btn btn-outline-light dropdown-toggle" type="button" id="batchManagementDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            <i class="fas fa-tasks"></i> Gestión de Batches
+          </button>
+          <ul class="dropdown-menu" aria-labelledby="batchManagementDropdown">
+            <li><h6 class="dropdown-header"><i class="fas fa-plus"></i> Crear y Asignar</h6></li>
             <li>
               <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#newBatchModal">
-                <i class="fas fa-plus"></i> Nuevo Batch
+                <i class="fas fa-plus-circle"></i> Nuevo Batch
               </a>
             </li>
             <li>
+              <a class="dropdown-item" href="#" onclick="autoCreateBatches()">
+                <i class="fas fa-magic"></i> Auto-crear desde MongoDB
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li><h6 class="dropdown-header"><i class="fas fa-sync"></i> Operaciones Masivas</h6></li>
+            <li>
               <a class="dropdown-item" href="#" onclick="resetBatches()">
-                <i class="fas fa-sync"></i> Recargar Datos
+                <i class="fas fa-refresh"></i> Recargar Datos
               </a>
             </li>
             <li>
               <a class="dropdown-item" href="#" onclick="forceInitBatches()" title="Forzar recarga desde archivo JSON">
                 <i class="fas fa-database"></i> Reinicializar desde JSON
+              </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#" onclick="bulkAssignBatches()">
+                <i class="fas fa-users"></i> Asignación Masiva
               </a>
             </li>
           </ul>
@@ -2660,6 +2682,158 @@ Escribe "CONFIRMAR" para proceder:`;
       window.URL.revokeObjectURL(url);
       
       showNotification('Métricas exportadas exitosamente', 'success');
+    }
+
+    // Función para auto-crear batches desde MongoDB
+    function autoCreateBatches() {
+      console.log('🤖 Iniciando auto-creación de batches desde MongoDB...');
+      
+      if (!confirm('¿Quieres crear automáticamente batches basándose en los archivos encontrados en MongoDB?\n\nEsto puede crear muchos batches nuevos.')) {
+        return;
+      }
+      
+      showNotification('Buscando archivos en MongoDB para crear batches automáticamente...', 'info');
+      
+      $.post('/api/auto-create-batches')
+        .done(function(response) {
+          console.log('✅ Auto-creación completada:', response);
+          if (response.success) {
+            showNotification(`${response.created_batches} nuevos batches creados automáticamente de ${response.total_found} archivos encontrados`, 'success');
+            loadBatches(); // Recargar la tabla
+          } else {
+            showNotification('Error en auto-creación: ' + response.error, 'error');
+          }
+        })
+        .fail(function(xhr) {
+          console.error('❌ Error en auto-creación:', xhr.responseJSON);
+          showNotification('Error creando batches automáticamente: ' + (xhr.responseJSON?.error || 'Error desconocido'), 'error');
+        });
+    }
+
+    // Función para asignación masiva de batches
+    function bulkAssignBatches() {
+      console.log('👥 Iniciando asignación masiva de batches...');
+      
+      // Mostrar modal personalizado para asignación masiva
+      const assigneeOptions = ['Mauricio', 'Maggie', 'Ceci', 'Flor', 'Ignacio']
+        .map(member => `<option value="${member}">${member}</option>`)
+        .join('');
+      
+      const modalHtml = `
+        <div class="modal fade" id="bulkAssignModal" tabindex="-1">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">
+                  <i class="fas fa-users"></i> Asignación Masiva de Batches
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                <div class="mb-3">
+                  <label class="form-label">Asignar a:</label>
+                  <select class="form-select" id="bulkAssignee" required>
+                    <option value="">Seleccionar responsable...</option>
+                    ${assigneeOptions}
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label">Criterio de asignación:</label>
+                  <select class="form-select" id="bulkCriteria">
+                    <option value="unassigned">Solo batches sin asignar</option>
+                    <option value="pending">Batches pendientes (NS)</option>
+                    <option value="all">Todos los batches</option>
+                  </select>
+                </div>
+                <div class="alert alert-warning">
+                  <i class="fas fa-exclamation-triangle"></i>
+                  <strong>Atención:</strong> Esta operación cambiará el responsable de múltiples batches simultáneamente.
+                </div>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="executeBulkAssign()">
+                  <i class="fas fa-check"></i> Asignar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      // Agregar el modal al DOM si no existe
+      if (!document.getElementById('bulkAssignModal')) {
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+      }
+      
+      // Mostrar el modal
+      new bootstrap.Modal(document.getElementById('bulkAssignModal')).show();
+    }
+
+    // Función para ejecutar la asignación masiva
+    function executeBulkAssign() {
+      const assignee = document.getElementById('bulkAssignee').value;
+      const criteria = document.getElementById('bulkCriteria').value;
+      
+      if (!assignee) {
+        showNotification('Por favor selecciona un responsable', 'warning');
+        return;
+      }
+      
+      // Filtrar batches según el criterio
+      let targetBatches = [];
+      switch(criteria) {
+        case 'unassigned':
+          targetBatches = batches.filter(b => !b.assignee || b.assignee.trim() === '');
+          break;
+        case 'pending':
+          targetBatches = batches.filter(b => b.status === 'NS');
+          break;
+        case 'all':
+          targetBatches = batches;
+          break;
+      }
+      
+      if (targetBatches.length === 0) {
+        showNotification('No hay batches que cumplan el criterio seleccionado', 'warning');
+        return;
+      }
+      
+      if (!confirm(`¿Asignar ${targetBatches.length} batches a ${assignee}?`)) {
+        return;
+      }
+      
+      showNotification(`Asignando ${targetBatches.length} batches a ${assignee}...`, 'info');
+      
+      // Asignar batches uno por uno
+      let completed = 0;
+      let errors = 0;
+      
+      targetBatches.forEach((batch, index) => {
+        $.ajax({
+          url: `/api/batches/${batch.id}`,
+          method: 'PUT',
+          contentType: 'application/json',
+          data: JSON.stringify({ assignee: assignee }),
+          success: function(response) {
+            completed++;
+            if (completed + errors === targetBatches.length) {
+              // Operación completada
+              showNotification(`✅ Asignación masiva completada: ${completed} batches asignados a ${assignee}`, 'success');
+              loadBatches(); // Recargar tabla
+              bootstrap.Modal.getInstance(document.getElementById('bulkAssignModal')).hide();
+            }
+          },
+          error: function(xhr) {
+            errors++;
+            if (completed + errors === targetBatches.length) {
+              showNotification(`⚠️ Asignación completada con errores: ${completed} exitosos, ${errors} fallidos`, 'warning');
+              loadBatches(); // Recargar tabla
+              bootstrap.Modal.getInstance(document.getElementById('bulkAssignModal')).hide();
+            }
+          }
+        });
+      });
     }
 
     // Función para cerrar sesión
