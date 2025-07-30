@@ -49,6 +49,11 @@ def dashboard():
 def dashboard_filtered(assignee):
     return render_template("dashboard.html", crew=CREW_MEMBERS, filter_assignee=assignee)
 
+@app.route("/batch-management")
+def batch_management():
+    """Nueva página para gestión de batches con drag & drop"""
+    return render_template("batch_management.html", crew=CREW_MEMBERS)
+
 @app.route("/masks")
 def masks():
     # Trae todos los documentos de máscaras

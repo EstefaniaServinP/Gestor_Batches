@@ -248,112 +248,7 @@
       font-weight: 600;
     }
 
-    /* Estilos para Drag & Drop */
-    .drop-zone {
-      transition: all 0.3s ease;
-      border: 2px dashed transparent;
-    }
 
-    .drop-zone.drag-over {
-      border-color: #007bff;
-      background-color: rgba(0, 123, 255, 0.1);
-      transform: scale(1.02);
-    }
-
-    .batch-item {
-      cursor: move;
-      transition: all 0.3s ease;
-      user-select: none;
-      margin-bottom: 8px;
-      border: 1px solid #e0e0e0;
-      border-radius: 6px;
-      padding: 10px;
-      background: white;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .batch-item:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-      border-color: #007bff;
-    }
-
-    .batch-item.dragging {
-      opacity: 0.5;
-      transform: rotate(5deg);
-      z-index: 1000;
-    }
-
-    .batch-item.no-assigned {
-      border-left: 4px solid #ffc107;
-    }
-
-    .batch-item.assigned {
-      border-left: 4px solid #28a745;
-    }
-
-    .segmentador-zone {
-      margin-bottom: 15px;
-    }
-
-    .segmentador-header {
-      border-bottom: 2px solid #dee2e6;
-    }
-
-    .segmentador-batches {
-      transition: all 0.3s ease;
-    }
-
-    .segmentador-batches.drag-over {
-      background-color: rgba(40, 167, 69, 0.1) !important;
-      border-color: #28a745 !important;
-      border-style: solid !important;
-    }
-
-    .min-height-400 {
-      min-height: 400px;
-    }
-
-    .min-height-100 {
-      min-height: 100px;
-    }
-
-    .pending-batch {
-      border-left: 4px solid #17a2b8 !important;
-      background-color: rgba(23, 162, 184, 0.05);
-    }
-
-    .pending-batch:hover {
-      background-color: rgba(23, 162, 184, 0.1);
-      border-color: #17a2b8 !important;
-    }
-
-    .batch-count {
-      font-size: 0.8em;
-      min-width: 25px;
-      text-align: center;
-    }
-
-    .batch-meta {
-      font-size: 0.8em;
-      color: #6c757d;
-    }
-
-    .batch-status {
-      font-size: 0.7em;
-      padding: 2px 6px;
-      border-radius: 3px;
-    }
-
-    /* Animaciones */
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(20px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .batch-item {
-      animation: fadeIn 0.3s ease-out;
-    }
     
     .text-primary {
       color: #B794F6 !important;
@@ -468,6 +363,13 @@
             <i class="fas fa-tasks"></i> Gestión de Batches
           </button>
           <ul class="dropdown-menu" aria-labelledby="batchManagementDropdown">
+            <li><h6 class="dropdown-header"><i class="fas fa-magic"></i> Herramientas Avanzadas</h6></li>
+            <li>
+              <a class="dropdown-item" href="/batch-management">
+                <i class="fas fa-arrows-alt"></i> Gestión Drag & Drop
+              </a>
+            </li>
+            <li><hr class="dropdown-divider"></li>
             <li><h6 class="dropdown-header"><i class="fas fa-plus"></i> Crear y Asignar</h6></li>
             <li>
               <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#newBatchModal">
@@ -551,89 +453,19 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
       <div>
         <h4 class="mb-0"><i class="fas fa-clipboard-check"></i> Gestión de Batches</h4>
-        <small class="text-muted">Asigna batches arrastrando hacia los segmentadores</small>
-      </div>
-      <div>
-        <button type="button" class="btn btn-outline-primary btn-sm" onclick="toggleDetailedView()">
-          <i class="fas fa-table"></i> Vista Detallada
-        </button>
+        <small class="text-muted">Administra y supervisa los batches de segmentación</small>
       </div>
     </div>
 
-    <!-- Drag & Drop Batch Assignment Interface -->
-    <div class="row">
-      <!-- Batches No Asignados -->
-      <div class="col-md-6">
-        <div class="card h-100">
-          <div class="card-header bg-warning text-dark">
-            <h5 class="mb-0"><i class="fas fa-inbox"></i> Batches No Asignados</h5>
-            <small class="text-muted">Arrastra los batches hacia los segmentadores</small>
-          </div>
-          <div class="card-body p-2" style="max-height: 600px; overflow-y: auto;">
-            <div id="unassignedBatches" class="drop-zone min-height-400">
-              <!-- Los batches no asignados se cargarán aquí -->
-              <div class="text-center text-muted p-4">
-                <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
-                <p>Cargando batches pendientes...</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Segmentadores (Asignados) -->
-      <div class="col-md-6">
-        <div class="card h-100">
-          <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fas fa-users"></i> Segmentadores</h5>
-            <div class="d-flex align-items-center gap-2">
-              <button type="button" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#statusLegendModal">
-                <i class="fas fa-info-circle"></i> Leyenda
-              </button>
-              <label class="me-2 text-white">Filtrar:</label>
-              <select id="assigneeFilter" class="form-select form-select-sm" style="width: auto;">
-                <option value="">Todos</option>
-                {% for member in crew %}
-                <option value="{{ member }}">{{ member }}</option>
-                {% endfor %}
-              </select>
-            </div>
-          </div>
-          <div class="card-body p-2" style="max-height: 600px; overflow-y: auto;">
-            <div class="row g-2">
-              {% for member in crew %}
-              <div class="col-12">
-                <div class="segmentador-zone" data-assignee="{{ member }}">
-                  <div class="segmentador-header d-flex justify-content-between align-items-center p-2 bg-light border rounded-top">
-                    <span class="fw-bold"><i class="fas fa-user"></i> {{ member }}</span>
-                    <span class="badge bg-primary batch-count">0</span>
-                  </div>
-                  <div class="drop-zone segmentador-batches border border-top-0 rounded-bottom p-2 min-height-100" 
-                       data-assignee="{{ member }}" 
-                       style="min-height: 120px; background-color: #f8f9fa;">
-                    <!-- Los batches asignados a este segmentador aparecerán aquí -->
-                  </div>
-                </div>
-              </div>
-              {% endfor %}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Tabla de Revisión (Oculta por defecto, para vista detallada) -->
-    <div class="card mt-3" id="detailedView" style="display: none;">
+    <!-- Tabla de Batches -->
+    <div class="card">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0"><i class="fas fa-clipboard-check"></i> Vista Detallada - Cola de Revisión</h5>
+        <h5 class="mb-0"><i class="fas fa-clipboard-check"></i> Cola de Revisión</h5>
         <div class="d-flex align-items-center gap-2">
           <small class="text-muted me-3">
             <i class="fas fa-info-circle"></i> 
             Los batches aprobados permanecen aquí hasta cambiar manualmente el estado a "S"
           </small>
-          <button type="button" class="btn btn-secondary btn-sm" onclick="toggleDetailedView()">
-            <i class="fas fa-eye-slash"></i> Ocultar Vista Detallada
-          </button>
         </div>
       </div>
       <div class="card-body">
@@ -914,36 +746,10 @@
         ]
       });
 
-      // Filtro por responsable
-      $('#assigneeFilter').on('change', function() {
-        const selectedAssignee = this.value;
-        
-        // Filtrar tabla si está visible
-        if ($('#detailedView').is(':visible')) {
-          batchesTable.column(1).search(selectedAssignee).draw();
-        }
-        
-        // Actualizar estadísticas según el filtro
-        if (selectedAssignee) {
-          // Mostrar estadísticas específicas del responsable seleccionado
-          filterAssignee = selectedAssignee;
-          updateStats(); // Esto llamará a updateAssigneeStats con el filtro activo
-          
-          // Filtrar vista drag & drop
-          applyDragDropFilter(selectedAssignee);
-        } else {
-          // Mostrar estadísticas generales
-          filterAssignee = '';
-          updateStats(); // Esto mostrará las estadísticas generales
-          
-          // Mostrar todos los segmentadores
-          applyDragDropFilter('');
-        }
-      });
-
       // Aplicar filtro automático si se especifica en la URL
       if (filterAssignee) {
-        $('#assigneeFilter').val(filterAssignee);
+        // Si hay un filtro específico de responsable, aplicarlo a la tabla
+        batchesTable.column(1).search(filterAssignee).draw();
       }
 
       // Evento para cuando se abra el modal de nuevo batch
@@ -1118,376 +924,12 @@
           console.log('📊 Datos recibidos:', data);
           batches = data;
           updateStats();
-          updateDragDropInterface();
-          updateTable(); // Solo para la vista detallada
+          updateTable(); // Cargar la tabla
         })
         .fail(function(xhr) {
           console.error('❌ Error cargando batches:', xhr);
           alert('Error cargando batches: ' + (xhr.responseJSON?.error || 'Error desconocido'));
         });
-    }
-
-    // Nueva función para actualizar la interfaz de drag & drop
-    function updateDragDropInterface() {
-      console.log('🎯 Actualizando interfaz drag & drop...');
-      
-      // Cargar batches pendientes desde el endpoint de missing-batches
-      $.get('/api/missing-batches')
-        .done(function(response) {
-          console.log('📥 Respuesta de missing-batches:', response);
-          
-          // Extraer el array de batches de la respuesta
-          const missingBatchesList = response.missing_batches || response || [];
-          console.log('📥 Batches pendientes cargados:', missingBatchesList.length);
-          
-          // Obtener batches no asignados de la base de datos
-          const unassignedBatchesFromDB = batches.filter(batch => 
-            batch.status === 'NS' && !batch.assignee
-          );
-          
-          // Combinar batches pendientes con batches no asignados de la DB
-          const allUnassignedBatches = [
-            // Batches pendientes (convertir a formato estándar)
-            ...missingBatchesList.map(batchId => ({
-              id: batchId,
-              assignee: null,
-              status: 'NS',
-              metadata: {
-                assigned_at: null,
-                due_date: null,
-                priority: 'media'
-              },
-              comments: 'Batch pendiente de asignación',
-              mongo_uploaded: false,
-              isPending: true // Marcador para identificar batches pendientes
-            })),
-            // Batches no asignados existentes en la DB
-            ...unassignedBatchesFromDB
-          ];
-          
-          // Obtener batches asignados por responsable
-          const assignedBatches = batches.filter(batch => 
-            batch.assignee && (batch.status === 'In' || batch.status === 'NS')
-          );
-          
-          // Renderizar batches no asignados
-          renderUnassignedBatches(allUnassignedBatches);
-          
-          // Renderizar batches asignados por segmentador
-          renderAssignedBatches(assignedBatches);
-          
-          // Inicializar eventos de drag & drop
-          initializeDragAndDrop();
-        })
-        .fail(function(xhr) {
-          console.error('❌ Error cargando batches pendientes:', xhr);
-          // Fallback: usar solo batches de la DB
-          const unassignedBatches = batches.filter(batch => 
-            batch.status === 'NS' && !batch.assignee
-          );
-          const assignedBatches = batches.filter(batch => 
-            batch.assignee && (batch.status === 'In' || batch.status === 'NS')
-          );
-          
-          renderUnassignedBatches(unassignedBatches);
-          renderAssignedBatches(assignedBatches);
-          initializeDragAndDrop();
-        });
-    }
-
-    function renderUnassignedBatches(unassignedBatches) {
-      const container = $('#unassignedBatches');
-      container.empty();
-      
-      if (unassignedBatches.length === 0) {
-        container.html(`
-          <div class="text-center text-muted p-4">
-            <i class="fas fa-check-circle fa-2x mb-3 text-success"></i>
-            <p>¡Todos los batches están asignados!</p>
-          </div>
-        `);
-        return;
-      }
-      
-      unassignedBatches.forEach(batch => {
-        const batchElement = createBatchElement(batch, 'no-assigned');
-        container.append(batchElement);
-      });
-    }
-
-    function renderAssignedBatches(assignedBatches) {
-      // Agrupar por responsable
-      const batchesByAssignee = {};
-      assignedBatches.forEach(batch => {
-        if (!batchesByAssignee[batch.assignee]) {
-          batchesByAssignee[batch.assignee] = [];
-        }
-        batchesByAssignee[batch.assignee].push(batch);
-      });
-      
-      // Actualizar contadores y contenido de cada segmentador
-      $('.segmentador-batches').each(function() {
-        const assignee = $(this).data('assignee');
-        const assigneeBatches = batchesByAssignee[assignee] || [];
-        
-        // Actualizar contador
-        $(this).closest('.segmentador-zone')
-          .find('.batch-count')
-          .text(assigneeBatches.length);
-        
-        // Limpiar y agregar batches
-        $(this).empty();
-        
-        if (assigneeBatches.length === 0) {
-          $(this).html(`
-            <div class="text-center text-muted p-3">
-              <i class="fas fa-inbox"></i>
-              <small>Sin batches asignados</small>
-            </div>
-          `);
-        } else {
-          assigneeBatches.forEach(batch => {
-            const batchElement = createBatchElement(batch, 'assigned');
-            $(this).append(batchElement);
-          });
-        }
-      });
-    }
-
-    function createBatchElement(batch, type) {
-      const statusIcon = batch.status === 'S' ? 'check-circle text-success' :
-                        batch.status === 'In' ? 'clock text-warning' :
-                        'circle text-secondary';
-      
-      const reviewIcon = batch.metadata?.review_status === 'aprobado' ? '✅' :
-                        batch.metadata?.review_status === 'no_aprobado' ? '❌' : '';
-      
-      // Indicador especial para batches pendientes
-      const pendingIndicator = batch.isPending ? 
-        '<span class="badge bg-info ms-2"><i class="fas fa-inbox"></i> Pendiente</span>' : '';
-      
-      // Fecha de asignación o indicador de pendiente
-      const dateInfo = batch.metadata?.assigned_at ? 
-        `<i class="fas fa-calendar"></i> ${batch.metadata.assigned_at}` :
-        batch.isPending ? 
-          '<i class="fas fa-hourglass-start"></i> Sin asignar' : 
-          'Sin fecha';
-      
-      return $(`
-        <div class="batch-item ${type} ${batch.isPending ? 'pending-batch' : ''}" 
-             draggable="true" 
-             data-batch-id="${batch.id}" 
-             data-assignee="${batch.assignee || ''}"
-             data-is-pending="${batch.isPending || false}">
-          <div class="d-flex justify-content-between align-items-start">
-            <div class="flex-grow-1">
-              <div class="fw-bold text-primary mb-1">
-                <i class="fas fa-${statusIcon}"></i>
-                ${batch.id}
-                ${reviewIcon}
-                ${pendingIndicator}
-              </div>
-              <div class="batch-meta">
-                <small class="text-muted">
-                  ${dateInfo}
-                </small>
-                ${batch.metadata?.due_date ? `<br><small class="text-warning">
-                  <i class="fas fa-clock"></i> Vence: ${batch.metadata.due_date}
-                </small>` : ''}
-              </div>
-            </div>
-            <div class="text-end">
-              <span class="batch-status badge bg-${batch.status === 'S' ? 'success' : batch.status === 'In' ? 'warning' : 'secondary'}">
-                ${batch.status}
-              </span>
-              ${batch.metadata?.priority === 'alta' ? '<br><small class="text-danger"><i class="fas fa-exclamation-triangle"></i> Alta</small>' : ''}
-            </div>
-          </div>
-          ${batch.comments ? `<div class="mt-2"><small class="text-muted">${batch.comments}</small></div>` : ''}
-        </div>
-      `);
-    }
-
-    function initializeDragAndDrop() {
-      console.log('🎯 Inicializando drag & drop...');
-      
-      // Eventos para elementos draggables
-      $(document).off('dragstart dragend', '.batch-item');
-      $(document).on('dragstart', '.batch-item', function(e) {
-        console.log('🖱️ Drag started:', $(this).data('batch-id'));
-        $(this).addClass('dragging');
-        e.originalEvent.dataTransfer.setData('text/plain', $(this).data('batch-id'));
-        e.originalEvent.dataTransfer.effectAllowed = 'move';
-      });
-      
-      $(document).on('dragend', '.batch-item', function(e) {
-        $(this).removeClass('dragging');
-        $('.drop-zone').removeClass('drag-over');
-      });
-      
-      // Eventos para zonas de drop
-      $(document).off('dragover dragenter dragleave drop', '.drop-zone');
-      
-      $(document).on('dragover', '.drop-zone', function(e) {
-        e.preventDefault();
-        e.originalEvent.dataTransfer.dropEffect = 'move';
-      });
-      
-      $(document).on('dragenter', '.drop-zone', function(e) {
-        e.preventDefault();
-        $(this).addClass('drag-over');
-      });
-      
-      $(document).on('dragleave', '.drop-zone', function(e) {
-        // Solo quitar el highlight si realmente salimos de la zona
-        if (!$(this)[0].contains(e.relatedTarget)) {
-          $(this).removeClass('drag-over');
-        }
-      });
-      
-      $(document).on('drop', '.drop-zone', function(e) {
-        e.preventDefault();
-        $(this).removeClass('drag-over');
-        
-        const batchId = e.originalEvent.dataTransfer.getData('text/plain');
-        const newAssignee = $(this).data('assignee');
-        
-        console.log('📤 Drop:', { batchId, newAssignee });
-        
-        if (batchId) {
-          assignBatchToSegmentador(batchId, newAssignee);
-        }
-      });
-    }
-
-    function assignBatchToSegmentador(batchId, newAssignee) {
-      console.log(`🎯 Asignando batch ${batchId} a ${newAssignee || 'sin asignar'}`);
-      
-      // Verificar si es un batch pendiente o uno existente en la DB
-      const isPendingBatch = !batches.find(b => b.id === batchId);
-      
-      if (isPendingBatch) {
-        // Crear nuevo batch desde pendiente
-        createBatchFromPending(batchId, newAssignee);
-      } else {
-        // Actualizar batch existente
-        updateExistingBatch(batchId, newAssignee);
-      }
-    }
-
-    function createBatchFromPending(batchId, assignee) {
-      console.log(`📝 Creando nuevo batch desde pendiente: ${batchId}`);
-      
-      const batchData = {
-        id: batchId,
-        assignee: assignee,
-        folder: `/data/${batchId}`,
-        tasks: ["segmentar", "subir_mascaras", "revisar"],
-        metadata: {
-          assigned_at: new Date().toISOString().split('T')[0],
-          due_date: '',
-          priority: 'media',
-          reviewed_at: null
-        },
-        status: 'NS',
-        mongo_uploaded: false,
-        comments: `Batch asignado a ${assignee} desde drag & drop`
-      };
-      
-      $.ajax({
-        url: '/api/batches',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(batchData),
-        success: function(response) {
-          console.log('✅ Nuevo batch creado:', response);
-          showNotification(`Batch ${batchId} creado y asignado a ${assignee}`, 'success');
-          loadBatches(); // Recargar todo para sincronizar
-        },
-        error: function(xhr) {
-          console.error('❌ Error creando batch:', xhr);
-          showNotification('Error creando batch: ' + (xhr.responseJSON?.error || 'Error desconocido'), 'error');
-          updateDragDropInterface(); // Restaurar interfaz
-        }
-      });
-    }
-
-    function updateExistingBatch(batchId, newAssignee) {
-      const batch = batches.find(b => b.id === batchId);
-      if (!batch) {
-        showNotification('Batch no encontrado', 'error');
-        return;
-      }
-      
-      const oldAssignee = batch.assignee;
-      
-      // Actualizar datos localmente
-      batch.assignee = newAssignee || null;
-      if (newAssignee && !batch.metadata.assigned_at) {
-        batch.metadata.assigned_at = new Date().toISOString().split('T')[0];
-      }
-      
-      // Enviar actualización al servidor
-      $.ajax({
-        url: `/api/batches/${batchId}`,
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify({
-          assignee: newAssignee || null,
-          metadata: batch.metadata
-        }),
-        success: function(response) {
-          console.log('✅ Batch actualizado:', response);
-          showNotification(
-            newAssignee ? 
-              `Batch ${batchId} asignado a ${newAssignee}` : 
-              `Batch ${batchId} desasignado`,
-            'success'
-          );
-          updateDragDropInterface();
-          updateStats();
-        },
-        error: function(xhr) {
-          console.error('❌ Error actualizando batch:', xhr);
-          // Revertir cambio local
-          batch.assignee = oldAssignee;
-          showNotification('Error asignando batch: ' + (xhr.responseJSON?.error || 'Error desconocido'), 'error');
-          updateDragDropInterface();
-        }
-      });
-    }
-
-    // Función para alternar entre vista drag & drop y vista detallada
-    function toggleDetailedView() {
-      const detailedView = $('#detailedView');
-      if (detailedView.is(':visible')) {
-        detailedView.hide();
-        $('.btn[onclick="toggleDetailedView()"]').html('<i class="fas fa-table"></i> Vista Detallada');
-      } else {
-        detailedView.show();
-        $('.btn[onclick="toggleDetailedView()"]').html('<i class="fas fa-columns"></i> Vista Drag & Drop');
-        updateTable(); // Asegurar que la tabla esté actualizada
-      }
-    }
-
-    // Función para aplicar filtro en la vista drag & drop
-    function applyDragDropFilter(assignee) {
-      if (assignee) {
-        // Ocultar todos los segmentadores excepto el seleccionado
-        $('.segmentador-zone').each(function() {
-          const currentAssignee = $(this).find('.drop-zone').data('assignee');
-          if (currentAssignee === assignee) {
-            $(this).show();
-          } else {
-            $(this).hide();
-          }
-        });
-        console.log(`🎯 Filtro aplicado: mostrando solo ${assignee}`);
-      } else {
-        // Mostrar todos los segmentadores
-        $('.segmentador-zone').show();
-        console.log('🎯 Filtro removido: mostrando todos los segmentadores');
-      }
     }
 
     function updateStats() {

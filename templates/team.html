@@ -12,8 +12,201 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     
+    /* Barra de navegación superior - oculta inicialmente */
+    .top-navbar {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      padding: 1rem 0;
+      display: none; /* Ocultar la barra superior */
+    }
+    
+    /* Menú hamburguesa */
+    .menu-toggle {
+      position: fixed;
+      top: 2rem;
+      right: 8rem; /* Más separación del botón agregar */
+      z-index: 1000;
+      background: rgba(255, 255, 255, 0.2); /* Más visible */
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      color: white;
+      border-radius: 50%;
+      width: 60px; /* Más grande */
+      height: 60px; /* Más grande */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      backdrop-filter: blur(10px);
+      font-size: 1.2rem; /* Ícono más grande */
+    }
+    
+    .menu-toggle:hover {
+      background: rgba(255, 255, 255, 0.35);
+      transform: scale(1.1);
+      box-shadow: 0 8px 25px rgba(255, 255, 255, 0.3);
+      border-color: rgba(255, 255, 255, 0.6);
+    }
+    
+    /* Menú lateral */
+    .side-menu {
+      position: fixed;
+      top: 0;
+      right: -300px; /* Cambiar para que se deslice desde la derecha */
+      width: 280px;
+      height: 100vh;
+      background: linear-gradient(135deg, rgba(183, 148, 246, 0.95) 0%, rgba(246, 135, 179, 0.95) 100%);
+      backdrop-filter: blur(20px);
+      z-index: 999;
+      transition: right 0.4s ease; /* Cambiar de left a right */
+      box-shadow: -5px 0 25px rgba(0, 0, 0, 0.2); /* Sombra hacia la izquierda */
+      border-left: 1px solid rgba(255, 255, 255, 0.2); /* Cambiar border-right a border-left */
+    }
+    
+    .side-menu.open {
+      right: 0; /* Cambiar de left a right */
+    }
+    
+    .menu-header {
+      padding: 2rem 1.5rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+    }
+    
+    .menu-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    .menu-items {
+      padding: 1rem 0;
+    }
+    
+    .menu-item {
+      display: block;
+      padding: 1rem 1.5rem;
+      color: white;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      border-right: 4px solid transparent; /* Cambiar de border-left a border-right */
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    
+    .menu-item:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-right-color: white; /* Cambiar de border-left a border-right */
+      color: white;
+      transform: translateX(-5px); /* Cambiar dirección del efecto hover */
+    }
+    
+    .menu-item i {
+      width: 20px;
+      text-align: center;
+    }
+    
+    /* Overlay para cerrar menú */
+    .menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 998;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+    
+    .menu-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    /* Botón agregar segmentador */
+    .add-member-btn {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      z-index: 1000;
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      border: none;
+      color: white;
+      border-radius: 50px;
+      padding: 1rem 1.5rem;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+      transition: all 0.3s ease;
+      display: none; /* Ocultar el botón flotante ya que usamos la card */
+    }
+    
+    /* Card para agregar nuevo miembro */
+    .add-member-card {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
+      border: 2px dashed #10B981;
+      border-radius: 15px;
+      padding: 2rem 1rem;
+      cursor: pointer;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 250px;
+    }
+    
+    .add-member-card:hover {
+      transform: translateY(-10px);
+      border-color: #059669;
+      border-style: solid;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
+      box-shadow: 0 20px 40px rgba(16, 185, 129, 0.2);
+    }
+    
+    .add-member-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1rem;
+      color: white;
+      font-size: 2.5rem;
+      font-weight: bold;
+      box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+      transition: all 0.3s ease;
+    }
+    
+    .add-member-card:hover .add-member-icon {
+      transform: scale(1.1);
+      box-shadow: 0 12px 30px rgba(16, 185, 129, 0.4);
+    }
+    
+    .add-member-text {
+      color: #10B981;
+      font-weight: 600;
+      font-size: 1.1rem;
+      text-align: center;
+    }
+    
+    .add-member-card:hover .add-member-text {
+      color: #059669;
+    }
+    
     .team-container {
-      padding: 2rem 0;
+      padding: 3rem 0 2rem 0; /* Menos padding arriba */
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -113,17 +306,32 @@
       border-top: 1px solid #dee2e6;
       position: relative;
       z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+      text-align: center;
     }
     
     .stat-item {
-      display: inline-block;
-      margin: 0 0.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       font-size: 0.85rem;
+      padding: 0.25rem;
     }
     
     .stat-number {
       font-weight: bold;
       color: #667eea;
+      font-size: 1.1rem;
+      line-height: 1;
+      margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+      font-size: 0.75rem;
+      line-height: 1;
+      color: #6c757d;
     }
     
     .title-section {
@@ -236,6 +444,44 @@
   </style>
 </head>
 <body>
+  <!-- Menú hamburguesa -->
+  <div class="menu-toggle" onclick="toggleMenu()">
+    <i class="fas fa-bars"></i>
+  </div>
+
+  <!-- Menú lateral -->
+  <div class="side-menu" id="sideMenu">
+    <div class="menu-header">
+      <h5 class="menu-title">
+        <i class="fas fa-tasks"></i>
+        Navegación
+      </h5>
+    </div>
+    <div class="menu-items">
+      <a href="/dashboard" class="menu-item">
+        <i class="fas fa-th-large"></i>
+        Dashboard Completo
+      </a>
+      <a href="/masks" class="menu-item">
+        <i class="fas fa-image"></i>
+        Máscaras MongoDB
+      </a>
+      <a href="/batch-management" class="menu-item">
+        <i class="fas fa-arrows-alt"></i>
+        Gestión Drag & Drop
+      </a>
+    </div>
+  </div>
+
+  <!-- Overlay para cerrar menú -->
+  <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+
+  <!-- Botón flotante para agregar segmentador -->
+  <button class="add-member-btn" onclick="showAddSegmentadorModal()">
+    <i class="fas fa-user-plus"></i>
+    Agregar Segmentador
+  </button>
+
   <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner"></div>
     <span>Cargando dashboard...</span>
@@ -258,17 +504,6 @@
             <div class="instructions">
               <i class="fas fa-info-circle"></i>
               <strong>Instrucciones:</strong> Haz doble clic en cualquier miembro del equipo para ver sus batches de segmentación asignados.
-              <div class="mt-2">
-                <a href="/dashboard" class="btn btn-outline-primary btn-sm me-2">
-                  <i class="fas fa-th-large"></i> Ver Dashboard Completo
-                </a>
-                <a href="/masks" class="btn btn-outline-secondary btn-sm me-2">
-                  <i class="fas fa-image"></i> Ver Máscaras MongoDB
-                </a>
-                <button class="btn btn-outline-success btn-sm" onclick="showAddSegmentadorModal()">
-                  <i class="fas fa-user-plus"></i> Agregar Segmentador
-                </button>
-              </div>
             </div>
           </div>
         </div>
@@ -386,7 +621,24 @@
       const grid = $('#memberGrid');
       grid.empty();
 
-      teamMembers.forEach(member => {
+      // Agregar el card para nuevo miembro PRIMERO
+      const addMemberCard = $(`
+        <div class="add-member-card" onclick="showAddSegmentadorModal()">
+          <div class="add-member-icon">
+            <i class="fas fa-plus"></i>
+          </div>
+          <div class="add-member-text">
+            Agregar Nuevo<br>Segmentador
+          </div>
+        </div>
+      `);
+      grid.append(addMemberCard);
+
+      // Ordenar miembros alfabéticamente antes de mostrarlos
+      const sortedMembers = [...teamMembers].sort((a, b) => a.localeCompare(b, 'es', { sensitivity: 'base' }));
+      
+      // Luego agregar los miembros existentes en orden alfabético
+      sortedMembers.forEach(member => {
         const stats = batchStats[member] || { total: 0, pending: 0, inProgress: 0, completed: 0 };
         const initials = member.split(' ').map(name => name[0]).join('').toUpperCase();
         
@@ -398,19 +650,19 @@
             <div class="member-stats">
               <div class="stat-item">
                 <span class="stat-number">${stats.total}</span>
-                <small class="text-muted">Total</small>
+                <small class="stat-label">Total</small>
               </div>
               <div class="stat-item">
                 <span class="stat-number text-secondary">${stats.pending}</span>
-                <small class="text-muted">Pendientes</small>
+                <small class="stat-label">Pendientes</small>
               </div>
               <div class="stat-item">
                 <span class="stat-number text-warning">${stats.inProgress}</span>
-                <small class="text-muted">Incompletas</small>
+                <small class="stat-label">Incompletas</small>
               </div>
               <div class="stat-item">
                 <span class="stat-number text-success">${stats.completed}</span>
-                <small class="text-muted">Completados</small>
+                <small class="stat-label">Completados</small>
               </div>
             </div>
           </div>
@@ -433,33 +685,10 @@
         grid.append(memberCard);
       });
 
-      // Si no hay miembros con batches, mostrar todos
-      if (grid.children().length === 0) {
-        teamMembers.forEach(member => {
-          const initials = member.split(' ').map(name => name[0]).join('').toUpperCase();
-          
-          const memberCard = $(`
-            <div class="member-card" data-member="${member}">
-              <div class="member-avatar">${initials}</div>
-              <div class="member-name">${member}</div>
-              <div class="member-role">Especialista en Segmentación</div>
-              <div class="member-stats">
-                <div class="stat-item">
-                  <span class="stat-number">0</span>
-                  <small class="text-muted">Batches</small>
-                </div>
-              </div>
-            </div>
-          `);
-
-          memberCard.on('dblclick', function() {
-            const memberName = $(this).data('member');
-            showLoadingOverlay();
-            window.location.href = `/dashboard/${encodeURIComponent(memberName)}`;
-          });
-
-          grid.append(memberCard);
-        });
+      // Si no hay miembros existentes, solo mostrar el card de agregar
+      if (sortedMembers.length === 0) {
+        // El card de agregar ya está agregado arriba
+        return;
       }
     }
 
@@ -513,6 +742,34 @@
     function showAddSegmentadorModal() {
       $('#addSegmentadorModal').modal('show');
     }
+
+    // Funciones para el menú lateral
+    function toggleMenu() {
+      const menu = document.getElementById('sideMenu');
+      const overlay = document.getElementById('menuOverlay');
+      
+      if (menu.classList.contains('open')) {
+        closeMenu();
+      } else {
+        menu.classList.add('open');
+        overlay.classList.add('show');
+      }
+    }
+    
+    function closeMenu() {
+      const menu = document.getElementById('sideMenu');
+      const overlay = document.getElementById('menuOverlay');
+      
+      menu.classList.remove('open');
+      overlay.classList.remove('show');
+    }
+    
+    // Cerrar menú al presionar Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeMenu();
+      }
+    });
 
     // Función para agregar un nuevo segmentador
     function addSegmentador() {
