@@ -41,6 +41,10 @@ CREW_MEMBERS = ["Mauricio", "Maggie", "Ceci", "Flor", "Ignacio"]
 def index():
     return render_template("team.html", crew=CREW_MEMBERS)
 
+@app.route("/team")
+def team():
+    return render_template("team.html", crew=CREW_MEMBERS)
+
 @app.route("/dashboard")
 def dashboard():
     return render_template("dashboard.html", crew=CREW_MEMBERS)
