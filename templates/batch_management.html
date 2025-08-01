@@ -393,8 +393,13 @@
       </a>
       
       <a href="/dashboard" class="menu-item">
-        <i class="fas fa-th-large"></i>
-        <span>Dashboard</span>
+        <i class="fas fa-cogs"></i>
+        <span>Dashboard General</span>
+      </a>
+      
+      <a href="javascript:void(0)" class="menu-item" onclick="showFilteredDashboardOptions()">
+        <i class="fas fa-filter"></i>
+        <span>Dashboard Filtrado</span>
       </a>
       
       <a href="/masks" class="menu-item">
@@ -650,6 +655,83 @@
       toggle.classList.remove('active');
     }
 
+    // Función para mostrar opciones de dashboard filtrado
+    function showFilteredDashboardOptions() {
+      const crew = ['Mauricio', 'Maggie', 'Ceci', 'Flor', 'Ignacio']; // Puedes obtener esto dinámicamente
+      
+      let optionsHtml = `
+        <div class="submenu-header" style="padding: 0.5rem 1.5rem; background: rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1);">
+          <small style="color: rgba(255,255,255,0.8);">Selecciona un responsable:</small>
+        </div>
+      `;
+      
+      crew.forEach(member => {
+        optionsHtml += `
+          <a href="/dashboard/${member}" class="menu-item" style="padding-left: 2.5rem;">
+            <i class="fas fa-user-circle"></i>
+            <span>${member}</span>
+          </a>
+        `;
+      });
+      
+      // Crear el HTML del submenú
+      const submenuHtml = `
+        <div class="filtered-submenu" style="
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+          backdrop-filter: blur(25px);
+          z-index: 10;
+          transform: translateX(100%);
+          transition: transform 0.3s ease;
+        ">
+          <div class="menu-header" style="display: flex; align-items: center; justify-content: space-between;">
+            <h5 class="text-white mb-0" style="font-size: 1rem;">
+              <i class="fas fa-filter"></i>
+              Dashboard Filtrado
+            </h5>
+            <button onclick="hideFilteredSubmenu()" style="
+              background: none;
+              border: none;
+              color: white;
+              font-size: 1.2rem;
+              cursor: pointer;
+              padding: 0.5rem;
+            ">
+              <i class="fas fa-arrow-left"></i>
+            </button>
+          </div>
+          <div style="padding: 1rem 0;">
+            ${optionsHtml}
+          </div>
+        </div>
+      `;
+      
+      // Agregar el submenú al menú lateral
+      const sideMenu = document.getElementById('sideMenu');
+      sideMenu.insertAdjacentHTML('beforeend', submenuHtml);
+      
+      // Mostrar el submenú con animación
+      setTimeout(() => {
+        const submenu = sideMenu.querySelector('.filtered-submenu');
+        submenu.style.transform = 'translateX(0)';
+      }, 50);
+    }
+
+    // Función para ocultar el submenú de filtrado
+    function hideFilteredSubmenu() {
+      const submenu = document.querySelector('.filtered-submenu');
+      if (submenu) {
+        submenu.style.transform = 'translateX(100%)';
+        setTimeout(() => {
+          submenu.remove();
+        }, 300);
+      }
+    }
+
     // Variables globales
     let batches = [];
     let batchesTable;
@@ -730,10 +812,20 @@
           const missingBatchesList = response.missing_batches || response || [];
           console.log('📥 Batches pendientes cargados:', missingBatchesList.length);
           
-          // Obtener batches no asignados de la base de datos
+          // Obtener batches no asignados de la base de datos (CUALQUIER STATUS SIN RESPONSABLE)
           const unassignedBatchesFromDB = batches.filter(batch => 
-            batch.status === 'NS' && !batch.assignee
+            !batch.assignee || batch.assignee === null || batch.assignee === ''
           );
+          
+          console.log(`📊 Batches sin responsable encontrados: ${unassignedBatchesFromDB.length}`);
+          unassignedBatchesFromDB.forEach(batch => {
+            console.log(`🔍 Batch sin asignar: ${batch.id} - Status: ${batch.status} - Assignee: "${batch.assignee || 'NULL'}"`);
+          });
+          
+          // Mostrar notificación si hay batches sin responsable que fueron movidos
+          if (unassignedBatchesFromDB.length > 0) {
+            showNotification(`Se movieron ${unassignedBatchesFromDB.length} batches sin responsable a la zona "No Asignados"`, 'info');
+          }
           
           // Combinar batches pendientes con batches no asignados de la DB
           const allUnassignedBatches = [
@@ -755,10 +847,14 @@
             ...unassignedBatchesFromDB
           ];
           
-          // Obtener batches asignados por responsable
+          // Obtener SOLO batches que SÍ tienen responsable asignado
           const assignedBatches = batches.filter(batch => 
-            batch.assignee && (batch.status === 'In' || batch.status === 'NS')
+            batch.assignee && batch.assignee !== null && batch.assignee !== '' && 
+            (batch.status === 'In' || batch.status === 'NS')
           );
+          
+          console.log(`🎯 Batches CON responsable: ${assignedBatches.length}`);
+          console.log(`🎯 Batches SIN responsable: ${allUnassignedBatches.length}`);
           
           // Renderizar batches no asignados
           renderUnassignedBatches(allUnassignedBatches);
@@ -773,10 +869,11 @@
           console.error('❌ Error cargando batches pendientes:', xhr);
           // Fallback: usar solo batches de la DB
           const unassignedBatches = batches.filter(batch => 
-            batch.status === 'NS' && !batch.assignee
+            !batch.assignee || batch.assignee === null || batch.assignee === ''
           );
           const assignedBatches = batches.filter(batch => 
-            batch.assignee && (batch.status === 'In' || batch.status === 'NS')
+            batch.assignee && batch.assignee !== null && batch.assignee !== '' && 
+            (batch.status === 'In' || batch.status === 'NS')
           );
           
           renderUnassignedBatches(unassignedBatches);
@@ -1098,12 +1195,13 @@
       console.log('📋 Actualizando tabla con', batches.length, 'batches');
       batchesTable.clear();
       
-      // Filtrar solo batches que necesitan revisión (In y NS)
+      // Filtrar solo batches que tienen responsable Y necesitan revisión (In y NS)
       const batchesForReview = batches.filter(batch => 
-        batch.status === 'In' || batch.status === 'NS'
+        (batch.status === 'In' || batch.status === 'NS') &&
+        batch.assignee && batch.assignee !== null && batch.assignee !== ''
       );
       
-      console.log(`📊 Mostrando ${batchesForReview.length} batches pendientes de revisión de ${batches.length} totales`);
+      console.log(`📊 Mostrando ${batchesForReview.length} batches CON RESPONSABLE pendientes de revisión de ${batches.length} totales`);
       
       batchesForReview.forEach(function(batch) {
         // Estado de MongoDB (Cargado a Mongo)
