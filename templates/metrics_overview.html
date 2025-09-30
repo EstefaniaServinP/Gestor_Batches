@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Métricas Generales - Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <style>
+    body {
+      background: linear-gradient(135deg, #059669 0%, #34D399 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .card {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      transition: transform 0.2s ease;
+      backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.95);
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(16, 185, 129, 0.2);
+    }
+
+    .navbar {
+      background: linear-gradient(135deg, #059669 0%, #34D399 100%) !important;
+      backdrop-filter: blur(10px);
+      border: none;
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+      border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      border: none;
+      border-radius: 25px;
+      padding: 10px 25px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.5);
+      background: linear-gradient(135deg, #059669 0%, #10B981 100%);
+    }
+
+    .btn-outline-light {
+      border: 2px solid rgba(255,255,255,0.3);
+      color: white;
+      border-radius: 20px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-outline-light:hover {
+      background: rgba(255,255,255,0.2);
+      border-color: white;
+      color: white;
+      transform: translateY(-1px);
+    }
+
+    /* Menú hamburguesa - Versión overlay elegante */
+    .menu-toggle {
+      position: fixed;
+      top: 2rem;
+      right: 2rem;
+      z-index: 1500;
+      background: rgba(255, 255, 255, 0.25);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      border-radius: 20px;
+      width: 70px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(20px);
+      font-size: 1.5rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .menu-toggle:hover {
+      background: rgba(255, 255, 255, 0.35);
+      transform: scale(1.05) rotate(5deg);
+      box-shadow: 0 12px 40px rgba(255, 255, 255, 0.2);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+
+    .menu-toggle.active {
+      transform: scale(0.95) rotate(90deg);
+      background: rgba(255, 255, 255, 0.4);
+    }
+
+    /* Menú lateral elegante overlay */
+    .side-menu {
+      position: fixed;
+      top: 0;
+      right: -400px;
+      width: 350px;
+      height: 100vh;
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+      backdrop-filter: blur(25px);
+      z-index: 1400;
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 0;
+      overflow: hidden;
+      box-shadow: -10px 0 50px rgba(0, 0, 0, 0.2);
+      border-left: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .side-menu.open {
+      right: 0;
+    }
+
+    .menu-header {
+      padding: 2rem 1.5rem 1rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+    }
+
+    .menu-header h5 {
+      color: white;
+      margin: 0;
+      font-weight: 600;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .menu-items {
+      padding: 1rem 0;
+    }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      padding: 1rem 1.5rem;
+      color: rgba(255, 255, 255, 0.9);
+      text-decoration: none;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 0;
+      position: relative;
+      font-weight: 500;
+      backdrop-filter: blur(5px);
+    }
+
+    .menu-item:before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+      transition: width 0.3s ease;
+      z-index: -1;
+    }
+
+    .menu-item:hover:before {
+      width: 100%;
+    }
+
+    .menu-item:hover {
+      color: white;
+      transform: translateX(10px);
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .menu-item i {
+      margin-right: 1rem;
+      font-size: 1.1rem;
+      width: 20px;
+      text-align: center;
+    }
+
+    .menu-item.active {
+      background: rgba(255, 255, 255, 0.1);
+      border-left: 3px solid white;
+    }
+
+    .submenu {
+      padding-left: 2rem;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .submenu .menu-item {
+      padding: 0.8rem 1.5rem;
+      font-size: 0.9rem;
+    }
+
+    /* Overlay para cerrar menú */
+    .menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 1300;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .menu-overlay.show {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Título principal */
+    .dashboard-title {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 2rem 3rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .dashboard-title h1 {
+      color: white;
+      font-size: 3rem;
+      font-weight: 700;
+      margin: 0;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      letter-spacing: 2px;
+    }
+
+    .dashboard-title p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.2rem;
+      margin: 0.5rem 0 0 0;
+      font-weight: 300;
+    }
+
+    /* Asegurar que el contenido principal tenga el z-index correcto */
+    .main-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Estilos para las tarjetas de estadísticas */
+    .card-title {
+      background: linear-gradient(135deg, #10B981, #34D399);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-weight: 600;
+    }
+
+    /* Estilos para métricas */
+    .metric-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+      border-radius: 15px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px rgba(16, 185, 129, 0.25);
+    }
+
+    .metric-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #059669;
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-label {
+      font-size: 1rem;
+      color: #6B7280;
+      font-weight: 500;
+    }
+
+    .progress-bar {
+      background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+      border-radius: 10px;
+    }
+
+    .table {
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .table thead th {
+      background: linear-gradient(135deg, rgba(183, 148, 246, 0.2) 0%, rgba(246, 135, 179, 0.2) 100%);
+      border: none;
+      color: #6B46C1;
+      font-weight: 600;
+      padding: 1rem;
+    }
+
+    .table tbody tr:hover {
+      background: linear-gradient(135deg, rgba(183, 148, 246, 0.1) 0%, rgba(246, 135, 179, 0.1) 100%);
+    }
+
+    /* Animaciones */
+    .fade-in {
+      animation: fadeIn 0.6s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .pulse {
+      animation: pulse-animation 2s infinite;
+    }
+
+    @keyframes pulse-animation {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <!-- Menú hamburguesa elegante -->
+  <div class="menu-toggle" onclick="toggleMenu()" id="menuToggle">
+    <i class="fas fa-bars"></i>
+  </div>
+
+  <!-- Overlay para cerrar menú -->
+  <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
+
+  <!-- Menú lateral minimalista -->
+  <div class="side-menu" id="sideMenu">
+    <div class="menu-header">
+      <h5 class="text-white mb-0">
+        <i class="fas fa-chart-bar"></i>
+        Metrics
+      </h5>
+    </div>
+    <div class="menu-items">
+      <!-- Main navigation -->
+      <a href="/" class="menu-item">
+        <i class="fas fa-home"></i>
+        <span>Home</span>
+      </a>
+      <a href="/dashboard" class="menu-item">
+        <i class="fas fa-th-large"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="/assign" class="menu-item">
+        <i class="fas fa-arrows-alt"></i>
+        <span>Assign Batches</span>
+      </a>
+      <a href="/masks" class="menu-item">
+        <i class="fas fa-images"></i>
+        <span>Masks</span>
+      </a>
+
+      <!-- Metrics submenu -->
+      <div class="submenu">
+        <a href="/metrics" class="menu-item">
+          <i class="fas fa-chart-bar"></i>
+          <span>Metrics Home</span>
+        </a>
+        <a href="/metrics/overview" class="menu-item active">
+          <i class="fas fa-chart-line"></i>
+          <span>Overview</span>
+        </a>
+        <a href="/metrics/team" class="menu-item">
+          <i class="fas fa-users"></i>
+          <span>Team Metrics</span>
+        </a>
+        <a href="/metrics/progress" class="menu-item">
+          <i class="fas fa-chart-pie"></i>
+          <span>Progress Reports</span>
+        </a>
+      </div>
+
+      <!-- Logout -->
+      <a href="#" class="menu-item" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
+    </div>
+  </div>
+
+  <div class="container-fluid mt-4 main-content">
+    <!-- Título Principal -->
+    <div class="dashboard-title">
+      <h1><i class="fas fa-chart-line"></i> MÉTRICAS GENERALES</h1>
+      <p>Resumen completo del rendimiento del sistema de segmentación</p>
+    </div>
+
+    <!-- Estadísticas Generales -->
+    <div class="row mb-4">
+      <div class="col-md-3">
+        <div class="metric-card text-center">
+          <div class="metric-value" id="totalBatches">0</div>
+          <div class="metric-label">Total Batches</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="metric-card text-center">
+          <div class="metric-value text-success" id="completedBatches">0</div>
+          <div class="metric-label">Completados</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="metric-card text-center">
+          <div class="metric-value text-warning" id="inProgressBatches">0</div>
+          <div class="metric-label">En Progreso</div>
+        </div>
+      </div>
+      <div class="col-md-3">
+        <div class="metric-card text-center">
+          <div class="metric-value text-secondary" id="pendingBatches">0</div>
+          <div class="metric-label">Pendientes</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barra de Progreso General -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h5 class="card-title mb-3">Progreso General del Proyecto</h5>
+        <div class="progress" style="height: 30px;">
+          <div class="progress-bar" id="overallProgress" role="progressbar" style="width: 0%"></div>
+        </div>
+        <div class="mt-2 text-center">
+          <small class="text-muted" id="progressText">Cargando...</small>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navegación entre vistas de métricas -->
+    <div class="card mb-4">
+      <div class="card-body text-center">
+        <h5 class="card-title mb-3">Explorar Métricas</h5>
+        <div class="row">
+          <div class="col-md-4">
+            <a href="/metrics/overview" class="btn btn-primary btn-lg w-100 mb-2">
+              <i class="fas fa-chart-line"></i><br>
+              Vista General
+            </a>
+          </div>
+          <div class="col-md-4">
+            <a href="/metrics/team" class="btn btn-outline-light btn-lg w-100 mb-2">
+              <i class="fas fa-users"></i><br>
+              Métricas por Equipo
+            </a>
+          </div>
+          <div class="col-md-4">
+            <a href="/metrics/progress" class="btn btn-outline-light btn-lg w-100 mb-2">
+              <i class="fas fa-chart-pie"></i><br>
+              Reportes de Progreso
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabla Detallada -->
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-table"></i> Vista Detallada</h5>
+        <button type="button" class="btn btn-outline-light btn-sm" onclick="exportMetrics()">
+          <i class="fas fa-download"></i> Exportar
+        </button>
+      </div>
+      <div class="card-body">
+        <table id="metricsTable" class="table table-striped table-hover">
+          <thead>
+            <tr>
+              <th>Responsable</th>
+              <th>Total</th>
+              <th>Completados</th>
+              <th>En Progreso</th>
+              <th>Pendientes</th>
+              <th>% Completado</th>
+            </tr>
+          </thead>
+          <tbody id="metricsTableBody">
+            <!-- Las filas se cargarán dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+
+  <script>
+    // Variables globales
+    let batches = [];
+
+    // Funciones del menú hamburguesa
+    function toggleMenu() {
+      const menu = document.getElementById('sideMenu');
+      const overlay = document.getElementById('menuOverlay');
+      const toggle = document.getElementById('menuToggle');
+
+      menu.classList.toggle('open');
+      overlay.classList.toggle('show');
+      toggle.classList.toggle('active');
+    }
+
+    function closeMenu() {
+      const menu = document.getElementById('sideMenu');
+      const overlay = document.getElementById('menuOverlay');
+      const toggle = document.getElementById('menuToggle');
+
+      menu.classList.remove('open');
+      menu.classList.remove('show');
+      toggle.classList.remove('active');
+    }
+
+    // Cerrar menú al presionar Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeMenu();
+      }
+    });
+
+    $(document).ready(function() {
+      // Inicializar DataTables
+      $('#metricsTable').DataTable({
+        pageLength: 25,
+        language: {
+          url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
+        },
+        order: [[5, 'desc']], // Ordenar por % completado descendente
+        columnDefs: [
+          { orderable: false, targets: -1 }
+        ]
+      });
+
+      // Cargar datos
+      loadBatches();
+    });
+
+    function loadBatches() {
+      console.log('🔄 Cargando batches para métricas...');
+      $.get('/api/batches')
+        .done(function(data) {
+          console.log('✅ Batches cargados:', data.length);
+          batches = data;
+          updateMetrics();
+        })
+        .fail(function(xhr) {
+          console.error('❌ Error cargando batches:', xhr);
+          alert('Error cargando batches: ' + (xhr.responseJSON?.error || 'Error desconocido'));
+        });
+    }
+
+    function updateMetrics() {
+      const total = batches.length;
+      const completed = batches.filter(b => b.status === 'S').length;
+      const inProgress = batches.filter(b => b.status === 'In').length;
+      const pending = batches.filter(b => b.status === 'NS').length;
+
+      // Actualizar estadísticas generales
+      $('#totalBatches').text(total);
+      $('#completedBatches').text(completed);
+      $('#inProgressBatches').text(inProgress);
+      $('#pendingBatches').text(pending);
+
+      // Actualizar barra de progreso
+      const completionRate = total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
+      $('#overallProgress').css('width', completionRate + '%');
+      $('#progressText').text(`${completed}/${total} batches completados (${completionRate}%)`);
+
+      // Calcular métricas por responsable
+      const byAssignee = {};
+      batches.forEach(b => {
+        if (!byAssignee[b.assignee]) {
+          byAssignee[b.assignee] = { total: 0, completed: 0, inProgress: 0, pending: 0 };
+        }
+        byAssignee[b.assignee].total++;
+        if (b.status === 'S') byAssignee[b.assignee].completed++;
+        else if (b.status === 'In') byAssignee[b.assignee].inProgress++;
+        else if (b.status === 'NS') byAssignee[b.assignee].pending++;
+      });
+
+      // Actualizar tabla
+      updateMetricsTable(byAssignee);
+    }
+
+    function updateMetricsTable(byAssignee) {
+      const tableBody = document.getElementById('metricsTableBody');
+      tableBody.innerHTML = '';
+
+      Object.keys(byAssignee).sort().forEach(assignee => {
+        const stats = byAssignee[assignee];
+        const rate = stats.total > 0 ? ((stats.completed / stats.total) * 100).toFixed(1) : 0;
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td><strong>${assignee}</strong></td>
+          <td>${stats.total}</td>
+          <td><span class="badge bg-success">${stats.completed}</span></td>
+          <td><span class="badge bg-warning">${stats.inProgress}</span></td>
+          <td><span class="badge bg-secondary">${stats.pending}</span></td>
+          <td>${rate}%</td>
+        `;
+        tableBody.appendChild(row);
+      });
+
+      // Refrescar DataTable
+      $('#metricsTable').DataTable().draw();
+    }
+
+    function exportMetrics() {
+      // Calcular estadísticas
+      const byAssignee = {};
+      batches.forEach(b => {
+        if (!byAssignee[b.assignee]) {
+          byAssignee[b.assignee] = { total: 0, completed: 0, inProgress: 0, pending: 0 };
+        }
+        byAssignee[b.assignee].total++;
+        if (b.status === 'S') byAssignee[b.assignee].completed++;
+        else if (b.status === 'In') byAssignee[b.assignee].inProgress++;
+        else if (b.status === 'NS') byAssignee[b.assignee].pending++;
+      });
+
+      // Crear CSV
+      let csvContent = "Responsable,Total,Completados,En Progreso,Pendientes,Porcentaje Completado\\n";
+      Object.keys(byAssignee).sort().forEach(assignee => {
+        const stats = byAssignee[assignee];
+        const rate = stats.total > 0 ? ((stats.completed / stats.total) * 100).toFixed(1) : 0;
+        csvContent += `${assignee},${stats.total},${stats.completed},${stats.inProgress},${stats.pending},${rate}%\\n`;
+      });
+
+      // Descargar archivo
+      const blob = new Blob([csvContent], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `metricas_${new Date().toISOString().split('T')[0]}.csv`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+
+      showNotification('Métricas exportadas exitosamente', 'success');
+    }
+
+    function showNotification(message, type = 'info') {
+      const alertClass = {
+        'success': 'alert-success',
+        'error': 'alert-danger',
+        'warning': 'alert-warning',
+        'info': 'alert-info'
+      }[type] || 'alert-info';
+
+      const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+          ${message}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+      `;
+
+      $('body').append(alertHtml);
+
+      // Auto-remove after 5 seconds
+      setTimeout(() => {
+        $('.alert').fadeOut();
+      }, 5000);
+    }
+
+    function logout() {
+      if (confirm('¿Estás seguro de que quieres salir?')) {
+        window.location.href = '/';
+      }
+    }
+  </script>
+</body>
+</html>

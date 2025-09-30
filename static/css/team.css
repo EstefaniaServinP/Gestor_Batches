@@ -1,0 +1,238 @@
+/* ===============================================
+   ESTILOS ESPECÍFICOS PARA TEAM.HTML
+   =============================================== */
+
+/* Botón agregar segmentador flotante */
+.add-member-btn {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  width: 65px;
+  height: 65px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.add-member-btn:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 15px 35px rgba(16, 185, 129, 0.5);
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+}
+
+/* Card para agregar nuevo miembro */
+.add-member-card {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
+  border: 2px dashed rgba(16, 185, 129, 0.5);
+  border-radius: 15px;
+  padding: 2rem;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  text-align: center;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(10px);
+}
+
+.add-member-card:hover {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2) 0%, rgba(5, 150, 105, 0.2) 100%);
+  border-color: rgba(16, 185, 129, 0.8);
+  transform: translateY(-5px);
+}
+
+.add-member-icon {
+  font-size: 3rem;
+  color: rgba(16, 185, 129, 0.7);
+  margin-bottom: 1rem;
+  transition: all 0.3s ease;
+}
+
+.add-member-card:hover .add-member-icon {
+  color: rgba(16, 185, 129, 1);
+  transform: scale(1.1);
+}
+
+.add-member-text {
+  color: rgba(16, 185, 129, 0.8);
+  font-weight: 500;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+}
+
+.add-member-card:hover .add-member-text {
+  color: rgba(16, 185, 129, 1);
+}
+
+/* Contenedor principal del equipo */
+.team-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  margin-top: 2rem;
+}
+
+.team-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(248, 250, 252, 0.9) 100%);
+  border-radius: 20px;
+  padding: 2.5rem;
+  backdrop-filter: blur(15px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+}
+
+.member-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+/* Tarjetas de miembros del equipo */
+.member-card {
+  background: linear-gradient(135deg, rgba(233, 216, 253, 0.7) 0%, rgba(254, 215, 226, 0.7) 100%);
+  border-radius: 15px;
+  padding: 2rem 1rem;
+  cursor: pointer;
+  transition: all 0.4s ease;
+  border: 2px solid rgba(183, 148, 246, 0.3);
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(10px);
+}
+
+.member-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  transition: left 0.6s;
+}
+
+.member-card:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(183, 148, 246, 0.3);
+  border-color: rgba(183, 148, 246, 0.6);
+}
+
+.member-card:hover::before {
+  left: 100%;
+}
+
+/* Avatar del miembro */
+.member-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: white;
+  border: 4px solid rgba(255, 255, 255, 0.8);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.member-name {
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #4c1d95;
+  margin-bottom: 0.5rem;
+}
+
+.member-role {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #7c3aed;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.member-stats {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 1rem;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-number {
+  display: block;
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: #5b21b6;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #8b5cf6;
+  margin-top: 0.2rem;
+}
+
+/* Botón eliminar segmentador */
+.delete-member-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(220, 38, 38, 0.8);
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  transition: all 0.3s ease;
+  z-index: 10;
+  opacity: 0;
+  transform: scale(0.8);
+}
+
+.member-card:hover .delete-member-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.delete-member-btn:hover {
+  background: rgba(185, 28, 28, 1);
+  transform: scale(1.1);
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .team-container {
+    padding: 1rem;
+  }
+  
+  .member-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+  
+  .add-member-btn {
+    bottom: 1rem;
+    right: 1rem;
+    width: 55px;
+    height: 55px;
+  }
+}

@@ -17,22 +17,31 @@ Fecha: Julio 23, 2025
 Equipo: Mauricio, Maggie, Ceci, Flor, Ignacio
 """
 
-from flask import Flask, render_template, request, jsonify, redirect, url_for
-from pymongo import MongoClient
+from flask import Flask, render_template, request, jsonify, redirect
+from db import get_db, create_indexes
 import json
 from datetime import datetime
-from bson import ObjectId
 
 app = Flask(__name__)
 
-# Cadena de conexión MongoDB
-MONGO_URI = "mongodb://admin:hxsCiKTUt0GNpqtaeRJL@192.168.100.26:27017/?authSource=admin"
-client = MongoClient(MONGO_URI)
+# No crear la conexión en import time
+db = None
+batches_col = None
+masks_col = None
 
-# Base de datos y colecciones
-db = client["QA"]
-masks_col = db["QA.masks.files"]
-batches_col = db["batches"]
+def init_db():
+    global db, batches_col, masks_col
+    db = get_db(raise_on_fail=False)
+    if db:
+        batches_col = db["batches"]
+        masks_col = db["masks"]
+        # crear índices en background (no bloqueante)
+        create_indexes()
+    else:
+        print("⚠️ DB no disponible en init_db — seguirá intentando al recibir peticiones")
+
+# ejemplo: contar documentos
+# print("Batches en DB:", batches_col.count_documents({}))
 
 # Lista de miembros del equipo
 CREW_MEMBERS = ["Mauricio", "Maggie", "Ceci", "Flor", "Ignacio"]
@@ -53,43 +62,90 @@ def dashboard():
 def dashboard_filtered(assignee):
     return render_template("dashboard.html", crew=CREW_MEMBERS, filter_assignee=assignee)
 
+@app.route("/assign")
+def assign_batches():
+    """Página para asignar batches"""
+    return render_template("batch_management.html", crew=CREW_MEMBERS)
+
 @app.route("/batch-management")
 def batch_management():
-    """Nueva página para gestión de batches con drag & drop"""
-    return render_template("batch_management.html", crew=CREW_MEMBERS)
+    """Redirigir a la nueva ruta /assign"""
+    return redirect("/assign")
 
 @app.route("/masks")
 def masks():
+    global masks_col
+    if masks_col is None:
+        # Intentar reconectar a demanda
+        db_local = get_db(raise_on_fail=False)
+        if db_local:
+            masks_col = db_local["masks"]
+        else:
+            return jsonify({"error": "No DB connection"}), 503
+
     # Trae todos los documentos de máscaras
     docs = list(masks_col.find({}, {"_id": 0, "filename": 1, "uploadDate": 1}))
     return render_template("masks.html", files=docs)
 
+@app.route("/metrics")
+def metrics():
+    """Página principal de métricas del sistema"""
+    return render_template("metrics.html", crew=CREW_MEMBERS)
+
+@app.route("/metrics/overview")
+def metrics_overview():
+    """Página de vista general de métricas"""
+    return render_template("metrics_overview.html", crew=CREW_MEMBERS)
+
+@app.route("/metrics/team")
+def metrics_team():
+    """Página de métricas del equipo"""
+    return render_template("metrics_team.html", crew=CREW_MEMBERS)
+
+@app.route("/metrics/progress")
+def metrics_progress():
+    """Página de reportes de progreso"""
+    return render_template("metrics_progress.html", crew=CREW_MEMBERS)
+
 @app.route("/api/batches", methods=["GET"])
 def get_batches():
-    # Obtiene todos los batches de MongoDB
-    batches = list(batches_col.find({}, {"_id": 0}))
-    
-    # Enriquecer con información de archivos
-    for batch in batches:
-        batch_number = batch["id"].replace("batch_", "")
-        pattern = f"masks_batch_{batch_number}"
-        
-        # Contar archivos para este batch
-        files = list(masks_col.find(
-            {"filename": {"$regex": pattern}},
-            {"filename": 1, "uploadDate": 1, "metadata": 1, "length": 1}
-        ).sort("uploadDate", -1))
-        
-        # Agregar información de archivos al batch
-        batch["file_info"] = {
-            "count": len(files),
-            "latest_upload": files[0]["uploadDate"] if files else None,
-            "uploaded_by": files[0].get("metadata", {}).get("uploaded_by", "unknown") if files else None,
-            "file_size": files[0].get("length", 0) if files else 0,
-            "has_files": len(files) > 0
-        }
-    
-    return jsonify(batches)
+    """Endpoint paginado: ?page=1&per_page=50"""
+    global batches_col
+    if batches_col is None:
+        # intentar reconectar a demanda
+        db_local = get_db(raise_on_fail=False)
+        if db_local:
+            batches_col = db_local["batches"]
+        else:
+            return jsonify({"error":"No DB connection"}), 503
+
+    try:
+        page = max(1, int(request.args.get("page", 1)))
+        per_page = int(request.args.get("per_page", 50))
+        per_page = min(max(5, per_page), 200)  # límites razonables
+
+        skip = (page - 1) * per_page
+
+        # Proyección para evitar traer campos pesados
+        projection = {"_id": 0}
+
+        cursor = batches_col.find({}, projection).sort("id", 1).skip(skip).limit(per_page)
+        items = list(cursor)
+
+        total = batches_col.count_documents({})
+
+        return jsonify({
+            "batches": items,
+            "pagination": {
+                "page": page,
+                "per_page": per_page,
+                "total": total,
+                "total_pages": (total + per_page - 1) // per_page
+            }
+        })
+    except Exception as e:
+        print("❌ Error en get_batches:", e)
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/api/batches", methods=["POST"])
 def create_batch():
@@ -148,25 +204,28 @@ def create_batch():
 @app.route("/api/batches/<batch_id>", methods=["PUT"])
 def update_batch(batch_id):
     data = request.json
-    
+
     update_data = {}
-    
+
     # Campos directos
     if "assignee" in data:
-        update_data["assignee"] = data["assignee"]
+        # Permitir explícitamente None/null para desasignar
+        update_data["assignee"] = data["assignee"] if data["assignee"] else None
+        print(f"🔄 Actualizando assignee de {batch_id} a: {update_data['assignee']}")
+
     if "status" in data:
         update_data["status"] = data["status"]
     if "comments" in data:
         update_data["comments"] = data["comments"]
     if "folder" in data:
         update_data["folder"] = data["folder"]
-    
+
     # Campos de metadata - nueva forma estructurada
     if "metadata" in data:
         metadata = data["metadata"]
         for key, value in metadata.items():
             update_data[f"metadata.{key}"] = value
-    
+
     # Campos individuales de metadata (retrocompatibilidad)
     if "due_date" in data:
         update_data["metadata.due_date"] = data["due_date"]
@@ -174,11 +233,12 @@ def update_batch(batch_id):
         update_data["metadata.priority"] = data["priority"]
     if "reviewed_at" in data:
         update_data["metadata.reviewed_at"] = data["reviewed_at"]
-    
+
     result = batches_col.update_one({"id": batch_id}, {"$set": update_data})
-    
-    if result.modified_count > 0:
-        return jsonify({"success": True})
+
+    if result.modified_count > 0 or batches_col.find_one({"id": batch_id}):
+        print(f"✅ Batch {batch_id} actualizado correctamente")
+        return jsonify({"success": True, "message": f"Batch {batch_id} actualizado"})
     else:
         return jsonify({"success": False, "error": "Batch no encontrado"}), 404
 
@@ -662,7 +722,7 @@ def init_batches():
             print("🔄 Forzando reinicialización - limpiando datos existentes")
             batches_col.delete_many({})
         
-        with open("batches,json", "r", encoding="utf-8") as f:
+        with open("batches.json", "r", encoding="utf-8") as f:
             data = json.load(f)
             if data.get("batches"):
                 # Verificar duplicados antes de insertar
@@ -698,7 +758,7 @@ def reset_batches():
     # Endpoint para limpiar y recargar completamente los batches
     try:
         batches_col.delete_many({})
-        with open("batches,json", "r", encoding="utf-8") as f:
+        with open("batches.json", "r", encoding="utf-8") as f:
             data = json.load(f)
             if data.get("batches"):
                 batches_col.insert_many(data["batches"])
@@ -797,4 +857,11 @@ def get_missing_batches():
         return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == "__main__":
+    # Inicializar DB de forma segura al iniciar localmente
+    try:
+        init_db()
+    except Exception as e:
+        print("⚠️ Error inicializando DB en startup:", e)
     app.run(debug=True, host="0.0.0.0", port=5000)
+
+

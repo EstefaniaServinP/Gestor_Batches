@@ -481,25 +481,12 @@
   <div class="side-menu" id="sideMenu">
     <div class="menu-header">
       <h5 class="text-white mb-0">
-        <i class="fas fa-users"></i>
-        Equipo
+        <i class="fas fa-home"></i>
+        Home
       </h5>
     </div>
     <div class="menu-items">
-      <a href="/dashboard" class="menu-item">
-        <i class="fas fa-th-large"></i>
-        <span>Dashboard</span>
-      </a>
-      
-      <a href="/masks" class="menu-item">
-        <i class="fas fa-images"></i>
-        <span>Máscaras</span>
-      </a>
-      
-      <a href="/batch-management" class="menu-item">
-        <i class="fas fa-user-plus"></i>
-        <span>Asignar Batches</span>
-      </a>
+      <!-- Menu items will be populated dynamically by JavaScript -->
     </div>
   </div>
 
@@ -601,7 +588,7 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    let teamMembers = {{ crew | tojson }};
+    let teamMembers = JSON.parse('{{ crew | tojson | safe }}');
     let batchStats = {};
 
     $(document).ready(function() {
@@ -799,6 +786,56 @@
       if (e.key === 'Escape') {
         closeMenu();
       }
+    });
+
+    // Sistema de menú dinámico
+    const availablePages = [
+      { name: 'Home', path: '/', icon: 'fas fa-home' },
+      { name: 'Dashboard', path: '/dashboard', icon: 'fas fa-th-large' },
+      { name: 'Assign Batches', path: '/assign', icon: 'fas fa-arrows-alt' },
+      { name: 'Masks', path: '/masks', icon: 'fas fa-images' },
+      { name: 'Metrics', path: '/metrics', icon: 'fas fa-chart-bar' }
+    ];
+
+    // Determinar la página actual
+    const currentPath = window.location.pathname;
+    const currentPage = availablePages.find(page => page.path === currentPath) || availablePages[0]; // Default to Home
+
+    // Generar menú dinámico
+    function generateMenu() {
+      const menuItems = document.querySelector('.menu-items');
+      menuItems.innerHTML = '';
+
+      // Filtrar páginas para excluir la actual
+      const otherPages = availablePages.filter(page => page.path !== currentPath);
+
+      // Agregar las otras páginas en orden
+      otherPages.forEach(page => {
+        const menuItem = document.createElement('a');
+        menuItem.href = page.path;
+        menuItem.className = 'menu-item';
+        menuItem.innerHTML = `
+          <i class="${page.icon}"></i>
+          <span>${page.name}</span>
+        `;
+        menuItems.appendChild(menuItem);
+      });
+
+      // Agregar opción de salir
+      const logoutItem = document.createElement('a');
+      logoutItem.href = '#';
+      logoutItem.className = 'menu-item';
+      logoutItem.onclick = logout;
+      logoutItem.innerHTML = `
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Salir</span>
+      `;
+      menuItems.appendChild(logoutItem);
+    }
+
+    // Inicializar menú dinámico
+    document.addEventListener('DOMContentLoaded', function() {
+      generateMenu();
     });
 
     // Función para agregar un nuevo segmentador

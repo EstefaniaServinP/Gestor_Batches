@@ -391,20 +391,39 @@
         <i class="fas fa-home"></i>
         <span>Inicio</span>
       </a>
-      
+
       <a href="/dashboard" class="menu-item">
-        <i class="fas fa-cogs"></i>
+        <i class="fas fa-th-large"></i>
         <span>Dashboard General</span>
       </a>
-      
-      <a href="javascript:void(0)" class="menu-item" onclick="showFilteredDashboardOptions()">
-        <i class="fas fa-filter"></i>
-        <span>Dashboard Filtrado</span>
-      </a>
-      
+
       <a href="/masks" class="menu-item">
         <i class="fas fa-images"></i>
         <span>Máscaras</span>
+      </a>
+
+      <div class="menu-item has-submenu">
+        <i class="fas fa-chart-bar"></i>
+        <span>Métricas</span>
+        <div class="submenu">
+          <a href="#" class="submenu-item" onclick="showTeamMetrics()">
+            <i class="fas fa-users"></i> Avances por Persona
+          </a>
+          <a href="#" class="submenu-item" onclick="showGlobalStats()">
+            <i class="fas fa-chart-line"></i> Estadísticas Globales
+          </a>
+          <a href="#" class="submenu-item" onclick="checkMongoFiles()">
+            <i class="fas fa-server"></i> Verificar MongoDB
+          </a>
+          <a href="#" class="submenu-item" onclick="showProgressReport()">
+            <i class="fas fa-chart-pie"></i> Reporte de Progreso
+          </a>
+        </div>
+      </div>
+
+      <a href="#" class="menu-item" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Salir</span>
       </a>
     </div>
   </div>
@@ -1106,40 +1125,53 @@
         showNotification('Batch no encontrado', 'error');
         return;
       }
-      
+
       const oldAssignee = batch.assignee;
-      
-      // Actualizar datos localmente
-      batch.assignee = newAssignee || null;
+
+      // Preparar datos para enviar al servidor
+      const updateData = {
+        assignee: newAssignee === '' || newAssignee === undefined ? null : newAssignee,
+        metadata: batch.metadata
+      };
+
+      // Si se está asignando a alguien nuevo y no tiene fecha de asignación, agregarla
       if (newAssignee && !batch.metadata.assigned_at) {
-        batch.metadata.assigned_at = new Date().toISOString().split('T')[0];
+        updateData.metadata.assigned_at = new Date().toISOString().split('T')[0];
       }
-      
+
+      console.log(`🔄 Actualizando batch ${batchId}:`, {
+        old: oldAssignee,
+        new: newAssignee,
+        data: updateData
+      });
+
       // Enviar actualización al servidor
       $.ajax({
         url: `/api/batches/${batchId}`,
         method: 'PUT',
         contentType: 'application/json',
-        data: JSON.stringify({
-          assignee: newAssignee || null,
-          metadata: batch.metadata
-        }),
+        data: JSON.stringify(updateData),
         success: function(response) {
-          console.log('✅ Batch actualizado:', response);
+          console.log('✅ Batch actualizado correctamente:', response);
+
+          // Actualizar datos localmente después de confirmar el servidor
+          batch.assignee = updateData.assignee;
+          batch.metadata = updateData.metadata;
+
           showNotification(
-            newAssignee ? 
-              `Batch ${batchId} asignado a ${newAssignee}` : 
-              `Batch ${batchId} desasignado`,
+            newAssignee ?
+              `Batch ${batchId} asignado a ${newAssignee}` :
+              `Batch ${batchId} regresado a "No Asignados"`,
             'success'
           );
-          updateDragDropInterface();
-          updateStats();
+
+          // Recargar la interfaz completa para sincronizar
+          loadBatches();
         },
         error: function(xhr) {
           console.error('❌ Error actualizando batch:', xhr);
-          // Revertir cambio local
-          batch.assignee = oldAssignee;
           showNotification('Error asignando batch: ' + (xhr.responseJSON?.error || 'Error desconocido'), 'error');
+          // Recargar interfaz para restaurar estado correcto
           updateDragDropInterface();
         }
       });
