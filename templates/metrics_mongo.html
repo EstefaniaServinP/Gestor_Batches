@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}Verificar MongoDB - Métricas{% endblock %}
+
+{% block page_css %}
+<style>
+    body {
+      background: linear-gradient(135deg, #059669 0%, #34D399 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .dashboard-title {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 2rem 3rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .dashboard-title h1 {
+      color: white;
+      font-size: 3rem;
+      font-weight: 700;
+      margin: 0;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      letter-spacing: 2px;
+    }
+
+    .dashboard-title p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 1.2rem;
+      margin: 0.5rem 0 0 0;
+      font-weight: 300;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(16, 185, 129, 0.2);
+    }
+
+    .metric-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.9) 100%);
+      border-radius: 15px;
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+      transition: all 0.3s ease;
+    }
+
+    .metric-value {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #059669;
+      margin-bottom: 0.5rem;
+    }
+
+    .metric-label {
+      font-size: 1rem;
+      color: #6B7280;
+      font-weight: 500;
+    }
+
+    .status-ok {
+      color: #10B981;
+    }
+
+    .status-error {
+      color: #EF4444;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+      border: none;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.3);
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #34D399 0%, #10B981 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="dashboard-title">
+      <h1><i class="fas fa-database"></i> VERIFICAR MONGODB</h1>
+      <p>Estado de conexión y estadísticas de la base de datos</p>
+    </div>
+
+    <div class="row">
+      <!-- Estado de Conexión -->
+      <div class="col-md-4">
+        <div class="metric-card">
+          <div class="metric-label">Estado de Conexión</div>
+          <div class="metric-value" id="connectionStatus">
+            <i class="fas fa-spinner fa-spin"></i> Verificando...
+          </div>
+        </div>
+      </div>
+
+      <!-- Total de Colecciones -->
+      <div class="col-md-4">
+        <div class="metric-card">
+          <div class="metric-label">Colecciones</div>
+          <div class="metric-value" id="collectionsCount">-</div>
+        </div>
+      </div>
+
+      <!-- Total de Documentos -->
+      <div class="col-md-4">
+        <div class="metric-card">
+          <div class="metric-label">Total Documentos</div>
+          <div class="metric-value" id="documentsCount">-</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Detalles de Colecciones -->
+    <div class="card mt-4">
+      <div class="card-header">
+        <h5 class="mb-0">
+          <i class="fas fa-list"></i> Detalle de Colecciones
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Colección</th>
+                <th>Documentos</th>
+                <th>Tamaño</th>
+              </tr>
+            </thead>
+            <tbody id="collectionsTable">
+              <tr>
+                <td colspan="3" class="text-center">
+                  <i class="fas fa-spinner fa-spin"></i> Cargando...
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+    $(document).ready(function() {
+      checkMongoConnection();
+    });
+
+    function checkMongoConnection() {
+      // Verificar estado de conexión a MongoDB
+      $.ajax({
+        url: '/api/mongo/status',
+        method: 'GET',
+        success: function(response) {
+          if (response.connected) {
+            $('#connectionStatus').html('<i class="fas fa-check-circle status-ok"></i> Conectado');
+            loadCollections();
+          } else {
+            $('#connectionStatus').html('<i class="fas fa-times-circle status-error"></i> Desconectado');
+          }
+        },
+        error: function(xhr) {
+          $('#connectionStatus').html('<i class="fas fa-exclamation-triangle status-error"></i> Error');
+          console.error('Error verificando conexión:', xhr);
+        }
+      });
+    }
+
+    function loadCollections() {
+      // Cargar información de colecciones
+      $.ajax({
+        url: '/api/mongo/collections',
+        method: 'GET',
+        success: function(response) {
+          if (response.collections) {
+            const collections = response.collections;
+            $('#collectionsCount').text(collections.length);
+
+            let totalDocs = 0;
+            let tableHtml = '';
+
+            collections.forEach(function(col) {
+              totalDocs += col.count || 0;
+              tableHtml += `
+                <tr>
+                  <td><i class="fas fa-folder"></i> ${col.name}</td>
+                  <td>${col.count || 0}</td>
+                  <td>${col.size || '-'}</td>
+                </tr>
+              `;
+            });
+
+            $('#documentsCount').text(totalDocs);
+            $('#collectionsTable').html(tableHtml);
+          }
+        },
+        error: function(xhr) {
+          $('#collectionsTable').html('<tr><td colspan="3" class="text-center text-danger">Error cargando colecciones</td></tr>');
+          console.error('Error cargando colecciones:', xhr);
+        }
+      });
+    }
+</script>
+{% endblock %}

@@ -1,12 +1,13 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <title>Dashboard de Segmentación</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-  <style>
+{% extends "base.html" %}
+
+{% block title %}Dashboard de Segmentación{% endblock %}
+
+{% block extra_css_libs %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+{% endblock %}
+
+{% block page_css %}
+<style>
     body { 
       background: linear-gradient(135deg, #059669 0%, #34D399 100%);
       min-height: 100vh;
@@ -26,208 +27,7 @@
       box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
       border-bottom: 2px solid rgba(255, 255, 255, 0.2);
     }
-    
-    /* Menú hamburguesa - Versión overlay elegante */
-    .menu-toggle {
-      position: fixed;
-      top: 2rem;
-      right: 2rem;
-      z-index: 1500;
-      background: rgba(255, 255, 255, 0.25);
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      color: white;
-      border-radius: 20px;
-      width: 70px;
-      height: 70px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      backdrop-filter: blur(20px);
-      font-size: 1.5rem;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    }
-    
-    .menu-toggle:hover {
-      background: rgba(255, 255, 255, 0.35);
-      transform: scale(1.05) rotate(5deg);
-      box-shadow: 0 12px 40px rgba(255, 255, 255, 0.2);
-      border-color: rgba(255, 255, 255, 0.5);
-    }
-    
-    .menu-toggle.active {
-      transform: scale(0.95) rotate(90deg);
-      background: rgba(255, 255, 255, 0.4);
-    }
-    
-    /* Menú lateral elegante overlay */
-    .side-menu {
-      position: fixed;
-      top: 0;
-      right: -400px;
-      width: 350px;
-      height: 100vh;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
-      backdrop-filter: blur(25px);
-      z-index: 1400;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      padding: 0;
-      overflow: hidden;
-      box-shadow: -10px 0 50px rgba(0, 0, 0, 0.2);
-      border-left: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    .side-menu.open {
-      right: 0;
-    }
-    
-    .menu-header {
-      padding: 3rem 2rem 2rem;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      text-align: center;
-    }
-    
-    .menu-header h5 {
-      font-size: 1.3rem;
-      font-weight: 300;
-      letter-spacing: 1px;
-    }
-    
-    .menu-items {
-      padding: 2rem 1.5rem;
-    }
-    
-    .menu-item {
-      display: flex;
-      align-items: center;
-      gap: 1.2rem;
-      color: rgba(255, 255, 255, 0.9);
-      text-decoration: none;
-      padding: 1.2rem 1.5rem;
-      margin: 0.8rem 0;
-      border-radius: 15px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border: 1px solid transparent;
-      font-size: 1.1rem;
-      font-weight: 500;
-      position: relative;
-      overflow: hidden;
-    }
-    
-    .menu-item:before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-      transition: left 0.6s;
-    }
-    
-    .menu-item:hover:before {
-      left: 100%;
-    }
-    
-    .menu-item:hover {
-      background: rgba(255, 255, 255, 0.15);
-      border-color: rgba(255, 255, 255, 0.3);
-      color: white;
-      transform: translateX(-8px);
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    }
-    
-    .menu-item i {
-      width: 24px;
-      text-align: center;
-      font-size: 1.3rem;
-    }
-    
-    .menu-item.has-submenu {
-      position: relative;
-    }
-    
-    .menu-item.has-submenu:after {
-      content: '\f054';
-      font-family: 'Font Awesome 6 Free';
-      font-weight: 900;
-      margin-left: auto;
-      font-size: 0.9rem;
-      opacity: 0.7;
-      transition: transform 0.3s ease;
-    }
-    
-    .menu-item.has-submenu:hover:after {
-      transform: translateX(5px);
-    }
-    
-    /* Submenu */
-    .submenu {
-      position: absolute;
-      left: -250px;
-      top: 0;
-      width: 240px;
-      background: rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(20px);
-      border-radius: 15px;
-      padding: 1rem;
-      opacity: 0;
-      visibility: hidden;
-      transform: translateX(-20px);
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
-    }
-    
-    .menu-item.has-submenu:hover .submenu {
-      opacity: 1;
-      visibility: visible;
-      transform: translateX(0);
-    }
-    
-    .submenu-item {
-      display: block;
-      color: rgba(255, 255, 255, 0.8);
-      text-decoration: none;
-      padding: 0.8rem 1rem;
-      border-radius: 10px;
-      transition: all 0.2s ease;
-      font-size: 0.95rem;
-    }
-    
-    .submenu-item:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      transform: translateX(5px);
-    }
-    
-    .submenu-item i {
-      width: 16px;
-      margin-right: 0.8rem;
-      font-size: 0.9rem;
-    }
-    
-    /* Overlay para cerrar menú */
-    .menu-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.3);
-      z-index: 1300;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-    }
-    
-    .menu-overlay.show {
-      opacity: 1;
-      visibility: visible;
-    }
-    
+
     /* Título principal del Dashboard */
     .dashboard-title {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%);
@@ -539,31 +339,11 @@
       background: linear-gradient(135deg, #FECACA 0%, #FEE2E2 100%);
       color: #991B1B;
     }
-  </style>
-</head>
-<body>
-  <!-- Menú hamburguesa elegante -->
-  <div class="menu-toggle" onclick="toggleMenu()" id="menuToggle">
-    <i class="fas fa-bars"></i>
-  </div>
+</style>
+{% endblock %}
 
-  <!-- Overlay para cerrar menú -->
-  <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
-
-  <!-- Menú lateral minimalista -->
-  <div class="side-menu" id="sideMenu">
-    <div class="menu-header">
-      <h5 class="text-white mb-0">
-        <i class="fas fa-compass"></i>
-        Dashboard
-      </h5>
-    </div>
-    <div class="menu-items">
-      <!-- Menu items will be populated dynamically by JavaScript -->
-    </div>
-  </div>
-
-  <div class="container-fluid mt-4 main-content">
+{% block content %}
+<div class="container-fluid mt-4">
     <!-- Título Principal del Dashboard -->
     <div class="dashboard-title">
       <h1><i class="fas fa-chart-line"></i> DASHBOARD</h1>
@@ -775,13 +555,16 @@
         </div>
       </div>
     </div>
-  </div>
+</div>
+{% endblock %}
 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
-  <script>
+{% block extra_js_libs %}
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+{% endblock %}
+
+{% block page_js %}
+<script>
     let batchesTable;
     let batches = [];
     let filterAssignee = '{{ filter_assignee or "" }}';
@@ -3325,11 +3108,9 @@ Escribe "CONFIRMAR" para proceder:`;
       menuItems.appendChild(logoutItem);
     }
 
-    // Inicializar menú dinámico
-    document.addEventListener('DOMContentLoaded', function() {
-      generateMenu();
-    });
-  </script>
-
-</body>
-</html>
+    // Menú dinámico ya no es necesario - ahora usamos el sidebar unificado
+    // document.addEventListener('DOMContentLoaded', function() {
+    //   generateMenu();
+    // });
+</script>
+{% endblock %}

@@ -37,7 +37,7 @@ def create_indexes():
     """Crear índices recomendados (id único, assignee) — idempotente."""
     try:
         db = get_db(raise_on_fail=False)
-        if not db:
+        if db is None:
             return
         # batches: id único, assignee para búsquedas
         db["batches"].create_index([("id", ASCENDING)], unique=True, background=True)

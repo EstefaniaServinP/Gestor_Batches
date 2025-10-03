@@ -26,13 +26,14 @@ app = Flask(__name__)
 
 # No crear la conexión en import time
 db = None
+
 batches_col = None
 masks_col = None
 
 def init_db():
     global db, batches_col, masks_col
     db = get_db(raise_on_fail=False)
-    if db:
+    if db is not None:
         batches_col = db["batches"]
         masks_col = db["masks"]
         # crear índices en background (no bloqueante)
@@ -78,7 +79,7 @@ def masks():
     if masks_col is None:
         # Intentar reconectar a demanda
         db_local = get_db(raise_on_fail=False)
-        if db_local:
+        if db_local is not None:
             masks_col = db_local["masks"]
         else:
             return jsonify({"error": "No DB connection"}), 503
@@ -107,6 +108,33 @@ def metrics_progress():
     """Página de reportes de progreso"""
     return render_template("metrics_progress.html", crew=CREW_MEMBERS)
 
+@app.route("/metrics/people")
+def metrics_people():
+    """Página de avances por persona (redirige a team)"""
+    return render_template("metrics_team.html", crew=CREW_MEMBERS)
+
+@app.route("/metrics/global")
+def metrics_global():
+    """Página de estadísticas globales (redirige a overview)"""
+    return render_template("metrics_overview.html", crew=CREW_MEMBERS)
+
+@app.route("/metrics/mongo")
+def metrics_mongo():
+    """Página de verificación MongoDB"""
+    return render_template("metrics_mongo.html", crew=CREW_MEMBERS)
+
+@app.route("/metrics/report")
+def metrics_report():
+    """Página de reporte de progreso (redirige a progress)"""
+    return render_template("metrics_progress.html", crew=CREW_MEMBERS)
+
+@app.route("/logout")
+def logout():
+    """Cerrar sesión (placeholder)"""
+    # Por ahora solo redirige al inicio
+    # Implementar autenticación en el futuro
+    return redirect("/")
+
 @app.route("/api/batches", methods=["GET"])
 def get_batches():
     """Endpoint paginado: ?page=1&per_page=50"""
@@ -114,7 +142,7 @@ def get_batches():
     if batches_col is None:
         # intentar reconectar a demanda
         db_local = get_db(raise_on_fail=False)
-        if db_local:
+        if db_local is not None:
             batches_col = db_local["batches"]
         else:
             return jsonify({"error":"No DB connection"}), 503
@@ -772,6 +800,38 @@ def get_missing_batches():
     try:
         # Lista completa de todos los batches que deberían existir
         all_possible_batches = [
+            'batch_20251002T105618', 'batch_20251002T105716', 'batch_20251002T105814', 'batch_20251002T105912',
+            'batch_20251002T110010', 'batch_20251002T110107', 'batch_20251002T110205', 'batch_20251002T110302',
+            'batch_20251002T110359', 'batch_20251002T110457', 'batch_20251002T110554', 'batch_20251002T110652',
+            'batch_20251002T110749', 'batch_20251002T110847', 'batch_20251002T110945', 'batch_20251002T111044',
+            'batch_20251002T111141', 'batch_20251002T111238', 'batch_20251002T111335', 'batch_20251002T111433',
+            'batch_20251002T111530', 'batch_20251002T111628', 'batch_20251002T111726', 'batch_20251002T111823',
+            'batch_20251002T111921', 'batch_20251002T112017', 'batch_20251002T112114', 'batch_20251002T112210',
+            'batch_20251002T112308', 'batch_20251002T112405', 'batch_20251002T112501', 'batch_20251002T112557',
+            'batch_20251002T112652', 'batch_20251002T112744', 'batch_20251002T112836', 'batch_20251002T112929',
+            'batch_20251002T113021', 'batch_20251002T113113', 'batch_20251002T113205', 'batch_20251002T113257',
+            'batch_20251002T113349', 'batch_20251002T113441', 'batch_20251002T113533', 'batch_20251002T113626',
+            'batch_20251002T113718', 'batch_20251002T113810', 'batch_20251002T113902', 'batch_20251002T113954',
+            'batch_20251002T114046', 'batch_20251002T114138', 'batch_20251002T114230', 'batch_20251002T114322',
+            'batch_20251002T114415', 'batch_20251002T114507', 'batch_20251002T114559', 'batch_20251002T114651',
+            'batch_20251002T114743', 'batch_20251002T125401', 'batch_20251002T125515', 'batch_20251002T125617',
+            'batch_20251002T125718', 'batch_20251002T125820', 'batch_20251002T125922', 'batch_20251002T130024',
+            'batch_20251002T130126', 'batch_20251002T130228', 'batch_20251002T130330', 'batch_20251002T130431',
+            'batch_20251002T130533', 'batch_20251002T130637', 'batch_20251002T130741', 'batch_20251002T130844',
+            'batch_20251002T130949', 'batch_20251002T131048', 'batch_20251002T131152', 'batch_20251002T131257',
+            'batch_20251002T131359', 'batch_20251002T131502', 'batch_20251002T131605', 'batch_20251002T131709',
+            'batch_20251002T131812', 'batch_20251002T131914', 'batch_20251002T132017', 'batch_20251002T132121',
+            'batch_20251002T132224', 'batch_20251002T132327', 'batch_20251002T132430', 'batch_20251002T132535',
+            'batch_20251002T132640', 'batch_20251002T132745', 'batch_20251002T132849', 'batch_20251002T132952',
+            'batch_20251002T134417', 'batch_20251002T134509', 'batch_20251002T135139', 'batch_20251002T135234',
+            'batch_20251002T135329', 'batch_20251002T135424', 'batch_20251002T135520', 'batch_20251002T135615',
+            'batch_20251002T135707', 'batch_20251002T135759', 'batch_20251002T135851', 'batch_20251002T135943',
+            'batch_20251002T140035', 'batch_20251002T140127', 'batch_20251002T140219', 'batch_20251002T140311',
+            'batch_20251002T140403', 'batch_20251002T140455', 'batch_20251002T140547', 'batch_20251002T140639',
+            'batch_20251002T140731', 'batch_20251002T140823', 'batch_20251002T140915', 'batch_20251002T141007',
+            'batch_20251002T141059', 'batch_20251002T141151', 'batch_20251002T141243', 'batch_20251002T141335',
+            'batch_20251002T141427', 'batch_20251002T141519', 'batch_20251002T141611', 'batch_20251002T141704',
+            'batch_20251002T141756', 'batch_20251002T141848', 'batch_20251002T141940',
             'batch_9', 'batch_10', 'batch_11', 'batch_12', 'batch_13', 'batch_14', 'batch_15',
             'batch_16', 'batch_17', 'batch_18', 'batch_19', 'batch_20', 'batch_21', 'batch_22',
             'batch_23', 'batch_24', 'batch_25', 'batch_26', 'batch_27', 'batch_28', 'batch_29',

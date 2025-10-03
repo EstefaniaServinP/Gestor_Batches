@@ -4,15 +4,16 @@
 
 // Variables globales del menú
 let menuOpen = false;
+let metricsSubmenuOpen = false;
 
 // Función para alternar el menú
 function toggleMenu() {
   const menu = document.getElementById('sideMenu');
   const overlay = document.getElementById('menuOverlay');
   const toggle = document.getElementById('menuToggle');
-  
+
   menuOpen = !menuOpen;
-  
+
   if (menuOpen) {
     openMenu();
   } else {
@@ -25,12 +26,18 @@ function openMenu() {
   const menu = document.getElementById('sideMenu');
   const overlay = document.getElementById('menuOverlay');
   const toggle = document.getElementById('menuToggle');
-  
+
   menu.classList.add('open');
   overlay.classList.add('show');
   toggle.classList.add('active');
   menuOpen = true;
-  
+
+  // Restaurar estado del submenú desde localStorage
+  const savedState = localStorage.getItem('metricsSubmenuOpen');
+  if (savedState === 'true') {
+    openMetricsSubmenu();
+  }
+
   // Agregar event listener para cerrar con ESC
   document.addEventListener('keydown', handleEscapeKey);
 }
@@ -40,12 +47,12 @@ function closeMenu() {
   const menu = document.getElementById('sideMenu');
   const overlay = document.getElementById('menuOverlay');
   const toggle = document.getElementById('menuToggle');
-  
+
   menu.classList.remove('open');
   overlay.classList.remove('show');
   toggle.classList.remove('active');
   menuOpen = false;
-  
+
   // Remover event listener
   document.removeEventListener('keydown', handleEscapeKey);
 }
@@ -57,8 +64,65 @@ function handleEscapeKey(event) {
   }
 }
 
+// Toggle del submenú de Métricas
+function toggleMetricsSubmenu(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  metricsSubmenuOpen = !metricsSubmenuOpen;
+
+  if (metricsSubmenuOpen) {
+    openMetricsSubmenu();
+  } else {
+    closeMetricsSubmenu();
+  }
+
+  // Guardar estado en localStorage
+  localStorage.setItem('metricsSubmenuOpen', metricsSubmenuOpen);
+}
+
+// Abrir submenú de Métricas
+function openMetricsSubmenu() {
+  const trigger = document.getElementById('metricsTrigger');
+  const submenu = document.getElementById('metricsSubmenu');
+
+  if (trigger && submenu) {
+    trigger.classList.add('expanded');
+    trigger.setAttribute('aria-expanded', 'true');
+    submenu.classList.add('expanded');
+    submenu.setAttribute('aria-hidden', 'false');
+    metricsSubmenuOpen = true;
+  }
+}
+
+// Cerrar submenú de Métricas
+function closeMetricsSubmenu() {
+  const trigger = document.getElementById('metricsTrigger');
+  const submenu = document.getElementById('metricsSubmenu');
+
+  if (trigger && submenu) {
+    trigger.classList.remove('expanded');
+    trigger.setAttribute('aria-expanded', 'false');
+    submenu.classList.remove('expanded');
+    submenu.setAttribute('aria-hidden', 'true');
+    metricsSubmenuOpen = false;
+  }
+}
+
+// Soporte de teclado para el trigger del submenú
+function handleMetricsTriggerKeydown(event) {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    toggleMetricsSubmenu(event);
+  }
+}
+
 // Generar HTML del menú hamburguesa
 function generateMenuHTML() {
+  const currentPath = window.location.pathname;
+
   return `
     <!-- Menú hamburguesa elegante -->
     <div class="menu-toggle" onclick="toggleMenu()" id="menuToggle">
@@ -71,46 +135,75 @@ function generateMenuHTML() {
         <h5><i class="fas fa-microscope"></i> Dashboard</h5>
       </div>
       <div class="menu-items">
+        <a href="/" class="menu-item">
+          <i class="fas fa-home"></i>
+          <span>Inicio</span>
+        </a>
         <a href="/dashboard" class="menu-item">
-          <i class="fas fa-tachometer-alt"></i>
-          Dashboard
+          <i class="fas fa-th-large"></i>
+          <span>Dashboard General</span>
         </a>
         <a href="/masks" class="menu-item">
-          <i class="fas fa-eye"></i>
-          Ver Máscaras
+          <i class="fas fa-images"></i>
+          <span>Máscaras</span>
         </a>
-        <a href="/assign" class="menu-item">
-          <i class="fas fa-tasks"></i>
-          Asignar Batches
-        </a>
-        <div class="menu-item has-submenu">
+
+        <!-- Trigger del submenú de Métricas -->
+        <button
+          class="menu-item-trigger"
+          id="metricsTrigger"
+          onclick="toggleMetricsSubmenu(event)"
+          onkeydown="handleMetricsTriggerKeydown(event)"
+          aria-expanded="false"
+          aria-controls="metricsSubmenu"
+        >
           <i class="fas fa-chart-bar"></i>
-          Métricas
-          <div class="submenu">
-            <a href="/metrics" class="submenu-item">
-              <i class="fas fa-chart-bar"></i>
-              Inicio de Métricas
-            </a>
-            <a href="/metrics/overview" class="submenu-item">
-              <i class="fas fa-chart-line"></i>
-              Vista General
-            </a>
-            <a href="/metrics/team" class="submenu-item">
-              <i class="fas fa-users"></i>
-              Métricas del Equipo
-            </a>
-            <a href="/metrics/progress" class="submenu-item">
-              <i class="fas fa-chart-pie"></i>
-              Reportes de Progreso
-            </a>
-          </div>
+          <span>Métricas</span>
+          <i class="fas fa-caret-right caret"></i>
+        </button>
+
+        <!-- Submenú colapsable de Métricas -->
+        <div
+          class="submenu-container"
+          id="metricsSubmenu"
+          role="group"
+          aria-hidden="true"
+        >
+          <a href="/metrics/team" class="submenu-item ${currentPath === '/metrics/team' ? 'active' : ''}">
+            <i class="fas fa-users"></i>
+            <span>Avances por Persona</span>
+          </a>
+          <a href="/metrics/overview" class="submenu-item ${currentPath === '/metrics/overview' ? 'active' : ''}">
+            <i class="fas fa-chart-line"></i>
+            <span>Estadísticas Globales</span>
+          </a>
+          <a href="/verify" class="submenu-item ${currentPath === '/verify' ? 'active' : ''}">
+            <i class="fas fa-database"></i>
+            <span>Verificar MongoDB</span>
+          </a>
+          <a href="/metrics/progress" class="submenu-item ${currentPath === '/metrics/progress' ? 'active' : ''}">
+            <i class="fas fa-chart-pie"></i>
+            <span>Reporte de Progreso</span>
+          </a>
         </div>
+
+        <a href="#" class="menu-item" onclick="logout(); return false;">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Salir</span>
+        </a>
       </div>
     </div>
 
     <!-- Overlay para cerrar menú -->
     <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
   `;
+}
+
+// Función de logout
+function logout() {
+  if (confirm('¿Estás seguro de que quieres salir?')) {
+    window.location.href = '/logout';
+  }
 }
 
 // Inicializar menú cuando el DOM esté listo

@@ -1,152 +1,19 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Asignar Batches - Dashboard</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-  <style>
+{% extends "base.html" %}
+
+{% block title %}Asignar Batches - Dashboard{% endblock %}
+
+{% block extra_css_libs %}
+<link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+{% endblock %}
+
+{% block page_css %}
+<style>
     body {
       background: linear-gradient(135deg, #059669 0%, #34D399 100%);
       min-height: 100vh;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    
-    /* Menú hamburguesa - Versión overlay elegante */
-    .menu-toggle {
-      position: fixed;
-      top: 2rem;
-      right: 2rem;
-      z-index: 1500;
-      background: rgba(255, 255, 255, 0.25);
-      border: 2px solid rgba(255, 255, 255, 0.3);
-      color: white;
-      border-radius: 20px;
-      width: 70px;
-      height: 70px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      backdrop-filter: blur(20px);
-      font-size: 1.5rem;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-    }
-    
-    .menu-toggle:hover {
-      background: rgba(255, 255, 255, 0.35);
-      transform: scale(1.05) rotate(5deg);
-      box-shadow: 0 12px 40px rgba(255, 255, 255, 0.2);
-      border-color: rgba(255, 255, 255, 0.5);
-    }
-    
-    .menu-toggle.active {
-      transform: scale(0.95) rotate(90deg);
-      background: rgba(255, 255, 255, 0.4);
-    }
-    
-    /* Menú lateral elegante overlay */
-    .side-menu {
-      position: fixed;
-      top: 0;
-      right: -400px;
-      width: 350px;
-      height: 100vh;
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
-      backdrop-filter: blur(25px);
-      z-index: 1400;
-      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      padding: 0;
-      overflow: hidden;
-      box-shadow: -10px 0 50px rgba(0, 0, 0, 0.2);
-      border-left: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    .side-menu.open {
-      right: 0;
-    }
-    
-    .menu-header {
-      padding: 2rem 1.5rem 1rem;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
-    }
-    
-    .menu-header h5 {
-      color: white;
-      margin: 0;
-      font-weight: 600;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    }
-    
-    .menu-items {
-      padding: 1rem 0;
-    }
-    
-    .menu-item {
-      display: flex;
-      align-items: center;
-      padding: 1rem 1.5rem;
-      color: rgba(255, 255, 255, 0.9);
-      text-decoration: none;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      border-radius: 0;
-      position: relative;
-      font-weight: 500;
-      backdrop-filter: blur(5px);
-    }
-    
-    .menu-item:before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      height: 100%;
-      width: 0;
-      background: linear-gradient(90deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
-      transition: width 0.3s ease;
-      z-index: -1;
-    }
-    
-    .menu-item:hover:before {
-      width: 100%;
-    }
-    
-    .menu-item:hover {
-      color: white;
-      transform: translateX(10px);
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-    }
-    
-    .menu-item i {
-      margin-right: 1rem;
-      font-size: 1.1rem;
-      width: 20px;
-      text-align: center;
-    }
-    
-    /* Overlay para cerrar menú */
-    .menu-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0, 0, 0, 0.3);
-      z-index: 1300;
-      opacity: 0;
-      visibility: hidden;
-      transition: all 0.3s ease;
-    }
-    
-    .menu-overlay.show {
-      opacity: 1;
-      visibility: visible;
-    }
-    
+
     /* Título principal */
     .dashboard-title {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%);
@@ -367,68 +234,11 @@
     .batch-item {
       animation: fadeIn 0.3s ease-out;
     }
-  </style>
-</head>
-<body>
-  <!-- Menú hamburguesa elegante -->
-  <div class="menu-toggle" onclick="toggleMenu()" id="menuToggle">
-    <i class="fas fa-bars"></i>
-  </div>
+</style>
+{% endblock %}
 
-  <!-- Overlay para cerrar menú -->
-  <div class="menu-overlay" id="menuOverlay" onclick="closeMenu()"></div>
-
-  <!-- Menú lateral minimalista -->
-  <div class="side-menu" id="sideMenu">
-    <div class="menu-header">
-      <h5 class="text-white mb-0">
-        <i class="fas fa-arrows-alt"></i>
-        Asignar Batches
-      </h5>
-    </div>
-    <div class="menu-items">
-      <a href="/team" class="menu-item">
-        <i class="fas fa-home"></i>
-        <span>Inicio</span>
-      </a>
-
-      <a href="/dashboard" class="menu-item">
-        <i class="fas fa-th-large"></i>
-        <span>Dashboard General</span>
-      </a>
-
-      <a href="/masks" class="menu-item">
-        <i class="fas fa-images"></i>
-        <span>Máscaras</span>
-      </a>
-
-      <div class="menu-item has-submenu">
-        <i class="fas fa-chart-bar"></i>
-        <span>Métricas</span>
-        <div class="submenu">
-          <a href="#" class="submenu-item" onclick="showTeamMetrics()">
-            <i class="fas fa-users"></i> Avances por Persona
-          </a>
-          <a href="#" class="submenu-item" onclick="showGlobalStats()">
-            <i class="fas fa-chart-line"></i> Estadísticas Globales
-          </a>
-          <a href="#" class="submenu-item" onclick="checkMongoFiles()">
-            <i class="fas fa-server"></i> Verificar MongoDB
-          </a>
-          <a href="#" class="submenu-item" onclick="showProgressReport()">
-            <i class="fas fa-chart-pie"></i> Reporte de Progreso
-          </a>
-        </div>
-      </div>
-
-      <a href="#" class="menu-item" onclick="logout()">
-        <i class="fas fa-sign-out-alt"></i>
-        <span>Salir</span>
-      </a>
-    </div>
-  </div>
-
-  <div class="container-fluid mt-4 main-content">
+{% block content %}
+<div class="container-fluid mt-4">
     <!-- Título Principal -->
     <div class="dashboard-title">
       <h1><i class="fas fa-arrows-alt"></i> ASIGNAR BATCHES</h1>
@@ -565,9 +375,6 @@
       </div>
     </div>
   </div>
-  
-  <!-- Cierre del contenido principal -->
-  </div>
 
   <!-- Modal para Nuevo Batch -->
   <div class="modal fade" id="newBatchModal" tabindex="-1">
@@ -645,112 +452,15 @@
       </div>
     </div>
   </div>
+{% endblock %}
 
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+{% block extra_js_libs %}
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+{% endblock %}
 
-  <script>
-    // Funciones del menú hamburguesa
-    function toggleMenu() {
-      const menu = document.getElementById('sideMenu');
-      const overlay = document.getElementById('menuOverlay');
-      const toggle = document.getElementById('menuToggle');
-      
-      menu.classList.toggle('open');
-      overlay.classList.toggle('show');
-      toggle.classList.toggle('active');
-    }
-
-    function closeMenu() {
-      const menu = document.getElementById('sideMenu');
-      const overlay = document.getElementById('menuOverlay');
-      const toggle = document.getElementById('menuToggle');
-      
-      menu.classList.remove('open');
-      overlay.classList.remove('show');
-      toggle.classList.remove('active');
-    }
-
-    // Función para mostrar opciones de dashboard filtrado
-    function showFilteredDashboardOptions() {
-      const crew = ['Mauricio', 'Maggie', 'Ceci', 'Flor', 'Ignacio']; // Puedes obtener esto dinámicamente
-      
-      let optionsHtml = `
-        <div class="submenu-header" style="padding: 0.5rem 1.5rem; background: rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1);">
-          <small style="color: rgba(255,255,255,0.8);">Selecciona un responsable:</small>
-        </div>
-      `;
-      
-      crew.forEach(member => {
-        optionsHtml += `
-          <a href="/dashboard/${member}" class="menu-item" style="padding-left: 2.5rem;">
-            <i class="fas fa-user-circle"></i>
-            <span>${member}</span>
-          </a>
-        `;
-      });
-      
-      // Crear el HTML del submenú
-      const submenuHtml = `
-        <div class="filtered-submenu" style="
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
-          backdrop-filter: blur(25px);
-          z-index: 10;
-          transform: translateX(100%);
-          transition: transform 0.3s ease;
-        ">
-          <div class="menu-header" style="display: flex; align-items: center; justify-content: space-between;">
-            <h5 class="text-white mb-0" style="font-size: 1rem;">
-              <i class="fas fa-filter"></i>
-              Dashboard Filtrado
-            </h5>
-            <button onclick="hideFilteredSubmenu()" style="
-              background: none;
-              border: none;
-              color: white;
-              font-size: 1.2rem;
-              cursor: pointer;
-              padding: 0.5rem;
-            ">
-              <i class="fas fa-arrow-left"></i>
-            </button>
-          </div>
-          <div style="padding: 1rem 0;">
-            ${optionsHtml}
-          </div>
-        </div>
-      `;
-      
-      // Agregar el submenú al menú lateral
-      const sideMenu = document.getElementById('sideMenu');
-      sideMenu.insertAdjacentHTML('beforeend', submenuHtml);
-      
-      // Mostrar el submenú con animación
-      setTimeout(() => {
-        const submenu = sideMenu.querySelector('.filtered-submenu');
-        submenu.style.transform = 'translateX(0)';
-      }, 50);
-    }
-
-    // Función para ocultar el submenú de filtrado
-    function hideFilteredSubmenu() {
-      const submenu = document.querySelector('.filtered-submenu');
-      if (submenu) {
-        submenu.style.transform = 'translateX(100%)';
-        setTimeout(() => {
-          submenu.remove();
-        }, 300);
-      }
-    }
-
+{% block page_js %}
+<script>
     // Variables globales
     let batches = [];
     let batchesTable;
@@ -1433,6 +1143,5 @@
         window.location.href = '/';
       }
     }
-  </script>
-</body>
-</html>
+</script>
+{% endblock %}

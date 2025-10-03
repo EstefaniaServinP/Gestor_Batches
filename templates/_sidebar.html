@@ -1,0 +1,106 @@
+{# Sidebar unificado - Partial reutilizable #}
+<!-- Botón hamburguesa -->
+<button
+  class="sidebar-toggle"
+  id="sidebarToggle"
+  onclick="toggleSidebar()"
+  aria-label="Abrir menú de navegación"
+  aria-expanded="false"
+  aria-controls="sidebar">
+  <i class="fas fa-bars"></i>
+</button>
+
+<!-- Overlay para cerrar -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- Sidebar -->
+<nav class="sidebar" id="sidebar" role="navigation" aria-label="Menú principal">
+  <div class="sidebar-header">
+    <h5>
+      <i class="fas fa-microscope"></i>
+      Dashboard
+    </h5>
+  </div>
+
+  <ul class="sidebar-menu">
+    <!-- Nivel 1: Inicio -->
+    <li class="sidebar-item {% if request.path == '/' or request.path == '/team' %}active{% endif %}">
+      <a href="/" class="sidebar-link">
+        <i class="fas fa-home"></i>
+        <span>Inicio</span>
+      </a>
+    </li>
+
+    <!-- Nivel 1: Dashboard General -->
+    <li class="sidebar-item {% if request.path.startswith('/dashboard') %}active{% endif %}">
+      <a href="/dashboard" class="sidebar-link">
+        <i class="fas fa-th-large"></i>
+        <span>Dashboard General</span>
+      </a>
+    </li>
+
+    <!-- Nivel 1: Máscaras -->
+    <li class="sidebar-item {% if request.path.startswith('/masks') %}active{% endif %}">
+      <a href="/masks" class="sidebar-link">
+        <i class="fas fa-images"></i>
+        <span>Máscaras</span>
+      </a>
+    </li>
+
+    <!-- Nivel 1: Métricas (toggle, NO navega) -->
+    <li class="sidebar-item {% if request.path.startswith('/metrics') %}active{% endif %}">
+      <button
+        class="sidebar-trigger"
+        id="metricsTrigger"
+        onclick="toggleMetricsSubmenu(event)"
+        onkeydown="handleMetricsTriggerKeydown(event)"
+        aria-expanded="false"
+        aria-controls="metricsSubmenu"
+        type="button">
+        <i class="fas fa-chart-bar"></i>
+        <span>Métricas</span>
+        <i class="fas fa-caret-right sidebar-caret"></i>
+      </button>
+
+      <!-- Submenú de Métricas -->
+      <ul
+        class="sidebar-submenu"
+        id="metricsSubmenu"
+        role="group"
+        aria-hidden="true">
+        <li class="sidebar-subitem {% if request.path == '/metrics/people' %}active{% endif %}">
+          <a href="/metrics/people" class="sidebar-sublink">
+            <i class="fas fa-users"></i>
+            <span>Avances por Persona</span>
+          </a>
+        </li>
+        <li class="sidebar-subitem {% if request.path == '/metrics/global' %}active{% endif %}">
+          <a href="/metrics/global" class="sidebar-sublink">
+            <i class="fas fa-chart-line"></i>
+            <span>Estadísticas Globales</span>
+          </a>
+        </li>
+        <li class="sidebar-subitem {% if request.path == '/metrics/mongo' %}active{% endif %}">
+          <a href="/metrics/mongo" class="sidebar-sublink">
+            <i class="fas fa-database"></i>
+            <span>Verificar MongoDB</span>
+          </a>
+        </li>
+        <li class="sidebar-subitem {% if request.path == '/metrics/report' %}active{% endif %}">
+          <a href="/metrics/report" class="sidebar-sublink">
+            <i class="fas fa-chart-pie"></i>
+            <span>Reporte de Progreso</span>
+          </a>
+        </li>
+      </ul>
+    </li>
+
+    <!-- Nivel 1: Salir -->
+    <li class="sidebar-item">
+      <a href="/logout" class="sidebar-link" onclick="return confirm('¿Estás seguro de que quieres salir?');">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Salir</span>
+      </a>
+    </li>
+  </ul>
+</nav>

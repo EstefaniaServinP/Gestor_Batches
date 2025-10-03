@@ -1,0 +1,264 @@
+/* ================================================
+   SIDEBAR UNIFICADO - Estilos encapsulados
+   ================================================ */
+
+/* Botón hamburguesa */
+.sidebar-toggle {
+  position: fixed;
+  top: 2rem;
+  left: 2rem;
+  z-index: 1500;
+  width: 70px;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 20px;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-toggle:hover {
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.05) rotate(5deg);
+  box-shadow: 0 12px 40px rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.sidebar-toggle.active {
+  transform: scale(0.95) rotate(90deg);
+  background: rgba(255, 255, 255, 0.4);
+}
+
+/* Overlay de fondo */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(3px);
+  z-index: 1300;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.sidebar-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Sidebar principal */
+.sidebar {
+  position: fixed;
+  top: 0;
+  left: -400px;
+  width: 350px;
+  height: 100vh;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(25px);
+  z-index: 1400;
+  transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+  overflow-y: auto;
+  box-shadow: 5px 0 50px rgba(0, 0, 0, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.sidebar.open {
+  left: 0;
+}
+
+/* Header del sidebar */
+.sidebar-header {
+  padding: 3rem 2rem 2rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.sidebar-header h5 {
+  color: white;
+  margin: 0;
+  font-weight: 300;
+  font-size: 1.3rem;
+  letter-spacing: 1px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Menú principal */
+.sidebar-menu {
+  list-style: none;
+  padding: 2rem 1.5rem;
+  margin: 0;
+}
+
+.sidebar-item {
+  margin: 0.8rem 0;
+}
+
+/* Enlaces del sidebar - IMPORTANTE: Fuerza color blanco */
+.sidebar-link,
+.sidebar-trigger {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.2rem 1.5rem;
+  color: rgba(255, 255, 255, 0.9) !important; /* Sobreescribe Bootstrap */
+  text-decoration: none !important;
+  border-radius: 15px;
+  border: 1px solid transparent;
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* Efecto de brillo al hover */
+.sidebar-link:before,
+.sidebar-trigger:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.6s;
+}
+
+.sidebar-link:hover:before,
+.sidebar-trigger:hover:before {
+  left: 100%;
+}
+
+/* Hover y focus */
+.sidebar-link:hover,
+.sidebar-link:focus,
+.sidebar-trigger:hover,
+.sidebar-trigger:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white !important;
+  transform: translateX(-8px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  outline: 2px solid rgba(255, 255, 255, 0.2);
+  outline-offset: 2px;
+  opacity: 1;
+}
+
+/* Item activo */
+.sidebar-item.active > .sidebar-link,
+.sidebar-item.active > .sidebar-trigger {
+  background: rgba(255, 255, 255, 0.2);
+  color: white !important;
+  font-weight: 600;
+}
+
+/* Iconos */
+.sidebar-link i,
+.sidebar-trigger i {
+  width: 24px;
+  text-align: center;
+  font-size: 1.3rem;
+}
+
+/* Caret del trigger */
+.sidebar-caret {
+  margin-left: auto;
+  transition: transform 0.3s ease;
+  font-size: 1rem;
+}
+
+.sidebar-trigger.expanded .sidebar-caret {
+  transform: rotate(90deg);
+}
+
+/* Submenú */
+.sidebar-submenu {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+
+.sidebar-submenu.open {
+  max-height: 500px;
+  opacity: 1;
+}
+
+.sidebar-submenu[aria-hidden="true"] {
+  visibility: hidden;
+}
+
+.sidebar-submenu[aria-hidden="false"] {
+  visibility: visible;
+}
+
+/* Items del submenú */
+.sidebar-subitem {
+  margin: 0.25rem 1rem;
+}
+
+.sidebar-sublink {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 1.5rem 0.8rem 3.5rem;
+  color: rgba(255, 255, 255, 0.85) !important; /* Fuerza blanco */
+  text-decoration: none !important;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.sidebar-sublink:hover,
+.sidebar-sublink:focus {
+  background: rgba(255, 255, 255, 0.1);
+  color: white !important;
+  transform: translateX(5px);
+  outline: 2px solid rgba(255, 255, 255, 0.2);
+  outline-offset: 2px;
+  opacity: 1;
+}
+
+.sidebar-subitem.active > .sidebar-sublink {
+  background: rgba(255, 255, 255, 0.2);
+  color: white !important;
+  font-weight: 600;
+}
+
+.sidebar-sublink i {
+  width: 16px;
+  text-align: center;
+  font-size: 1rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    width: 300px;
+  }
+
+  .sidebar-toggle {
+    width: 60px;
+    height: 60px;
+    font-size: 1.3rem;
+  }
+}

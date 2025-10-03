@@ -5,45 +5,52 @@
 /* Menú hamburguesa - Versión elegante */
 .menu-toggle {
   position: fixed;
-  top: 1rem;
-  left: 1rem;
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.9) 0%, rgba(168, 85, 247, 0.9) 100%);
-  border: none;
-  border-radius: 15px;
+  top: 2rem;
+  left: 2rem;
+  width: 70px;
+  height: 70px;
+  background: rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  border-radius: 20px;
   cursor: pointer;
   z-index: 1500;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
 }
 
 .menu-toggle:hover {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.4);
-  background: linear-gradient(135deg, rgba(99, 102, 241, 1) 0%, rgba(168, 85, 247, 1) 100%);
+  background: rgba(255, 255, 255, 0.35);
+  transform: scale(1.05) rotate(5deg);
+  box-shadow: 0 12px 40px rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 .menu-toggle.active {
-  background: linear-gradient(135deg, rgba(168, 85, 247, 1) 0%, rgba(99, 102, 241, 1) 100%);
-  transform: rotate(90deg);
+  transform: scale(0.95) rotate(90deg);
+  background: rgba(255, 255, 255, 0.4);
 }
 
 /* Menú lateral elegante */
 .side-menu {
   position: fixed;
   top: 0;
-  left: -350px;
+  left: -400px;
   width: 350px;
   height: 100vh;
-  background: linear-gradient(180deg, rgba(99, 102, 241, 0.95) 0%, rgba(168, 85, 247, 0.95) 100%);
-  backdrop-filter: blur(20px);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(25px);
   transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1400;
-  border-right: 2px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 5px 0 30px rgba(0, 0, 0, 0.3);
+  padding: 0;
+  overflow-y: auto;
+  box-shadow: 5px 0 50px rgba(0, 0, 0, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .side-menu.open {
@@ -51,24 +58,77 @@
 }
 
 .menu-header {
-  padding: 2rem 1.5rem 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  margin-bottom: 1rem;
+  padding: 3rem 2rem 2rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
 }
 
 .menu-header h5 {
   color: white;
   margin: 0;
-  font-weight: 600;
+  font-weight: 300;
   font-size: 1.3rem;
+  letter-spacing: 1px;
   text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 .menu-items {
-  padding: 0 1rem;
+  padding: 2rem 1.5rem;
 }
 
 .menu-item {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 1.2rem 1.5rem;
+  margin: 0.8rem 0;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  border-radius: 15px;
+  border: 1px solid transparent;
+  font-size: 1.1rem;
+  font-weight: 500;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-item:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.6s;
+}
+
+.menu-item:hover:before {
+  left: 100%;
+}
+
+.menu-item:hover,
+.menu-item:focus {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+  transform: translateX(-8px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  text-decoration: none;
+  outline: 2px solid rgba(255, 255, 255, 0.2);
+  outline-offset: 2px;
+}
+
+.menu-item i {
+  width: 24px;
+  text-align: center;
+  font-size: 1.3rem;
+}
+
+/* Menú item con submenú colapsable */
+.menu-item-trigger {
   display: flex;
   align-items: center;
   padding: 1rem 1.5rem;
@@ -80,9 +140,14 @@
   position: relative;
   overflow: hidden;
   font-weight: 500;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
 }
 
-.menu-item:before {
+.menu-item-trigger:before {
   content: '';
   position: absolute;
   top: 0;
@@ -93,23 +158,93 @@
   transition: left 0.5s;
 }
 
-.menu-item:hover:before {
+.menu-item-trigger:hover:before {
   left: 100%;
 }
 
-.menu-item:hover {
+.menu-item-trigger:hover,
+.menu-item-trigger:focus {
   background: rgba(255, 255, 255, 0.15);
   transform: translateX(5px);
   color: white;
   text-decoration: none;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  outline: 2px solid rgba(255, 255, 255, 0.3);
+  outline-offset: 2px;
 }
 
-.menu-item i {
+.menu-item-trigger i {
   margin-right: 1rem;
   font-size: 1.1rem;
   width: 20px;
   text-align: center;
+}
+
+.menu-item-trigger .caret {
+  margin-left: auto;
+  transition: transform 0.3s ease;
+  font-size: 0.9rem;
+}
+
+.menu-item-trigger.expanded .caret {
+  transform: rotate(90deg);
+}
+
+/* Submenú colapsable */
+.submenu-container {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+
+.submenu-container.expanded {
+  max-height: 500px;
+  opacity: 1;
+}
+
+.submenu-container[aria-hidden="true"] {
+  visibility: hidden;
+}
+
+.submenu-container[aria-hidden="false"] {
+  visibility: visible;
+}
+
+/* Items del submenú */
+.submenu-item {
+  display: flex;
+  align-items: center;
+  padding: 0.8rem 1.5rem 0.8rem 3.5rem;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  margin: 0.25rem 1rem;
+}
+
+.submenu-item:hover,
+.submenu-item:focus {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  text-decoration: none;
+  transform: translateX(5px);
+  outline: 2px solid rgba(255, 255, 255, 0.2);
+  outline-offset: 2px;
+}
+
+.submenu-item i {
+  margin-right: 1rem;
+  font-size: 1rem;
+  width: 16px;
+  text-align: center;
+}
+
+.submenu-item.active {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-weight: 600;
 }
 
 /* Overlay para cerrar menú */

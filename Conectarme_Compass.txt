@@ -1,0 +1,40 @@
+CONECTAR BASE DE DATOS
+
+Usaremos túnel SSH para que desde tu laptop puedas entrar al MongoDB del servidor de tu amigo (que escucha en 127.0.0.1:27017 allí). Tú te conectarás a tu 127.0.0.1:27018 y el túnel lo llevará al remoto.
+
+1) En tu laptop (cliente)
+1.1 Cierra túneles viejos (por si quedó algo abierto)
+
+pkill -f "L 27018:127.0.0.1:27017" 2>/dev/null || true
+pkill -f "L 27019:127.0.0.1:27017" 2>/dev/null || true
+
+
+1.2 Abre el túnel (LAN o IP pública, elige 1)
+
+LAN (si están en la misma red):
+ssh -f -N -v -L 27018:127.0.0.1:27017 carlos@192.168.0.246
+
+
+IP pública (si no están en la misma LAN):
+ssh -f -N -v -L 27018:127.0.0.1:27017 carlos@189.187.242.54
+
+
+1.3 Verifica que el túnel está escuchando
+ss -ltnp | grep 27018 || lsof -iTCP:27018 -sTCP:LISTEN
+
+1.4 Prueba de humo (confirma que llegas al remoto)
+mongosh "mongodb://127.0.0.1:27018/?directConnection=true" --eval "db.serverStatus().host"
+
+
+2) Conéctate con Compass (en la MISMA máquina donde abriste el túnel)
+
+Abre MongoDB Compass.
+
+Add new connection → Paste connection string.
+
+mongosh "mongodb://127.0.0.1:27018/?directConnection=true"
+
+Pega exactamente:
+mongodb://127.0.0.1:27018/?directConnection=true
+
+
