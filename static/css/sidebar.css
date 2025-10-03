@@ -6,7 +6,7 @@
 .sidebar-toggle {
   position: fixed;
   top: 2rem;
-  left: 2rem;
+  right: 2rem;
   z-index: 1500;
   width: 70px;
   height: 70px;
@@ -60,21 +60,21 @@
 .sidebar {
   position: fixed;
   top: 0;
-  left: -400px;
+  right: -400px;
   width: 350px;
   height: 100vh;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
   backdrop-filter: blur(25px);
   z-index: 1400;
-  transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0;
   overflow-y: auto;
-  box-shadow: 5px 0 50px rgba(0, 0, 0, 0.2);
-  border-right: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: -5px 0 50px rgba(0, 0, 0, 0.2);
+  border-left: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .sidebar.open {
-  left: 0;
+  right: 0;
 }
 
 /* Header del sidebar */
@@ -153,7 +153,7 @@
   background: rgba(255, 255, 255, 0.15);
   border-color: rgba(255, 255, 255, 0.3);
   color: white !important;
-  transform: translateX(-8px);
+  transform: translateX(8px);
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
   outline: 2px solid rgba(255, 255, 255, 0.2);
   outline-offset: 2px;
@@ -232,7 +232,7 @@
 .sidebar-sublink:focus {
   background: rgba(255, 255, 255, 0.1);
   color: white !important;
-  transform: translateX(5px);
+  transform: translateX(-5px);
   outline: 2px solid rgba(255, 255, 255, 0.2);
   outline-offset: 2px;
   opacity: 1;
