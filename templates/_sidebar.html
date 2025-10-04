@@ -39,6 +39,14 @@
       </a>
     </li>
 
+    <!-- Nivel 1: Asignar Batches -->
+    <li class="sidebar-item {% if request.path.startswith('/assign') or request.path.startswith('/batch-management') %}active{% endif %}">
+      <a href="/assign" class="sidebar-link">
+        <i class="fas fa-arrows-alt"></i>
+        <span>Asignar Batches</span>
+      </a>
+    </li>
+
     <!-- Nivel 1: Máscaras -->
     <li class="sidebar-item {% if request.path.startswith('/masks') %}active{% endif %}">
       <a href="/masks" class="sidebar-link">

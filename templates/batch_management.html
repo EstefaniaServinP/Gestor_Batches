@@ -287,7 +287,7 @@
       </div>
       <div>
         <button type="button" class="btn btn-outline-light btn-sm" onclick="toggleDetailedView()">
-          <i class="fas fa-table"></i> Vista Detallada
+          <i class="fas fa-table"></i> Ver Todos los Batches
         </button>
       </div>
     </div>
@@ -345,11 +345,11 @@
     <!-- Tabla de Revisión (Oculta por defecto, para vista detallada) -->
     <div class="card mt-3" id="detailedView" style="display: none;">
       <div class="card-header d-flex justify-content-between align-items-center">
-        <h5 class="mb-0"><i class="fas fa-clipboard-check"></i> Vista Detallada - Cola de Revisión</h5>
+        <h5 class="mb-0"><i class="fas fa-table"></i> Vista Detallada - Todos los Batches</h5>
         <div class="d-flex align-items-center gap-2">
           <small class="text-muted me-3">
-            <i class="fas fa-info-circle"></i> 
-            Los batches aprobados permanecen aquí hasta cambiar manualmente el estado a "S"
+            <i class="fas fa-info-circle"></i>
+            Vista completa de todos los batches del sistema
           </small>
           <button type="button" class="btn btn-secondary btn-sm" onclick="toggleDetailedView()">
             <i class="fas fa-eye-slash"></i> Ocultar Vista Detallada
@@ -414,7 +414,7 @@
               <div class="col-md-4">
                 <div class="mb-3">
                   <label class="form-label">Carpeta de Imágenes</label>
-                  <input type="text" class="form-control" id="folder" name="folder" placeholder="/data/batch_XX">
+                  <input type="text" class="form-control" id="folder" name="folder" placeholder="/home/faservin/american_project/batch_XX">
                   <div class="form-text">Ruta completa a la carpeta</div>
                 </div>
               </div>
@@ -469,14 +469,19 @@
     $(document).ready(function() {
       // Inicializar DataTables
       batchesTable = $('#batchesTable').DataTable({
-        pageLength: 25,
+        pageLength: -1,  // Mostrar TODOS los batches sin paginación
+        lengthMenu: [[10, 25, 50, 100, 200, 500, -1], [10, 25, 50, 100, 200, 500, "Todos"]],
         order: [[4, 'desc']],
         language: {
           url: 'https://cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json'
         },
         columnDefs: [
           { orderable: false, targets: -1 }
-        ]
+        ],
+        initComplete: function() {
+          // Seleccionar automáticamente "Todos" al cargar
+          this.api().page.len(-1).draw();
+        }
       });
 
       // Filtro por responsable
@@ -513,11 +518,23 @@
 
     function loadBatches() {
       console.log('🔄 Cargando batches...');
-      $.get('/api/batches')
+      $.get('/api/batches?per_page=1000')
         .done(function(data) {
-          console.log('✅ Batches cargados:', data.length);
-          console.log('📊 Datos recibidos:', data);
-          batches = data;
+          // Handle new paginated response format
+          if (data.batches) {
+            batches = data.batches;
+            // Store pagination info for future use
+            window.currentPage = data.pagination.page;
+            window.totalPages = data.pagination.total_pages;
+            window.totalBatches = data.pagination.total;
+          } else {
+            // Fallback for old format
+            batches = data;
+          }
+
+          console.log('✅ Batches cargados:', batches.length, 'de', window.totalBatches || 'N/A');
+          console.log('📊 Datos recibidos:', batches);
+
           updateStats();
           updateDragDropInterface();
           updateTable(); // Solo para la vista detallada
@@ -798,7 +815,7 @@
       const batchData = {
         id: batchId,
         assignee: assignee,
-        folder: `/data/${batchId}`,
+        folder: `/home/faservin/american_project/${batchId}`,
         tasks: ["segmentar", "subir_mascaras", "revisar"],
         metadata: {
           assigned_at: new Date().toISOString().split('T')[0],
@@ -892,7 +909,7 @@
       const detailedView = $('#detailedView');
       if (detailedView.is(':visible')) {
         detailedView.hide();
-        $('.btn[onclick="toggleDetailedView()"]').html('<i class="fas fa-table"></i> Vista Detallada');
+        $('.btn[onclick="toggleDetailedView()"]').html('<i class="fas fa-table"></i> Ver Todos los Batches');
       } else {
         detailedView.show();
         $('.btn[onclick="toggleDetailedView()"]').html('<i class="fas fa-columns"></i> Vista Drag & Drop');
@@ -936,16 +953,13 @@
     function updateTable() {
       console.log('📋 Actualizando tabla con', batches.length, 'batches');
       batchesTable.clear();
-      
-      // Filtrar solo batches que tienen responsable Y necesitan revisión (In y NS)
-      const batchesForReview = batches.filter(batch => 
-        (batch.status === 'In' || batch.status === 'NS') &&
-        batch.assignee && batch.assignee !== null && batch.assignee !== ''
-      );
-      
-      console.log(`📊 Mostrando ${batchesForReview.length} batches CON RESPONSABLE pendientes de revisión de ${batches.length} totales`);
-      
-      batchesForReview.forEach(function(batch) {
+
+      // Mostrar TODOS los batches (no filtrar)
+      const allBatches = batches;
+
+      console.log(`📊 Mostrando TODOS los ${allBatches.length} batches`);
+
+      allBatches.forEach(function(batch) {
         // Estado de MongoDB (Cargado a Mongo)
         const mongoStatus = batch.mongo_uploaded ? 
           `<i class="fas fa-check-circle text-success" title="Sí"></i> Sí` : 
@@ -1073,7 +1087,7 @@
       const batchData = {
         id: batchId,
         assignee: data.assignee,
-        folder: data.folder || `/data/${batchId}`,
+        folder: data.folder || `/home/faservin/american_project/${batchId}`,
         tasks: ["segmentar", "subir_mascaras", "revisar"],
         metadata: {
           assigned_at: new Date().toISOString().split('T')[0], // Fecha actual
