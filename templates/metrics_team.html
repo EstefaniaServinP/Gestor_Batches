@@ -395,10 +395,15 @@
 
     function loadBatches() {
       console.log('🔄 Cargando batches para métricas del equipo...');
-      $.get('/api/batches')
+      $.get('/api/batches?per_page=1000')
         .done(function(data) {
-          console.log('✅ Batches cargados:', data.length);
-          batches = data;
+          // Handle paginated response format
+          if (data.batches) {
+            batches = data.batches;
+          } else {
+            batches = data; // Fallback
+          }
+          console.log('✅ Batches cargados:', batches.length);
           updateTeamMetrics();
         })
         .fail(function(xhr) {
