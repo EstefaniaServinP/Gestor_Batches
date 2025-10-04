@@ -196,22 +196,60 @@ $.get('/api/batches')
 .done(function(data) {
   batches = data;  // ❌ Error: data es objeto paginado
 
-// AHORA: Maneja respuesta paginada igual que batch_management
-$.get('/api/batches?per_page=1000')
-.done(function(data) {
-  if (data.batches) {
-    batches = data.batches;  // ✅ Extrae array de batches
-  } else {
-    batches = data; // Fallback
+// AHORA: Endpoints dedicados de métricas
+$.get('/api/metrics/team')  // ✅ Estadísticas por persona
+.done(function(response) {
+  if (response.success) {
+    teamMetrics = response.data;  // ✅ Datos calculados en backend
+    updateTeamMetricsFromAPI(teamMetrics);
   }
+});
+
+$.get('/api/metrics/overview')  // ✅ Estadísticas globales
+.done(function(response) {
+  if (response.success) {
+    overviewStats = response.data;
+    updateMetricsFromAPI(overviewStats, response.completion_rate);
+  }
+});
+```
+
+### 9. **Nuevos Endpoints API de Métricas**
+```python
+# Estadísticas globales
+GET /api/metrics/overview
+# Respuesta: {"success": true, "data": {"total_batches": 571, "completed_batches": 5, ...}, "completion_rate": 0.9}
+
+# Métricas por equipo
+GET /api/metrics/team
+# Respuesta: {"success": true, "data": [{"assignee": "Mauricio", "total": 1, "completed": 0, "pending": 1, ...}], ...}
+
+# Serie temporal de progreso
+GET /api/metrics/progress
+# Respuesta: {"success": true, "data": [{"date": "2025-10-04", "total": 1, "completed": 0, ...}], ...}
+```
+
+### 10. **Enlaces del Menú Corregidos**
+```html
+<!-- ANTES: Enlaces incorrectos -->
+<a href="/metrics/people">Avances por Persona</a>     <!-- ❌ -->
+<a href="/metrics/global">Estadísticas Globales</a>   <!-- ❌ -->
+<a href="/metrics/report">Reporte de Progreso</a>     <!-- ❌ -->
+
+<!-- AHORA: Enlaces correctos -->
+<a href="/metrics/team">Avances por Persona</a>       <!-- ✅ -->
+<a href="/metrics/overview">Estadísticas Globales</a> <!-- ✅ -->
+<a href="/metrics/progress">Reporte de Progreso</a>   <!-- ✅ -->
 ```
 
 ## 🎯 Estado Final Completamente Funcional
 - ✅ **Filesystem conectado** al dashboard
 - ✅ **571 batches recuperados** (todos los que tenías hardcodeados)
 - ✅ **Vista Detallada** muestra TODOS los batches sin paginación
-- ✅ **Métricas del Equipo** conectadas y funcionando
-- ✅ **Vista General** muestra estadísticas correctas
+- ✅ **Métricas del Equipo** conectadas y funcionando (Mauricio: 1 batch NS)
+- ✅ **Vista General** muestra estadísticas correctas (571 total, 0.9% completado)
+- ✅ **API de métricas** implementada (`/api/metrics/overview`, `/api/metrics/team`, `/api/metrics/progress`)
+- ✅ **Enlaces del menú** corregidos para navegación correcta
 - ✅ **Drag & drop funcionando** perfectamente
 - ✅ **Detección automática** de nuevas carpetas
 - ✅ **Sincronización** completa con MongoDB

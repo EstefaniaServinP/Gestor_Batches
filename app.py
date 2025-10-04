@@ -816,7 +816,7 @@ def get_missing_batches():
                 item_path = os.path.join(DATA_DIRECTORY, item)
                 # Excluir archivos y directorios que no son batches
                 exclude_items = ['subfolder_names.txt', 'assets_task_01jxjr14ykeghb7nvakp9ey2d9_1749754687_img_1.webp',
-                               'imagenes ilustrativas', 'logo.png', 'logo.zip', 'Presentación_Cap_OPERADOR', 'PRESENT_LECTURA']
+                                'imagenes ilustrativas', 'logo.png', 'logo.zip', 'Presentación_Cap_OPERADOR', 'PRESENT_LECTURA']
                 if os.path.isdir(item_path) and item not in exclude_items and not item.startswith('.'):
                     all_possible_batches.append(item)
 
@@ -850,6 +850,241 @@ def get_missing_batches():
 
     except Exception as e:
         print(f"❌ Error obteniendo batches faltantes: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/metrics/overview", methods=["GET"])
+def get_metrics_overview():
+    """Obtener estadísticas globales del sistema"""
+    try:
+        global batches_col
+        if batches_col is None:
+            db_local = get_db(raise_on_fail=False)
+            if db_local is not None:
+                batches_col = db_local["batches"]
+            else:
+                return jsonify({"error": "No DB connection"}), 503
+
+        # Agregación para estadísticas globales
+        pipeline = [
+            {
+                "$group": {
+                    "_id": "$status",
+                    "count": {"$sum": 1}
+                }
+            }
+        ]
+
+        results = list(batches_col.aggregate(pipeline))
+
+        # Inicializar contadores
+        stats = {
+            "total_batches": 0,
+            "completed_batches": 0,  # S
+            "in_progress_batches": 0,  # FS
+            "pending_batches": 0,     # NS
+            "unassigned_batches": 0   # assignee null/empty
+        }
+
+        # Procesar resultados de agregación
+        for result in results:
+            status = result["_id"]
+            count = result["count"]
+            stats["total_batches"] += count
+
+            if status == "S":
+                stats["completed_batches"] = count
+            elif status == "FS":
+                stats["in_progress_batches"] = count
+            elif status == "NS":
+                stats["pending_batches"] = count
+
+        # Contar batches sin asignar
+        unassigned_count = batches_col.count_documents({
+            "$or": [
+                {"assignee": {"$exists": False}},
+                {"assignee": None},
+                {"assignee": ""},
+                {"assignee": {"$regex": "^\\s*$"}}
+            ]
+        })
+        stats["unassigned_batches"] = unassigned_count
+
+        # Calcular porcentaje de completado
+        completion_rate = (stats["completed_batches"] / stats["total_batches"] * 100) if stats["total_batches"] > 0 else 0
+
+        return jsonify({
+            "success": True,
+            "data": stats,
+            "completion_rate": round(completion_rate, 1),
+            "message": f"Estadísticas calculadas para {stats['total_batches']} batches"
+        })
+
+    except Exception as e:
+        print(f"❌ Error en metrics overview: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/metrics/team", methods=["GET"])
+def get_metrics_team():
+    """Obtener métricas por miembro del equipo"""
+    try:
+        global batches_col
+        if batches_col is None:
+            db_local = get_db(raise_on_fail=False)
+            if db_local is not None:
+                batches_col = db_local["batches"]
+            else:
+                return jsonify({"error": "No DB connection"}), 503
+
+        # Obtener lista de miembros del equipo
+        team_members = []
+        try:
+            # Intentar usar colección team de MongoDB
+            team_col = db_local["team"]
+            team_members = [member["name"] for member in team_col.find({}, {"name": 1, "_id": 0})]
+        except:
+            # Fallback a lista hardcodeada
+            team_members = CREW_MEMBERS
+
+        # Agregación para métricas por assignee
+        pipeline = [
+            {
+                "$group": {
+                    "_id": {
+                        "$cond": {
+                            "if": {"$or": [
+                                {"$eq": ["$assignee", None]},
+                                {"$eq": ["$assignee", ""]},
+                                {"$regexMatch": {"input": "$assignee", "regex": "^\\s*$"}}
+                            ]},
+                            "then": "Sin asignar",
+                            "else": "$assignee"
+                        }
+                    },
+                    "total": {"$sum": 1},
+                    "completed": {"$sum": {"$cond": [{"$eq": ["$status", "S"]}, 1, 0]}},
+                    "in_progress": {"$sum": {"$cond": [{"$eq": ["$status", "FS"]}, 1, 0]}},
+                    "pending": {"$sum": {"$cond": [{"$eq": ["$status", "NS"]}, 1, 0]}},
+                    "batches": {"$push": {
+                        "id": "$id",
+                        "status": "$status",
+                        "assigned_at": "$metadata.assigned_at"
+                    }}
+                }
+            },
+            {
+                "$sort": {"_id": 1}
+            }
+        ]
+
+        results = list(batches_col.aggregate(pipeline))
+
+        # Procesar resultados y agregar recent_batches
+        team_metrics = []
+        for result in results:
+            assignee = result["_id"]
+
+            # Ordenar batches por fecha de asignación (si existe) o por ID
+            batches = result["batches"]
+            batches.sort(key=lambda x: (x.get("assigned_at") or "9999-99-99", x["id"]), reverse=True)
+
+            # Tomar los 3 más recientes
+            recent_batches = [batch["id"] for batch in batches[:3]]
+
+            team_metrics.append({
+                "assignee": assignee,
+                "total": result["total"],
+                "completed": result["completed"],
+                "in_progress": result["in_progress"],
+                "pending": result["pending"],
+                "completion_rate": round((result["completed"] / result["total"] * 100), 1) if result["total"] > 0 else 0,
+                "recent_batches": recent_batches
+            })
+
+        # Asegurar que todos los miembros del equipo aparezcan (incluso con 0 batches)
+        existing_assignees = {metric["assignee"] for metric in team_metrics}
+        for member in team_members:
+            if member not in existing_assignees:
+                team_metrics.append({
+                    "assignee": member,
+                    "total": 0,
+                    "completed": 0,
+                    "in_progress": 0,
+                    "pending": 0,
+                    "completion_rate": 0,
+                    "recent_batches": []
+                })
+
+        # Ordenar por nombre de assignee
+        team_metrics.sort(key=lambda x: x["assignee"])
+
+        return jsonify({
+            "success": True,
+            "data": team_metrics,
+            "total_members": len(team_members),
+            "message": f"Métricas calculadas para {len(team_metrics)} miembros"
+        })
+
+    except Exception as e:
+        print(f"❌ Error en metrics team: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/metrics/progress", methods=["GET"])
+def get_metrics_progress():
+    """Obtener serie temporal de progreso por fechas de asignación"""
+    try:
+        global batches_col
+        if batches_col is None:
+            db_local = get_db(raise_on_fail=False)
+            if db_local is not None:
+                batches_col = db_local["batches"]
+            else:
+                return jsonify({"error": "No DB connection"}), 503
+
+        # Agregación por fecha de asignación
+        pipeline = [
+            {
+                "$match": {
+                    "metadata.assigned_at": {"$exists": True, "$ne": None, "$ne": ""}
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$metadata.assigned_at",
+                    "total": {"$sum": 1},
+                    "completed": {"$sum": {"$cond": [{"$eq": ["$status", "S"]}, 1, 0]}},
+                    "in_progress": {"$sum": {"$cond": [{"$eq": ["$status", "FS"]}, 1, 0]}},
+                    "pending": {"$sum": {"$cond": [{"$eq": ["$status", "NS"]}, 1, 0]}}
+                }
+            },
+            {
+                "$sort": {"_id": 1}
+            }
+        ]
+
+        results = list(batches_col.aggregate(pipeline))
+
+        # Procesar resultados
+        progress_data = []
+        for result in results:
+            date = result["_id"]
+            progress_data.append({
+                "date": date,
+                "total": result["total"],
+                "completed": result["completed"],
+                "in_progress": result["in_progress"],
+                "pending": result["pending"],
+                "completion_rate": round((result["completed"] / result["total"] * 100), 1) if result["total"] > 0 else 0
+            })
+
+        return jsonify({
+            "success": True,
+            "data": progress_data,
+            "total_dates": len(progress_data),
+            "message": f"Serie temporal calculada para {len(progress_data)} fechas"
+        })
+
+    except Exception as e:
+        print(f"❌ Error en metrics progress: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == "__main__":

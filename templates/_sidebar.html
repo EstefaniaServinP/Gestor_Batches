@@ -76,14 +76,14 @@
         id="metricsSubmenu"
         role="group"
         aria-hidden="true">
-        <li class="sidebar-subitem {% if request.path == '/metrics/people' %}active{% endif %}">
-          <a href="/metrics/people" class="sidebar-sublink">
+        <li class="sidebar-subitem {% if request.path == '/metrics/team' %}active{% endif %}">
+          <a href="/metrics/team" class="sidebar-sublink">
             <i class="fas fa-users"></i>
             <span>Avances por Persona</span>
           </a>
         </li>
-        <li class="sidebar-subitem {% if request.path == '/metrics/global' %}active{% endif %}">
-          <a href="/metrics/global" class="sidebar-sublink">
+        <li class="sidebar-subitem {% if request.path == '/metrics/overview' %}active{% endif %}">
+          <a href="/metrics/overview" class="sidebar-sublink">
             <i class="fas fa-chart-line"></i>
             <span>Estadísticas Globales</span>
           </a>
@@ -94,8 +94,8 @@
             <span>Verificar MongoDB</span>
           </a>
         </li>
-        <li class="sidebar-subitem {% if request.path == '/metrics/report' %}active{% endif %}">
-          <a href="/metrics/report" class="sidebar-sublink">
+        <li class="sidebar-subitem {% if request.path == '/metrics/progress' %}active{% endif %}">
+          <a href="/metrics/progress" class="sidebar-sublink">
             <i class="fas fa-chart-pie"></i>
             <span>Reporte de Progreso</span>
           </a>

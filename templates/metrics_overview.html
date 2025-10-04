@@ -301,7 +301,7 @@
 {% block page_js %}
 <script>
     // Variables globales
-    let batches = [];
+    let overviewStats = {};
 
     $(document).ready(function() {
       // Inicializar DataTables
@@ -321,73 +321,64 @@
     });
 
     function loadBatches() {
-      console.log('🔄 Cargando batches para métricas...');
-      $.get('/api/batches?per_page=1000')
-        .done(function(data) {
-          // Handle paginated response format
-          if (data.batches) {
-            batches = data.batches;
+      console.log('🔄 Cargando métricas generales...');
+      $.get('/api/metrics/overview')
+        .done(function(response) {
+          if (response.success) {
+            overviewStats = response.data;
+            console.log('✅ Estadísticas generales cargadas:', overviewStats);
+            updateMetricsFromAPI(overviewStats, response.completion_rate);
           } else {
-            batches = data; // Fallback
+            console.error('❌ Error en respuesta:', response.error);
+            alert('Error cargando métricas: ' + (response.error || 'Error desconocido'));
           }
-          console.log('✅ Batches cargados:', batches.length);
-          updateMetrics();
         })
         .fail(function(xhr) {
-          console.error('❌ Error cargando batches:', xhr);
-          alert('Error cargando batches: ' + (xhr.responseJSON?.error || 'Error desconocido'));
+          console.error('❌ Error cargando métricas generales:', xhr);
+          alert('Error cargando métricas: ' + (xhr.responseJSON?.error || 'Error desconocido'));
         });
     }
 
-    function updateMetrics() {
-      const total = batches.length;
-      const completed = batches.filter(b => b.status === 'S').length;
-      const inProgress = batches.filter(b => b.status === 'In').length;
-      const pending = batches.filter(b => b.status === 'NS').length;
-
-      // Actualizar estadísticas generales
-      $('#totalBatches').text(total);
-      $('#completedBatches').text(completed);
-      $('#inProgressBatches').text(inProgress);
-      $('#pendingBatches').text(pending);
+    function updateMetricsFromAPI(stats, completionRate) {
+      // Actualizar estadísticas generales desde el API
+      $('#totalBatches').text(stats.total_batches);
+      $('#completedBatches').text(stats.completed_batches);
+      $('#inProgressBatches').text(stats.in_progress_batches);
+      $('#pendingBatches').text(stats.pending_batches);
 
       // Actualizar barra de progreso
-      const completionRate = total > 0 ? ((completed / total) * 100).toFixed(1) : 0;
       $('#overallProgress').css('width', completionRate + '%');
-      $('#progressText').text(`${completed}/${total} batches completados (${completionRate}%)`);
+      $('#progressText').text(`${stats.completed_batches}/${stats.total_batches} batches completados (${completionRate}%)`);
 
-      // Calcular métricas por responsable
-      const byAssignee = {};
-      batches.forEach(b => {
-        if (!byAssignee[b.assignee]) {
-          byAssignee[b.assignee] = { total: 0, completed: 0, inProgress: 0, pending: 0 };
-        }
-        byAssignee[b.assignee].total++;
-        if (b.status === 'S') byAssignee[b.assignee].completed++;
-        else if (b.status === 'In') byAssignee[b.assignee].inProgress++;
-        else if (b.status === 'NS') byAssignee[b.assignee].pending++;
-      });
-
-      // Actualizar tabla
-      updateMetricsTable(byAssignee);
+      // Para la tabla, necesitamos cargar métricas por equipo
+      loadTeamMetricsForTable();
     }
 
-    function updateMetricsTable(byAssignee) {
+    function loadTeamMetricsForTable() {
+      $.get('/api/metrics/team')
+        .done(function(response) {
+          if (response.success) {
+            updateMetricsTableFromAPI(response.data);
+          }
+        })
+        .fail(function(xhr) {
+          console.error('❌ Error cargando métricas del equipo para tabla:', xhr);
+        });
+    }
+
+    function updateMetricsTableFromAPI(teamMetrics) {
       const tableBody = document.getElementById('metricsTableBody');
       tableBody.innerHTML = '';
 
-      Object.keys(byAssignee).sort().forEach(assignee => {
-        const stats = byAssignee[assignee];
-        const rate = stats.total > 0 ? ((stats.completed / stats.total) * 100).toFixed(1) : 0;
-
+      teamMetrics.forEach(member => {
         const row = document.createElement('tr');
         row.innerHTML = `
-          <td><strong>${assignee}</strong></td>
-          <td>${stats.total}</td>
-          <td><span class="badge bg-success">${stats.completed}</span></td>
-          <td><span class="badge bg-warning">${stats.inProgress}</span></td>
-          <td><span class="badge bg-secondary">${stats.pending}</span></td>
-          <td>${rate}%</td>
+          <td><strong>${member.assignee}</strong></td>
+          <td>${member.total}</td>
+          <td><span class="badge bg-success">${member.completed}</span></td>
+          <td><span class="badge bg-warning">${member.in_progress}</span></td>
+          <td><span class="badge bg-secondary">${member.pending}</span></td>
+          <td>${member.completion_rate}%</td>
         `;
         tableBody.appendChild(row);
       });
@@ -397,36 +388,32 @@
     }
 
     function exportMetrics() {
-      // Calcular estadísticas
-      const byAssignee = {};
-      batches.forEach(b => {
-        if (!byAssignee[b.assignee]) {
-          byAssignee[b.assignee] = { total: 0, completed: 0, inProgress: 0, pending: 0 };
-        }
-        byAssignee[b.assignee].total++;
-        if (b.status === 'S') byAssignee[b.assignee].completed++;
-        else if (b.status === 'In') byAssignee[b.assignee].inProgress++;
-        else if (b.status === 'NS') byAssignee[b.assignee].pending++;
-      });
+      // Usar datos del API (overviewStats contiene estadísticas generales)
+      // Para exportar por assignee, necesitamos cargar métricas del equipo
+      $.get('/api/metrics/team')
+        .done(function(response) {
+          if (response.success) {
+            const csvContent = "Responsable,Total,Completados,En Progreso,Pendientes,Porcentaje Completado\\n" +
+              response.data.map(member =>
+                `${member.assignee},${member.total},${member.completed},${member.in_progress},${member.pending},${member.completion_rate}%`
+              ).join("\\n");
 
-      // Crear CSV
-      let csvContent = "Responsable,Total,Completados,En Progreso,Pendientes,Porcentaje Completado\\n";
-      Object.keys(byAssignee).sort().forEach(assignee => {
-        const stats = byAssignee[assignee];
-        const rate = stats.total > 0 ? ((stats.completed / stats.total) * 100).toFixed(1) : 0;
-        csvContent += `${assignee},${stats.total},${stats.completed},${stats.inProgress},${stats.pending},${rate}%\\n`;
-      });
+            // Descargar archivo
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `metricas_${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
 
-      // Descargar archivo
-      const blob = new Blob([csvContent], { type: 'text/csv' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `metricas_${new Date().toISOString().split('T')[0]}.csv`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-
-      showNotification('Métricas exportadas exitosamente', 'success');
+            showNotification('Métricas exportadas exitosamente', 'success');
+          }
+        })
+        .fail(function(xhr) {
+          console.error('❌ Error cargando métricas para exportar:', xhr);
+          showNotification('Error exportando métricas', 'error');
+        });
     }
 
     function showNotification(message, type = 'info') {
