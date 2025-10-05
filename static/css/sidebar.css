@@ -244,6 +244,16 @@
   font-weight: 600;
 }
 
+/* Elemento activo en submenú (no clickeable) */
+.active-link {
+  color: #10b981 !important;
+  font-weight: 600;
+  cursor: default !important;
+  pointer-events: none;
+  background: rgba(16, 185, 129, 0.1) !important;
+  border-left: 3px solid #10b981 !important;
+}
+
 .sidebar-sublink i {
   width: 16px;
   text-align: center;

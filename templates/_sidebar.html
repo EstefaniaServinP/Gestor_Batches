@@ -55,52 +55,12 @@
       </a>
     </li>
 
-    <!-- Nivel 1: Métricas (toggle, NO navega) -->
+    <!-- Nivel 1: Métricas -->
     <li class="sidebar-item {% if request.path.startswith('/metrics') %}active{% endif %}">
-      <button
-        class="sidebar-trigger"
-        id="metricsTrigger"
-        onclick="toggleMetricsSubmenu(event)"
-        onkeydown="handleMetricsTriggerKeydown(event)"
-        aria-expanded="false"
-        aria-controls="metricsSubmenu"
-        type="button">
+      <a href="/metrics" class="sidebar-link">
         <i class="fas fa-chart-bar"></i>
         <span>Métricas</span>
-        <i class="fas fa-caret-right sidebar-caret"></i>
-      </button>
-
-      <!-- Submenú de Métricas -->
-      <ul
-        class="sidebar-submenu"
-        id="metricsSubmenu"
-        role="group"
-        aria-hidden="true">
-        <li class="sidebar-subitem {% if request.path == '/metrics/team' %}active{% endif %}">
-          <a href="/metrics/team" class="sidebar-sublink">
-            <i class="fas fa-users"></i>
-            <span>Avances por Persona</span>
-          </a>
-        </li>
-        <li class="sidebar-subitem {% if request.path == '/metrics/overview' %}active{% endif %}">
-          <a href="/metrics/overview" class="sidebar-sublink">
-            <i class="fas fa-chart-line"></i>
-            <span>Estadísticas Globales</span>
-          </a>
-        </li>
-        <li class="sidebar-subitem {% if request.path == '/metrics/mongo' %}active{% endif %}">
-          <a href="/metrics/mongo" class="sidebar-sublink">
-            <i class="fas fa-database"></i>
-            <span>Verificar MongoDB</span>
-          </a>
-        </li>
-        <li class="sidebar-subitem {% if request.path == '/metrics/progress' %}active{% endif %}">
-          <a href="/metrics/progress" class="sidebar-sublink">
-            <i class="fas fa-chart-pie"></i>
-            <span>Reporte de Progreso</span>
-          </a>
-        </li>
-      </ul>
+      </a>
     </li>
 
     <!-- Nivel 1: Salir -->

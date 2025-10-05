@@ -4,6 +4,7 @@
 
 {% block extra_css_libs %}
 <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}
 
 {% block page_css %}
@@ -293,46 +294,24 @@
       </div>
     </div>
 
-    <!-- Navegación entre vistas de métricas -->
+
+    <!-- Gráfica de Barras Horizontales - Completados por Persona -->
     <div class="card mb-4">
-      <div class="card-body text-center">
-        <h5 class="card-title mb-3">Explorar Métricas</h5>
-        <div class="row">
-          <div class="col-md-4">
-            <a href="/metrics/overview" class="btn btn-outline-light btn-lg w-100 mb-2">
-              <i class="fas fa-chart-line"></i><br>
-              Vista General
-            </a>
-          </div>
-          <div class="col-md-4">
-            <a href="/metrics/team" class="btn btn-primary btn-lg w-100 mb-2">
-              <i class="fas fa-users"></i><br>
-              Métricas por Equipo
-            </a>
-          </div>
-          <div class="col-md-4">
-            <a href="/metrics/progress" class="btn btn-outline-light btn-lg w-100 mb-2">
-              <i class="fas fa-chart-pie"></i><br>
-              Reportes de Progreso
-            </a>
-          </div>
-        </div>
+      <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-chart-bar"></i> Completados por Segmentador</h5>
+      </div>
+      <div class="card-body">
+        <canvas id="completionChart" width="400" height="300"></canvas>
       </div>
     </div>
 
-    <!-- Métricas por Miembro del Equipo -->
+    <!-- Gráfica de Donut - Distribución de Estados -->
     <div class="card mb-4">
       <div class="card-header">
-        <h5 class="mb-0"><i class="fas fa-user-friends"></i> Rendimiento por Segmentador</h5>
+        <h5 class="mb-0"><i class="fas fa-chart-pie"></i> Distribución General de Estados</h5>
       </div>
       <div class="card-body">
-        <div id="teamMetricsContainer">
-          <!-- Las métricas se cargarán dinámicamente -->
-          <div class="text-center">
-            <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
-            <p>Cargando métricas del equipo...</p>
-          </div>
-        </div>
+        <canvas id="statusDonutChart" width="400" height="300"></canvas>
       </div>
     </div>
 
@@ -425,65 +404,95 @@
       $('#totalActiveBatches').text(totalActive);
       $('#totalCompletedBatches').text(totalCompleted);
 
-      // Generar métricas por miembro usando datos del API
-      updateTeamMemberCardsFromAPI(teamMetrics);
+      // Crear gráficas usando datos del API
+      createCompletionChart(teamMetrics);
+      createStatusDonutChart(teamMetrics);
 
       // Actualizar tabla usando datos del API
       updateTeamTableFromAPI(teamMetrics);
     }
 
-    function updateTeamMemberCardsFromAPI(teamMetrics) {
-      const container = document.getElementById('teamMetricsContainer');
-      container.innerHTML = '';
+    function createCompletionChart(teamMetrics) {
+      const ctx = document.getElementById('completionChart').getContext('2d');
 
-      teamMetrics.forEach(member => {
-        const completionRate = member.completion_rate;
-        const progressRate = member.total > 0 ? ((member.in_progress / member.total) * 100).toFixed(1) : 0;
+      // Ordenar por completados descendente
+      const sortedData = teamMetrics.sort((a, b) => b.completed - a.completed);
 
-        const memberCard = document.createElement('div');
-        memberCard.className = 'team-member-card fade-in';
-        memberCard.innerHTML = `
-          <div class="member-name">${member.assignee}</div>
-          <div class="member-stats">
-            <div class="stat-item">
-              <span class="stat-value text-primary">${member.total}</span>
-              <span class="stat-label">Total</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-value text-success">${member.completed}</span>
-              <span class="stat-label">Completados</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-value text-warning">${member.in_progress}</span>
-              <span class="stat-label">En Progreso</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-value text-secondary">${member.pending}</span>
-              <span class="stat-label">Pendientes</span>
-            </div>
-          </div>
-
-          <div class="member-progress">
-            <div class="progress" style="height: 8px;">
-              <div class="progress-bar bg-success" style="width: ${completionRate}%"></div>
-              <div class="progress-bar bg-warning" style="width: ${progressRate}%"></div>
-            </div>
-            <small class="text-muted mt-1 d-block">
-              ${completionRate}% completado, ${progressRate}% en proceso
-            </small>
-          </div>
-
-          <div class="member-recent-batches">
-            <strong>Batches recientes:</strong>
-            ${member.recent_batches.map(batchId => {
-              // Para mostrar batches recientes, usamos una clase genérica ya que no tenemos el status individual
-              return `<span class="batch-tag batch-pending">${batchId}</span>`;
-            }).join('')}
-          </div>
-        `;
-        container.appendChild(memberCard);
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: sortedData.map(member => member.assignee),
+          datasets: [{
+            label: 'Batches Completados',
+            data: sortedData.map(member => member.completed),
+            backgroundColor: 'rgba(16, 185, 129, 0.8)',
+            borderColor: 'rgba(16, 185, 129, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          indexAxis: 'y', // Barras horizontales
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            title: {
+              display: true,
+              text: 'Batches Completados por Segmentador'
+            }
+          },
+          scales: {
+            x: {
+              beginAtZero: true
+            }
+          }
+        }
       });
     }
+
+    function createStatusDonutChart(teamMetrics) {
+      const ctx = document.getElementById('statusDonutChart').getContext('2d');
+
+      // Sumar todos los estados
+      const totalCompleted = teamMetrics.reduce((sum, member) => sum + member.completed, 0);
+      const totalInProgress = teamMetrics.reduce((sum, member) => sum + member.in_progress, 0);
+      const totalPending = teamMetrics.reduce((sum, member) => sum + member.pending, 0);
+
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Completados', 'En Progreso', 'Pendientes'],
+          datasets: [{
+            data: [totalCompleted, totalInProgress, totalPending],
+            backgroundColor: [
+              'rgba(16, 185, 129, 0.8)',
+              'rgba(245, 158, 11, 0.8)',
+              'rgba(107, 114, 128, 0.8)'
+            ],
+            borderColor: [
+              'rgba(16, 185, 129, 1)',
+              'rgba(245, 158, 11, 1)',
+              'rgba(107, 114, 128, 1)'
+            ],
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+            },
+            title: {
+              display: true,
+              text: 'Distribución General de Estados'
+            }
+          }
+        }
+      });
+    }
+
 
     function updateTeamTableFromAPI(teamMetrics) {
       const tableBody = document.getElementById('teamTableBody');

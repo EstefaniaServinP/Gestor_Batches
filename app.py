@@ -94,43 +94,8 @@ def masks():
 
 @app.route("/metrics")
 def metrics():
-    """Página principal de métricas del sistema"""
-    return render_template("metrics.html", crew=CREW_MEMBERS)
-
-@app.route("/metrics/overview")
-def metrics_overview():
-    """Página de vista general de métricas"""
+    """Página de estadísticas globales"""
     return render_template("metrics_overview.html", crew=CREW_MEMBERS)
-
-@app.route("/metrics/team")
-def metrics_team():
-    """Página de métricas del equipo"""
-    return render_template("metrics_team.html", crew=CREW_MEMBERS)
-
-@app.route("/metrics/progress")
-def metrics_progress():
-    """Página de reportes de progreso"""
-    return render_template("metrics_progress.html", crew=CREW_MEMBERS)
-
-@app.route("/metrics/people")
-def metrics_people():
-    """Página de avances por persona (redirige a team)"""
-    return render_template("metrics_team.html", crew=CREW_MEMBERS)
-
-@app.route("/metrics/global")
-def metrics_global():
-    """Página de estadísticas globales (redirige a overview)"""
-    return render_template("metrics_overview.html", crew=CREW_MEMBERS)
-
-@app.route("/metrics/mongo")
-def metrics_mongo():
-    """Página de verificación MongoDB"""
-    return render_template("metrics_mongo.html", crew=CREW_MEMBERS)
-
-@app.route("/metrics/report")
-def metrics_report():
-    """Página de reporte de progreso (redirige a progress)"""
-    return render_template("metrics_progress.html", crew=CREW_MEMBERS)
 
 @app.route("/logout")
 def logout():
@@ -925,7 +890,7 @@ def get_metrics_overview():
 
 @app.route("/api/metrics/team", methods=["GET"])
 def get_metrics_team():
-    """Obtener métricas por miembro del equipo"""
+    """Obtener métricas por miembro del equipo con paridad de datos"""
     try:
         global batches_col
         if batches_col is None:
@@ -935,31 +900,33 @@ def get_metrics_team():
             else:
                 return jsonify({"error": "No DB connection"}), 503
 
-        # Obtener lista de miembros del equipo
-        team_members = []
-        try:
-            # Intentar usar colección team de MongoDB
-            team_col = db_local["team"]
-            team_members = [member["name"] for member in team_col.find({}, {"name": 1, "_id": 0})]
-        except:
-            # Fallback a lista hardcodeada
-            team_members = CREW_MEMBERS
-
         # Agregación para métricas por assignee
         pipeline = [
             {
-                "$group": {
-                    "_id": {
+                "$addFields": {
+                    "assignee_normalized": {
                         "$cond": {
                             "if": {"$or": [
                                 {"$eq": ["$assignee", None]},
                                 {"$eq": ["$assignee", ""]},
-                                {"$regexMatch": {"input": "$assignee", "regex": "^\\s*$"}}
+                                {"$not": ["$assignee"]}
                             ]},
                             "then": "Sin asignar",
                             "else": "$assignee"
                         }
                     },
+                    # Usar metadata.assigned_at si existe, sino usar created_at o fecha actual
+                    "sort_date": {
+                        "$ifNull": [
+                            "$metadata.assigned_at",
+                            {"$ifNull": ["$created_at", "1970-01-01"]}
+                        ]
+                    }
+                }
+            },
+            {
+                "$group": {
+                    "_id": "$assignee_normalized",
                     "total": {"$sum": 1},
                     "completed": {"$sum": {"$cond": [{"$eq": ["$status", "S"]}, 1, 0]}},
                     "in_progress": {"$sum": {"$cond": [{"$eq": ["$status", "FS"]}, 1, 0]}},
@@ -967,7 +934,7 @@ def get_metrics_team():
                     "batches": {"$push": {
                         "id": "$id",
                         "status": "$status",
-                        "assigned_at": "$metadata.assigned_at"
+                        "sort_date": "$sort_date"
                     }}
                 }
             },
@@ -983,12 +950,16 @@ def get_metrics_team():
         for result in results:
             assignee = result["_id"]
 
-            # Ordenar batches por fecha de asignación (si existe) o por ID
+            # Ordenar batches por fecha descendente (más reciente primero)
             batches = result["batches"]
-            batches.sort(key=lambda x: (x.get("assigned_at") or "9999-99-99", x["id"]), reverse=True)
+            batches.sort(key=lambda x: x.get("sort_date", "1970-01-01"), reverse=True)
 
             # Tomar los 3 más recientes
             recent_batches = [batch["id"] for batch in batches[:3]]
+
+            # Calcular eficiencia: S / (S + FS)
+            active_work = result["completed"] + result["in_progress"]
+            efficiency = round((result["completed"] / active_work * 100), 1) if active_work > 0 else 0
 
             team_metrics.append({
                 "assignee": assignee,
@@ -997,12 +968,13 @@ def get_metrics_team():
                 "in_progress": result["in_progress"],
                 "pending": result["pending"],
                 "completion_rate": round((result["completed"] / result["total"] * 100), 1) if result["total"] > 0 else 0,
+                "efficiency": efficiency,
                 "recent_batches": recent_batches
             })
 
         # Asegurar que todos los miembros del equipo aparezcan (incluso con 0 batches)
         existing_assignees = {metric["assignee"] for metric in team_metrics}
-        for member in team_members:
+        for member in CREW_MEMBERS:
             if member not in existing_assignees:
                 team_metrics.append({
                     "assignee": member,
@@ -1011,6 +983,7 @@ def get_metrics_team():
                     "in_progress": 0,
                     "pending": 0,
                     "completion_rate": 0,
+                    "efficiency": 0,
                     "recent_batches": []
                 })
 
@@ -1020,7 +993,7 @@ def get_metrics_team():
         return jsonify({
             "success": True,
             "data": team_metrics,
-            "total_members": len(team_members),
+            "total_members": len(CREW_MEMBERS),
             "message": f"Métricas calculadas para {len(team_metrics)} miembros"
         })
 
@@ -1030,7 +1003,7 @@ def get_metrics_team():
 
 @app.route("/api/metrics/progress", methods=["GET"])
 def get_metrics_progress():
-    """Obtener serie temporal de progreso por fechas de asignación"""
+    """Obtener serie temporal de progreso con filtros opcionales"""
     try:
         global batches_col
         if batches_col is None:
@@ -1040,13 +1013,33 @@ def get_metrics_progress():
             else:
                 return jsonify({"error": "No DB connection"}), 503
 
+        # Obtener parámetros de filtro
+        from_date = request.args.get("from")  # YYYY-MM-DD
+        to_date = request.args.get("to")      # YYYY-MM-DD
+        assignees_param = request.args.get("assignees")  # "Flor,Mauricio"
+
+        # Construir filtro de match
+        match_filter = {
+            "metadata.assigned_at": {"$exists": True, "$ne": None, "$ne": ""}
+        }
+
+        # Filtro por rango de fechas
+        if from_date or to_date:
+            date_filter = {}
+            if from_date:
+                date_filter["$gte"] = from_date
+            if to_date:
+                date_filter["$lte"] = to_date
+            match_filter["metadata.assigned_at"] = {**match_filter["metadata.assigned_at"], **date_filter}
+
+        # Filtro por assignees
+        if assignees_param:
+            assignees_list = [a.strip() for a in assignees_param.split(",")]
+            match_filter["assignee"] = {"$in": assignees_list}
+
         # Agregación por fecha de asignación
         pipeline = [
-            {
-                "$match": {
-                    "metadata.assigned_at": {"$exists": True, "$ne": None, "$ne": ""}
-                }
-            },
+            {"$match": match_filter},
             {
                 "$group": {
                     "_id": "$metadata.assigned_at",
@@ -1056,9 +1049,7 @@ def get_metrics_progress():
                     "pending": {"$sum": {"$cond": [{"$eq": ["$status", "NS"]}, 1, 0]}}
                 }
             },
-            {
-                "$sort": {"_id": 1}
-            }
+            {"$sort": {"_id": 1}}
         ]
 
         results = list(batches_col.aggregate(pipeline))
@@ -1080,6 +1071,11 @@ def get_metrics_progress():
             "success": True,
             "data": progress_data,
             "total_dates": len(progress_data),
+            "filters": {
+                "from": from_date,
+                "to": to_date,
+                "assignees": assignees_param
+            },
             "message": f"Serie temporal calculada para {len(progress_data)} fechas"
         })
 
