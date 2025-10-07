@@ -1287,7 +1287,7 @@
           <div class="col-md-6">
             <h6>Información General</h6>
             <p><strong>ID:</strong> ${batch.id}</p>
-            <p><strong>Responsable:</strong> ${batch.assignee}</p>
+            <p><strong>Responsable:</strong> ${batch.assignee || 'Sin asignar'}</p>
             <p><strong>Carpeta:</strong> ${batch.folder}</p>
           </div>
           <div class="col-md-6">
@@ -1427,7 +1427,7 @@
                 <div class="card bg-light">
                   <div class="card-body">
                     <p class="mb-1"><strong>Batch ID:</strong> ${batch.id}</p>
-                    <p class="mb-1"><strong>Responsable:</strong> ${batch.assignee}</p>
+                    <p class="mb-1"><strong>Responsable:</strong> ${batch.assignee || 'Sin asignar'}</p>
                     <p class="mb-1"><strong>Estado:</strong> ${batch.status}</p>
                     <p class="mb-0"><strong>Comentarios:</strong> ${batch.comments || 'Sin comentarios'}</p>
                   </div>
@@ -1764,7 +1764,7 @@ Escribe "CONFIRMAR" para proceder:`;
           approvedHtml += `
             <tr>
               <td><code>${batch.id}</code></td>
-              <td><span class="badge bg-info">${batch.assignee}</span></td>
+              <td><span class="badge bg-info">${batch.assignee || 'Sin asignar'}</span></td>
               <td>${approvedDate}</td>
               <td><small class="text-muted">${batch.comments || 'Sin comentarios'}</small></td>
             </tr>

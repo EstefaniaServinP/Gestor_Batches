@@ -839,9 +839,9 @@ def get_metrics_overview():
             }
         ]
 
-        results = list(batches_col.aggregate(pipeline))
+        results = list(batches_col.aggregate(pipeline)) or []
 
-        # Inicializar contadores
+        # Inicializar contadores (valores seguros por defecto)
         stats = {
             "total_batches": 0,
             "completed_batches": 0,  # S
@@ -852,8 +852,8 @@ def get_metrics_overview():
 
         # Procesar resultados de agregación
         for result in results:
-            status = result["_id"]
-            count = result["count"]
+            status = result.get("_id")
+            count = result.get("count", 0)
             stats["total_batches"] += count
 
             if status == "S":
@@ -863,18 +863,22 @@ def get_metrics_overview():
             elif status == "NS":
                 stats["pending_batches"] = count
 
-        # Contar batches sin asignar
-        unassigned_count = batches_col.count_documents({
-            "$or": [
-                {"assignee": {"$exists": False}},
-                {"assignee": None},
-                {"assignee": ""},
-                {"assignee": {"$regex": "^\\s*$"}}
-            ]
-        })
-        stats["unassigned_batches"] = unassigned_count
+        # Contar batches sin asignar (con manejo de error)
+        try:
+            unassigned_count = batches_col.count_documents({
+                "$or": [
+                    {"assignee": {"$exists": False}},
+                    {"assignee": None},
+                    {"assignee": ""},
+                    {"assignee": {"$regex": "^\\s*$"}}
+                ]
+            })
+            stats["unassigned_batches"] = unassigned_count
+        except Exception as count_error:
+            print(f"⚠️ Error contando sin asignar: {count_error}")
+            stats["unassigned_batches"] = 0
 
-        # Calcular porcentaje de completado
+        # Calcular porcentaje de completado (división segura)
         completion_rate = (stats["completed_batches"] / stats["total_batches"] * 100) if stats["total_batches"] > 0 else 0
 
         return jsonify({
@@ -886,6 +890,8 @@ def get_metrics_overview():
 
     except Exception as e:
         print(f"❌ Error en metrics overview: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route("/api/metrics/team", methods=["GET"])
@@ -1034,8 +1040,9 @@ def get_metrics_progress():
 
         # Filtro por assignees
         if assignees_param:
-            assignees_list = [a.strip() for a in assignees_param.split(",")]
-            match_filter["assignee"] = {"$in": assignees_list}
+            assignees_list = [a.strip() for a in assignees_param.split(",") if a.strip()]
+            if assignees_list:
+                match_filter["assignee"] = {"$in": assignees_list}
 
         # Agregación por fecha de asignación
         pipeline = [
@@ -1082,6 +1089,137 @@ def get_metrics_progress():
     except Exception as e:
         print(f"❌ Error en metrics progress: {e}")
         return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/metrics/export", methods=["GET"])
+def export_metrics():
+    """Exportar métricas a CSV con filtros opcionales"""
+    try:
+        global batches_col
+        if batches_col is None:
+            db_local = get_db(raise_on_fail=False)
+            if db_local is not None:
+                batches_col = db_local["batches"]
+            else:
+                return "Error: No DB connection", 503
+
+        # Obtener parámetros de filtro (sanitizados)
+        from_date = request.args.get("from", "").strip()
+        to_date = request.args.get("to", "").strip()
+        assignees_param = request.args.get("assignees", "").strip()
+
+        # Construir pipeline de agregación con assignee expandido
+        match_filter = {}
+
+        # Filtro por rango de fechas
+        if from_date or to_date:
+            date_filter = {}
+            if from_date:
+                date_filter["$gte"] = from_date
+            if to_date:
+                date_filter["$lte"] = to_date
+            match_filter["metadata.assigned_at"] = date_filter
+
+        # Filtro por assignees
+        if assignees_param:
+            assignees_list = [a.strip() for a in assignees_param.split(",") if a.strip()]
+            if assignees_list:
+                match_filter["assignee"] = {"$in": assignees_list}
+
+        # Agregación por fecha y assignee
+        pipeline = [
+            {
+                "$addFields": {
+                    "assignee_display": {
+                        "$cond": {
+                            "if": {"$or": [
+                                {"$eq": ["$assignee", None]},
+                                {"$eq": ["$assignee", ""]},
+                                {"$not": ["$assignee"]}
+                            ]},
+                            "then": "Sin asignar",
+                            "else": "$assignee"
+                        }
+                    }
+                }
+            }
+        ]
+
+        if match_filter:
+            pipeline.insert(0, {"$match": match_filter})
+
+        pipeline.extend([
+            {
+                "$group": {
+                    "_id": {
+                        "date": "$metadata.assigned_at",
+                        "assignee": "$assignee_display"
+                    },
+                    "total": {"$sum": 1},
+                    "S": {"$sum": {"$cond": [{"$eq": ["$status", "S"]}, 1, 0]}},
+                    "FS": {"$sum": {"$cond": [{"$eq": ["$status", "FS"]}, 1, 0]}},
+                    "NS": {"$sum": {"$cond": [{"$eq": ["$status", "NS"]}, 1, 0]}}
+                }
+            },
+            {
+                "$sort": {"_id.date": 1, "_id.assignee": 1}
+            }
+        ])
+
+        results = list(batches_col.aggregate(pipeline))
+
+        # Generar CSV
+        from io import StringIO
+        import csv
+
+        output = StringIO()
+        writer = csv.writer(output)
+
+        # Headers
+        writer.writerow(['date', 'assignee', 'total', 'S', 'FS', 'NS', 'completionRate', 'efficiency'])
+
+        # Datos
+        for result in results:
+            date = result["_id"]["date"] or "Sin fecha"
+            assignee = result["_id"]["assignee"]
+            total = result["total"]
+            completed = result["S"]
+            in_progress = result["FS"]
+            pending = result["NS"]
+
+            completion_rate = round((completed / total * 100), 1) if total > 0 else 0
+            active_work = completed + in_progress
+            efficiency = round((completed / active_work * 100), 1) if active_work > 0 else 0
+
+            writer.writerow([
+                date,
+                assignee,
+                total,
+                completed,
+                in_progress,
+                pending,
+                completion_rate,
+                efficiency
+            ])
+
+        # Si no hay datos, solo headers
+        csv_content = output.getvalue()
+        output.close()
+
+        # Generar nombre de archivo con timestamp
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+        filename = f"progress_{timestamp}.csv"
+
+        # Crear respuesta
+        response = app.make_response(csv_content)
+        response.headers["Content-Disposition"] = f"attachment; filename={filename}"
+        response.headers["Content-Type"] = "text/csv; charset=utf-8"
+
+        return response
+
+    except Exception as e:
+        print(f"❌ Error en metrics export: {e}")
+        return f"Error: {str(e)}", 500
 
 if __name__ == "__main__":
     # Inicializar DB de forma segura al iniciar localmente

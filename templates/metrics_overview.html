@@ -294,6 +294,13 @@
       </div>
     </div>
 
+    <!-- Botón de descarga CSV -->
+    <div class="text-center mb-4 fade-in">
+      <button class="btn btn-outline-light" onclick="exportMetricsCSV()" style="background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.3); color: white; padding: 12px 30px; border-radius: 25px; font-weight: 600; transition: all 0.3s ease;">
+        <i class="fas fa-download"></i> Descargar Reporte CSV
+      </button>
+    </div>
+
     <!-- Gráficas compactas -->
     <div class="charts-grid fade-in">
       <!-- Tarjeta 1: Distribución por Estado -->
@@ -596,6 +603,27 @@
         charts.modal.destroy();
         charts.modal = null;
       }
+    }
+
+    function exportMetricsCSV() {
+      // Por ahora sin filtros, exporta todo
+      // Puedes agregar un modal para seleccionar filtros si lo deseas
+      const url = '/api/metrics/export';
+
+      console.log('📥 Descargando CSV de métricas...');
+
+      // Crear link temporal para descargar
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `progress_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+
+      // Notificación
+      setTimeout(() => {
+        alert('✅ Descarga iniciada. Revisa tu carpeta de descargas.');
+      }, 500);
     }
 </script>
 {% endblock %}
