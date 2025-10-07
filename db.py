@@ -3,6 +3,8 @@ from pymongo import MongoClient, ASCENDING
 
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017")
 DB_NAME = os.environ.get("MONGO_DB", "segmentacion_db")
+QUALITY_DB_NAME = "Quality_dashboard"  # Base para segmentadores
+TRAINING_DB_NAME = "training_metrics"  # Base para máscaras
 
 _client = None
 
@@ -47,6 +49,24 @@ def create_indexes():
         print("✅ Índices verificados/creados")
     except Exception as e:
         print("⚠️ No se pudieron crear índices:", e)
+
+def get_quality_db():
+    """Retorna la base de datos Quality_dashboard para segmentadores"""
+    ok, err = ping_client()
+    if ok:
+        return get_client()[QUALITY_DB_NAME]
+    msg = f"No se pudo conectar a Quality_dashboard: {err}"
+    print("⚠️", msg)
+    return None
+
+def get_training_db():
+    """Retorna la base de datos training_metrics para máscaras"""
+    ok, err = ping_client()
+    if ok:
+        return get_client()[TRAINING_DB_NAME]
+    msg = f"No se pudo conectar a training_metrics: {err}"
+    print("⚠️", msg)
+    return None
 
 def close_client():
     global _client

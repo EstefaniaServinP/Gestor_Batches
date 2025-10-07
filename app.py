@@ -33,23 +33,83 @@ db = None
 
 batches_col = None
 masks_col = None
+segmentadores_col = None
+
+# Nuevas conexiones para Quality_dashboard y training_metrics
+quality_db = None
+quality_segmentadores_col = None
+training_db = None
+training_masks_col = None
 
 def init_db():
-    global db, batches_col, masks_col
+    global db, batches_col, masks_col, segmentadores_col, CREW_MEMBERS
+    global quality_db, quality_segmentadores_col, training_db, training_masks_col
+
+    # Conexión a segmentacion_db (batches principales)
     db = get_db(raise_on_fail=False)
     if db is not None:
         batches_col = db["batches"]
         masks_col = db["masks"]
-        # crear índices en background (no bloqueante)
+        segmentadores_col = db["segmentadores"]
         create_indexes()
+        print("✅ Conectado a segmentacion_db")
     else:
-        print("⚠️ DB no disponible en init_db — seguirá intentando al recibir peticiones")
+        print("⚠️ segmentacion_db no disponible")
 
-# ejemplo: contar documentos
-# print("Batches en DB:", batches_col.count_documents({}))
+    # Conexión a Quality_dashboard (segmentadores persistentes)
+    from db import get_quality_db
+    quality_db = get_quality_db()
+    if quality_db is not None:
+        quality_segmentadores_col = quality_db["segmentadores"]
+        load_segmentadores_from_db()
+        print("✅ Conectado a Quality_dashboard.segmentadores")
+    else:
+        print("⚠️ Quality_dashboard no disponible")
 
-# Lista de miembros del equipo
-CREW_MEMBERS = ["Mauricio", "Maggie", "Ceci", "Flor", "Ignacio"]
+    # Conexión a training_metrics (máscaras subidas)
+    from db import get_training_db
+    training_db = get_training_db()
+    if training_db is not None:
+        training_masks_col = training_db["masks.files"]
+        print("✅ Conectado a training_metrics.masks.files")
+    else:
+        print("⚠️ training_metrics no disponible")
+
+def load_segmentadores_from_db():
+    """Cargar lista de segmentadores desde Quality_dashboard.segmentadores"""
+    global CREW_MEMBERS, quality_segmentadores_col
+    try:
+        if quality_segmentadores_col is not None:
+            # Verificar si hay segmentadores en Quality_dashboard
+            count = quality_segmentadores_col.count_documents({})
+            if count > 0:
+                # Cargar desde Quality_dashboard
+                segmentadores = list(quality_segmentadores_col.find({}, {"_id": 0, "name": 1}).sort("name", 1))
+                CREW_MEMBERS = [seg["name"] for seg in segmentadores]
+                print(f"✅ {len(CREW_MEMBERS)} segmentadores cargados desde Quality_dashboard: {CREW_MEMBERS}")
+            else:
+                # Primera vez: guardar los segmentadores iniciales en Quality_dashboard
+                initial_segmentadores = ["Mauricio", "Maggie", "Ceci", "Flor", "Ignacio"]
+                for name in initial_segmentadores:
+                    quality_segmentadores_col.insert_one({
+                        "name": name,
+                        "role": "Segmentador",
+                        "email": "",
+                        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    })
+                CREW_MEMBERS = initial_segmentadores
+                print(f"✅ Segmentadores iniciales guardados en Quality_dashboard: {CREW_MEMBERS}")
+        else:
+            # Fallback a lista hardcodeada si Quality_dashboard no está disponible
+            CREW_MEMBERS = ["Mauricio", "Maggie", "Ceci", "Flor", "Ignacio"]
+            print(f"⚠️ Quality_dashboard no disponible, usando lista por defecto")
+    except Exception as e:
+        # Fallback a lista hardcodeada si hay error
+        CREW_MEMBERS = ["Mauricio", "Maggie", "Ceci", "Flor", "Ignacio"]
+        print(f"⚠️ Error cargando segmentadores desde Quality_dashboard: {e}")
+
+# Lista de miembros del equipo (será cargada desde MongoDB en init_db)
+CREW_MEMBERS = []
 
 @app.route("/")
 def index():
@@ -309,47 +369,59 @@ def delete_batch(batch_id):
 
 @app.route("/api/add-segmentador", methods=["POST"])
 def add_segmentador():
-    """Agregar un nuevo segmentador al equipo"""
-    global CREW_MEMBERS
-    
+    """Agregar un nuevo segmentador al equipo y guardarlo en Quality_dashboard"""
+    global CREW_MEMBERS, quality_segmentadores_col
+
     try:
         data = request.get_json()
-        
+
         if not data:
             return jsonify({
                 "success": False,
                 "error": "No se enviaron datos"
             }), 400
-        
+
         name = data.get("name", "").strip()
         role = data.get("role", "Segmentador General")
         email = data.get("email", "")
-        
+
         # Validar que se proporcione un nombre
         if not name:
             return jsonify({
                 "success": False,
                 "error": "El nombre del segmentador es requerido"
             }), 400
-        
+
         # Verificar que no exista ya
         if name in CREW_MEMBERS:
             return jsonify({
                 "success": False,
                 "error": f"El segmentador '{name}' ya existe en el equipo"
             }), 400
-        
-        # Agregar al equipo
+
+        # GUARDAR EN QUALITY_DASHBOARD
+        if quality_segmentadores_col is None:
+            return jsonify({
+                "success": False,
+                "error": "Quality_dashboard no disponible"
+            }), 503
+
+        quality_segmentadores_col.insert_one({
+            "name": name,
+            "role": role,
+            "email": email,
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        })
+
+        # Agregar a memoria
         CREW_MEMBERS.append(name)
-        
-        print(f"👤 Nuevo segmentador agregado: {name} ({role})")
-        
-        # Log para debugging
+
+        print(f"✅ Segmentador '{name}' guardado en Quality_dashboard y memoria")
         print(f"📋 Equipo actualizado: {CREW_MEMBERS}")
-        
+
         return jsonify({
             "success": True,
-            "message": f"Segmentador '{name}' agregado exitosamente",
+            "message": f"Segmentador '{name}' agregado y guardado en Quality_dashboard",
             "segmentador": {
                 "name": name,
                 "role": role,
@@ -357,7 +429,7 @@ def add_segmentador():
             },
             "team_size": len(CREW_MEMBERS)
         })
-        
+
     except Exception as e:
         print(f"❌ Error agregando segmentador: {e}")
         return jsonify({
@@ -382,33 +454,42 @@ def get_segmentadores():
 
 @app.route("/api/check-mongo-files", methods=["GET"])
 def check_mongo_files():
-    """Verificar qué archivos están actualmente en MongoDB"""
+    """Verificar qué archivos están actualmente en training_metrics.masks.files"""
+    global training_masks_col
+
     try:
-        print("🔍 Iniciando verificación de archivos en MongoDB...")
-        
+        print("🔍 Iniciando verificación de archivos en training_metrics.masks.files...")
+
+        # Verificar que la colección esté disponible
+        if training_masks_col is None:
+            return jsonify({
+                "success": False,
+                "error": "training_metrics.masks.files no disponible"
+            }), 503
+
         # Verificar conexión primero
         try:
             # Test de conexión
-            masks_col.find_one({}, {"_id": 1})
-            print("✅ Conexión a MongoDB establecida")
+            training_masks_col.find_one({}, {"_id": 1})
+            print("✅ Conexión a training_metrics establecida")
         except Exception as conn_error:
-            print(f"❌ Error de conexión a MongoDB: {conn_error}")
+            print(f"❌ Error de conexión a training_metrics: {conn_error}")
             return jsonify({
-                "success": False, 
-                "error": f"Error de conexión a MongoDB: {str(conn_error)}"
+                "success": False,
+                "error": f"Error de conexión a training_metrics: {str(conn_error)}"
             }), 500
-        
-        # Obtener lista de todos los archivos en la colección masks
+
+        # Obtener lista de todos los archivos en training_metrics.masks.files
         try:
-            files = list(masks_col.find(
+            files = list(training_masks_col.find(
                 {},
                 {"filename": 1, "uploadDate": 1, "metadata": 1, "length": 1}
-            ).sort("uploadDate", -1).limit(100))  # Aumentar a 100 archivos
-            print(f"📊 Se encontraron {len(files)} archivos en total")
+            ).sort("uploadDate", -1).limit(100))
+            print(f"📊 Se encontraron {len(files)} archivos en training_metrics")
         except Exception as query_error:
             print(f"❌ Error consultando archivos: {query_error}")
             return jsonify({
-                "success": False, 
+                "success": False,
                 "error": f"Error consultando archivos: {str(query_error)}"
             }), 500
         
@@ -447,13 +528,15 @@ def check_mongo_files():
             batch_patterns = {}
         
         print(f"📊 Patrones encontrados: {len(batch_patterns)} batches diferentes")
-        
+
         return jsonify({
             "success": True,
             "total_files": len(files_info),
             "recent_files": files_info,
             "batch_patterns": batch_patterns,
-            "message": f"Se encontraron {len(files_info)} archivos en MongoDB"
+            "database": "training_metrics",
+            "collection": "masks.files",
+            "message": f"Se encontraron {len(files_info)} archivos en training_metrics.masks.files"
         })
         
     except Exception as e:

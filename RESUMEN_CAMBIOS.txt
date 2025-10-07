@@ -1,0 +1,115 @@
+================================================================================
+  RESUMEN DE CAMBIOS - Dashboard de Segmentación
+================================================================================
+
+PROBLEMA RESUELTO:
+------------------
+✅ Segmentadores ahora se guardan en Quality_dashboard (MongoDB)
+✅ Ya NO se pierden al reiniciar el servidor
+✅ Conexión a training_metrics.masks.files para verificar máscaras
+
+================================================================================
+ARCHIVOS MODIFICADOS:
+================================================================================
+
+1. db.py
+   ├─ Agregado: QUALITY_DB_NAME = "Quality_dashboard"
+   ├─ Agregado: TRAINING_DB_NAME = "training_metrics"
+   ├─ Agregado: get_quality_db() → Conecta a Quality_dashboard
+   └─ Agregado: get_training_db() → Conecta a training_metrics
+
+2. app.py
+   ├─ Variables globales nuevas:
+   │  ├─ quality_db
+   │  ├─ quality_segmentadores_col → Quality_dashboard.segmentadores
+   │  ├─ training_db
+   │  └─ training_masks_col → training_metrics.masks.files
+   │
+   ├─ init_db():
+   │  ├─ Conecta a Quality_dashboard.segmentadores
+   │  └─ Conecta a training_metrics.masks.files
+   │
+   ├─ load_segmentadores_from_db():
+   │  ├─ Ahora usa quality_segmentadores_col
+   │  └─ Lee desde Quality_dashboard (persistente)
+   │
+   ├─ /api/add-segmentador:
+   │  ├─ Ahora guarda en Quality_dashboard.segmentadores
+   │  └─ Persiste después de reiniciar
+   │
+   └─ /api/check-mongo-files:
+      ├─ Ahora usa training_masks_col
+      └─ Lee desde training_metrics.masks.files
+
+================================================================================
+ESTRUCTURA MONGODB:
+================================================================================
+
+MongoDB (localhost:27017)
+│
+├─── segmentacion_db
+│    ├── batches (asignaciones de folders)
+│    └── masks (no usado)
+│
+├─── Quality_dashboard  ← NUEVO USO
+│    └── segmentadores  ← AQUÍ SE GUARDAN SEGMENTADORES
+│         └── {name, role, email, created_at}
+│
+└─── training_metrics
+     ├── masks.files   ← MÁSCARAS SUBIDAS POR SEGMENTADORES
+     └── masks.chunks
+
+================================================================================
+FLUJO DE DATOS:
+================================================================================
+
+1. AGREGAR SEGMENTADOR:
+   Usuario → POST /api/add-segmentador → Quality_dashboard.segmentadores ✅
+   
+2. REINICIAR SERVIDOR:
+   Flask inicia → load_segmentadores_from_db() → Quality_dashboard.segmentadores
+   → CREW_MEMBERS (memoria) ✅
+   
+3. VERIFICAR MÁSCARAS:
+   Usuario → GET /api/check-mongo-files → training_metrics.masks.files ✅
+
+================================================================================
+COMANDOS DE PRUEBA:
+================================================================================
+
+# 1. Iniciar servidor
+python app.py
+
+# 2. Ver segmentadores actuales
+curl http://localhost:5000/api/segmentadores
+
+# 3. Agregar segmentador
+curl -X POST http://localhost:5000/api/add-segmentador \
+  -H "Content-Type: application/json" \
+  -d '{"name": "TestUser", "role": "Segmentador", "email": "test@test.com"}'
+
+# 4. Verificar en MongoDB
+mongosh
+use Quality_dashboard
+db.segmentadores.find().pretty()
+exit
+
+# 5. Reiniciar Flask y verificar que persiste
+python app.py
+curl http://localhost:5000/api/segmentadores
+
+# 6. Verificar máscaras en training_metrics
+curl http://localhost:5000/api/check-mongo-files
+
+================================================================================
+PRÓXIMOS PASOS:
+================================================================================
+
+✅ PASO 1: Ejecuta "python app.py" y verifica los logs
+✅ PASO 2: Prueba agregar un segmentador
+✅ PASO 3: Reinicia el servidor y verifica que persiste
+✅ PASO 4: Verifica archivos en training_metrics
+
+📖 Ver PASOS_IMPLEMENTACION.md para instrucciones detalladas
+
+================================================================================
