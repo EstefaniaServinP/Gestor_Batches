@@ -66,14 +66,14 @@ def init_db():
     else:
         print("⚠️ Quality_dashboard no disponible")
 
-    # Conexión a training_metrics (máscaras subidas)
+    # Conexión a QUALITY_IEMSA (máscaras subidas en GridFS)
     from db import get_training_db
     training_db = get_training_db()
     if training_db is not None:
-        training_masks_col = training_db["masks.files"]
-        print("✅ Conectado a training_metrics.masks.files")
+        training_masks_col = training_db["training_metrics.masks.files"]
+        print("✅ Conectado a QUALITY_IEMSA.training_metrics.masks.files")
     else:
-        print("⚠️ training_metrics no disponible")
+        print("⚠️ QUALITY_IEMSA no disponible")
 
 def load_segmentadores_from_db():
     """Cargar lista de segmentadores desde Quality_dashboard.segmentadores"""
@@ -139,17 +139,18 @@ def batch_management():
 
 @app.route("/masks")
 def masks():
-    global masks_col
-    if masks_col is None:
+    global training_masks_col
+    if training_masks_col is None:
         # Intentar reconectar a demanda
-        db_local = get_db(raise_on_fail=False)
-        if db_local is not None:
-            masks_col = db_local["masks"]
+        from db import get_training_db
+        training_db_local = get_training_db()
+        if training_db_local is not None:
+            training_masks_col = training_db_local["training_metrics.masks.files"]
         else:
-            return jsonify({"error": "No DB connection"}), 503
+            return jsonify({"error": "No DB connection to QUALITY_IEMSA"}), 503
 
-    # Trae todos los documentos de máscaras
-    docs = list(masks_col.find({}, {"_id": 0, "filename": 1, "uploadDate": 1}))
+    # Trae todos los documentos de máscaras desde QUALITY_IEMSA.training_metrics.masks.files
+    docs = list(training_masks_col.find({}, {"_id": 0, "filename": 1, "uploadDate": 1}))
     return render_template("masks.html", files=docs)
 
 @app.route("/metrics")
@@ -705,10 +706,19 @@ def check_mongo_files():
 @app.route("/api/batch-files/<batch_id>", methods=["GET"])
 def get_batch_files(batch_id):
     """Obtener información de archivos subidos para un batch específico"""
+    global training_masks_col
+
     try:
+        # Verificar que training_masks_col esté disponible
+        if training_masks_col is None:
+            return jsonify({
+                "success": False,
+                "error": "QUALITY_IEMSA.training_metrics.masks.files no disponible"
+            }), 503
+
         # Buscar archivos que coincidan con el patrón batch_XX
         pattern = f"masks_batch_{batch_id.replace('batch_', '')}"
-        files = list(masks_col.find(
+        files = list(training_masks_col.find(
             {"filename": {"$regex": pattern}},
             {"filename": 1, "uploadDate": 1, "metadata": 1, "length": 1}
         ).sort("uploadDate", -1))
@@ -746,8 +756,17 @@ def get_batch_files(batch_id):
 @app.route("/api/sync-batch-files", methods=["POST"])
 def sync_batch_files():
     """Sincronizar batches con archivos (OPTIMIZADO: 1 query en lugar de 4500+)"""
+    global training_masks_col
+
     try:
         print("🔄 Iniciando sincronización OPTIMIZADA de archivos con batches...")
+
+        # Verificar que training_masks_col esté disponible
+        if training_masks_col is None:
+            return jsonify({
+                "success": False,
+                "error": "QUALITY_IEMSA.training_metrics.masks.files no disponible"
+            }), 503
 
         # OPTIMIZACIÓN 1: Solo traer campos necesarios de batches
         batches = list(batches_col.find({}, {"id": 1, "mongo_uploaded": 1, "_id": 0}))
@@ -779,8 +798,8 @@ def sync_batch_files():
 
         print(f"📊 Buscando archivos para {len(all_numbers)} batches con 1 query...")
 
-        # UNA SOLA CONSULTA para todos los archivos
-        all_files = list(masks_col.find(
+        # UNA SOLA CONSULTA para todos los archivos desde training_metrics.masks.files
+        all_files = list(training_masks_col.find(
             {"filename": {"$regex": mega_pattern, "$options": "i"}},
             {"filename": 1, "uploadDate": 1, "_id": 0}  # Solo campos necesarios
         ).sort("uploadDate", -1))
@@ -858,11 +877,20 @@ def sync_batch_files():
 @app.route("/api/auto-create-batches", methods=["POST"])
 def auto_create_batches():
     """Crear batches automáticamente (OPTIMIZADO: solo filename, sin metadata pesada)"""
+    global training_masks_col
+
     try:
         print("🤖 Iniciando creación automática de batches...")
 
-        # OPTIMIZACIÓN: Solo traer filename, no metadata ni length
-        files = list(masks_col.find(
+        # Verificar que training_masks_col esté disponible
+        if training_masks_col is None:
+            return jsonify({
+                "success": False,
+                "error": "QUALITY_IEMSA.training_metrics.masks.files no disponible"
+            }), 503
+
+        # OPTIMIZACIÓN: Solo traer filename, no metadata ni length desde training_metrics.masks.files
+        files = list(training_masks_col.find(
             {},
             {"filename": 1, "_id": 0}  # Solo filename necesario
         ).limit(10000))  # Límite de seguridad
