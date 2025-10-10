@@ -1,337 +1,2347 @@
 {
   "program": "Gestor de Batches de Segmentación",
-  "created_at": "2025-07-24T00:00:00-06:00",
-  "crew": ["Flor", "Ignacio"],
+  "created_at": "2025-10-07T00:00:00-06:00",
+  "crew": ["Flor", "Ignacio", "Mauricio", "Maggie", "Ceci"],
   "batches": [
     {
-      "id": "batch_9",
-      "assignee": "Flor",
-      "folder": "/data/batch_9",
+      "id": "batch_20250909T0001",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0001",
       "tasks": ["segmentar", "subir_mascaras", "revisar"],
       "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "alta",
-        "reviewed_at": null
-      },
-      "status": "S",
-      "mongo_uploaded": true,
-      "comments": "Batch completamente segmentado"
-    },
-    {
-      "id": "batch_11",
-      "assignee": "Flor",
-      "folder": "/data/batch_11",
-      "tasks": ["segmentar", "subir_mascaras", "revisar"],
-      "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "alta",
-        "reviewed_at": null
-      },
-      "status": "NS",
-      "mongo_uploaded": true,
-      "comments": "Pendiente de segmentación"
-    },
-    {
-      "id": "batch_13",
-      "assignee": "Flor",
-      "folder": "/data/batch_13",
-      "tasks": ["segmentar", "subir_mascaras", "revisar"],
-      "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "alta",
-        "reviewed_at": null
-      },
-      "status": "FS",
-      "mongo_uploaded": true,
-      "comments": "Segmentación parcial completada"
-    },
-    {
-      "id": "batch_14",
-      "assignee": "Flor",
-      "folder": "/data/batch_14",
-      "tasks": ["segmentar", "subir_mascaras", "revisar"],
-      "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "alta",
-        "reviewed_at": null
-      },
-      "status": "S",
-      "mongo_uploaded": true,
-      "comments": "Completado y verificado"
-    },
-    {
-      "id": "batch_28",
-      "assignee": "Flor",
-      "folder": "/data/batch_28",
-      "tasks": ["segmentar", "subir_mascaras", "revisar"],
-      "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
+        "assigned_at": "",
+        "due_date": "",
         "priority": "media",
-        "reviewed_at": null
-      },
-      "status": "FS",
-      "mongo_uploaded": true,
-      "comments": "En progreso, faltan algunas imágenes"
-    },
-    {
-      "id": "batch_34",
-      "assignee": "Flor",
-      "folder": "/data/batch_34",
-      "tasks": ["segmentar", "subir_mascaras", "revisar"],
-      "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "media",
-        "reviewed_at": null
-      },
-      "status": "NS",
-      "mongo_uploaded": true,
-      "comments": "Sin iniciar"
-    },
-    {
-      "id": "batch_36",
-      "assignee": "Flor",
-      "folder": "/data/batch_36",
-      "tasks": ["segmentar", "subir_mascaras", "revisar"],
-      "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "media",
-        "reviewed_at": null
-      },
-      "status": "NS",
-      "mongo_uploaded": true,
-      "comments": "Asignado recientemente"
-    },
-    {
-      "id": "batch_38",
-      "assignee": "Flor",
-      "folder": "/data/batch_38",
-      "tasks": ["segmentar", "subir_mascaras", "revisar"],
-      "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "media",
-        "reviewed_at": null
-      },
-      "status": "FS",
-      "mongo_uploaded": true,
-      "comments": "Avance del 70%"
-    },
-    {
-      "id": "batch_39",
-      "assignee": "Flor",
-      "folder": "/data/batch_39",
-      "tasks": ["segmentar", "subir_mascaras", "revisar"],
-      "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "media",
-        "reviewed_at": null
-      },
-      "status": "S",
-      "mongo_uploaded": true,
-      "comments": "Terminado y revisado"
-    },
-    {
-      "id": "batch_41",
-      "assignee": "Flor",
-      "folder": "/data/batch_41",
-      "tasks": ["segmentar", "subir_mascaras", "revisar"],
-      "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "baja",
-        "reviewed_at": null
-      },
-      "status": "S",
-      "mongo_uploaded": true,
-      "comments": "Listo para entrega"
-    },
-    {
-      "id": "batch_42",
-      "assignee": "Flor",
-      "folder": "/data/batch_42",
-      "tasks": ["segmentar", "subir_mascaras", "revisar"],
-      "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "baja",
         "reviewed_at": null
       },
       "status": "NS",
       "mongo_uploaded": false,
-      "comments": "Pendiente de subir archivos"
+      "comments": ""
     },
     {
-      "id": "batch_15",
-      "assignee": "Ignacio",
-      "folder": "/data/batch_15",
+      "id": "batch_20250909T0002",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0002",
       "tasks": ["segmentar", "subir_mascaras", "revisar"],
       "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "alta",
-        "reviewed_at": null
-      },
-      "status": "NS",
-      "mongo_uploaded": false,
-      "comments": "Recién asignado"
-    },
-    {
-      "id": "batch_16",
-      "assignee": "Ignacio",
-      "folder": "/data/batch_16",
-      "tasks": ["segmentar", "subir_mascaras", "revisar"],
-      "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "alta",
-        "reviewed_at": null
-      },
-      "status": "NS",
-      "mongo_uploaded": false,
-      "comments": "Sin iniciar trabajos"
-    },
-    {
-      "id": "batch_17",
-      "assignee": "Ignacio",
-      "folder": "/data/batch_17",
-      "tasks": ["segmentar", "subir_mascaras", "revisar"],
-      "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "alta",
-        "reviewed_at": null
-      },
-      "status": "FS",
-      "mongo_uploaded": false,
-      "comments": "Trabajo iniciado"
-    },
-    {
-      "id": "batch_21",
-      "assignee": "Ignacio",
-      "folder": "/data/batch_21",
-      "tasks": ["segmentar", "subir_mascaras", "revisar"],
-      "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "alta",
-        "reviewed_at": null
-      },
-      "status": "NS",
-      "mongo_uploaded": false,
-      "comments": "Pendiente de revisión"
-    },
-    {
-      "id": "batch_46",
-      "assignee": "Ignacio",
-      "folder": "/data/batch_46",
-      "tasks": ["segmentar", "subir_mascaras", "revisar"],
-      "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
+        "assigned_at": "",
+        "due_date": "",
         "priority": "media",
         "reviewed_at": null
       },
       "status": "NS",
-      "mongo_uploaded": true,
-      "comments": "Archivos subidos, falta segmentar"
-    },
-    {
-      "id": "batch_47",
-      "assignee": "Ignacio",
-      "folder": "/data/batch_47",
-      "tasks": ["segmentar", "subir_mascaras", "revisar"],
-      "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "media",
-        "reviewed_at": null
-      },
-      "status": "FS",
       "mongo_uploaded": false,
-      "comments": "Segmentación parcial"
+      "comments": ""
     },
     {
-      "id": "batch_48",
-      "assignee": "Ignacio",
-      "folder": "/data/batch_48",
+      "id": "batch_20250909T0003",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0003",
       "tasks": ["segmentar", "subir_mascaras", "revisar"],
       "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
+        "assigned_at": "",
+        "due_date": "",
         "priority": "media",
         "reviewed_at": null
       },
-      "status": "FS",
-      "mongo_uploaded": true,
-      "comments": "Avance significativo"
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
     },
     {
-      "id": "batch_49",
-      "assignee": "Ignacio",
-      "folder": "/data/batch_49",
+      "id": "batch_20250909T0004",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0004",
       "tasks": ["segmentar", "subir_mascaras", "revisar"],
       "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
+        "assigned_at": "",
+        "due_date": "",
         "priority": "media",
         "reviewed_at": null
       },
-      "status": "FS",
-      "mongo_uploaded": true,
-      "comments": "En desarrollo"
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
     },
     {
-      "id": "batch_50",
-      "assignee": "Ignacio",
-      "folder": "/data/batch_50",
+      "id": "batch_20250909T0005",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0005",
       "tasks": ["segmentar", "subir_mascaras", "revisar"],
       "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "baja",
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
         "reviewed_at": null
       },
-      "status": "S",
-      "mongo_uploaded": true,
-      "comments": "Completado exitosamente"
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
     },
     {
-      "id": "batch_51",
-      "assignee": "Ignacio",
-      "folder": "/data/batch_51",
+      "id": "batch_20250909T0006",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0006",
       "tasks": ["segmentar", "subir_mascaras", "revisar"],
       "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "baja",
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
         "reviewed_at": null
       },
-      "status": "FS",
-      "mongo_uploaded": true,
-      "comments": "Falta revisar calidad"
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
     },
     {
-      "id": "batch_52",
-      "assignee": "Ignacio",
-      "folder": "/data/batch_52",
+      "id": "batch_20250909T0007",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0007",
       "tasks": ["segmentar", "subir_mascaras", "revisar"],
       "metadata": {
-        "assigned_at": "2025-07-24",
-        "due_date": "2025-07-31",
-        "priority": "baja",
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
         "reviewed_at": null
       },
-      "status": "FS",
-      "mongo_uploaded": true,
-      "comments": "Proceso de finalización"
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0008",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0008",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0009",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0009",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0010",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0010",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0011",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0011",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0012",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0012",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0013",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0013",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0014",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0014",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0015",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0015",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0016",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0016",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0017",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0017",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0018",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0018",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0019",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0019",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0020",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0020",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0021",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0021",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0022",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0022",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0023",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0023",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0024",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0024",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0025",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0025",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0026",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0026",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0027",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0027",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0028",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0028",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0029",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0029",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0030",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0030",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0031",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0031",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0032",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0032",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0033",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0033",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0034",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0034",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0035",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0035",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0036",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0036",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0037",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0037",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0038",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0038",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0039",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0039",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0040",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0040",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0041",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0041",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0042",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0042",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0043",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0043",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0044",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0044",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0045",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0045",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0046",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0046",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0047",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0047",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0048",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0048",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0049",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0049",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0050",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0050",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0051",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0051",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0052",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0052",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0053",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0053",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0054",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0054",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0055",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0055",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0056",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0056",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0057",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0057",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0058",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0058",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0059",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0059",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0060",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0060",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0061",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0061",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0062",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0062",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0063",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0063",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0064",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0064",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0065",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0065",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0066",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0066",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0067",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0067",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0068",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0068",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0069",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0069",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0070",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0070",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0071",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0071",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0072",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0072",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0073",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0073",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0074",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0074",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0075",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0075",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0076",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0076",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0077",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0077",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0078",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0078",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20250909T0079",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20250909T0079",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132967",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132967",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132968",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132968",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132969",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132969",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132970",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132970",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132971",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132971",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132972",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132972",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132973",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132973",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132974",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132974",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132975",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132975",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132976",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132976",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132977",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132977",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132978",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132978",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132979",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132979",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132980",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132980",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132981",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132981",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132982",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132982",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132983",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132983",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132984",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132984",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132985",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132985",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132987",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132987",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132988",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132988",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132989",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132989",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132990",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132990",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132991",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132991",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132992",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132992",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132993",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132993",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132994",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132994",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132995",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132995",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132996",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132996",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132997",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132997",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132998",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132998",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T132999",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T132999",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133000",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133000",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133001",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133001",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133002",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133002",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133003",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133003",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133004",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133004",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133005",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133005",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133007",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133007",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133008",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133008",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133009",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133009",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133010",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133010",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133011",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133011",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133012",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133012",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133013",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133013",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133014",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133014",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133015",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133015",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133016",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133016",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133017",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133017",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133018",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133018",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133019",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133019",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133020",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133020",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133021",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133021",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133022",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133022",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133023",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133023",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133024",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133024",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133025",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133025",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133026",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133026",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133027",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133027",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133028",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133028",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133029",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133029",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133030",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133030",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133031",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133031",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133032",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133032",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133033",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133033",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133034",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133034",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133035",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133035",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133036",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133036",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133037",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133037",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133038",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133038",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133039",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133039",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133040",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133040",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133041",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133041",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133042",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133042",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133043",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133043",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133044",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133044",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_20251002T133045",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/batch_20251002T133045",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": "",
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
     }
   ]
 }

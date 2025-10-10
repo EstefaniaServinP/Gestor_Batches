@@ -452,9 +452,159 @@ def get_segmentadores():
             "error": str(e)
         }), 500
 
+@app.route("/api/remove-segmentador", methods=["DELETE"])
+def remove_segmentador():
+    """Eliminar un segmentador del equipo y de Quality_dashboard"""
+    global CREW_MEMBERS, quality_segmentadores_col
+
+    try:
+        data = request.get_json()
+
+        if not data:
+            return jsonify({
+                "success": False,
+                "error": "No se enviaron datos"
+            }), 400
+
+        name = data.get("name", "").strip()
+
+        if not name:
+            return jsonify({
+                "success": False,
+                "error": "El nombre es requerido"
+            }), 400
+
+        if name not in CREW_MEMBERS:
+            return jsonify({
+                "success": False,
+                "error": f"El segmentador '{name}' no existe"
+            }), 404
+
+        # ELIMINAR DE QUALITY_DASHBOARD
+        if quality_segmentadores_col is None:
+            return jsonify({
+                "success": False,
+                "error": "Quality_dashboard no disponible"
+            }), 503
+
+        result = quality_segmentadores_col.delete_one({"name": name})
+
+        if result.deleted_count > 0:
+            # Eliminar de memoria
+            CREW_MEMBERS.remove(name)
+            print(f"✅ Segmentador '{name}' eliminado de Quality_dashboard y memoria")
+
+            return jsonify({
+                "success": True,
+                "message": f"Segmentador '{name}' eliminado exitosamente",
+                "team_size": len(CREW_MEMBERS)
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "error": "No se pudo eliminar de la base de datos"
+            }), 500
+
+    except Exception as e:
+        print(f"❌ Error eliminando segmentador: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
+@app.route("/api/update-segmentador", methods=["PUT"])
+def update_segmentador():
+    """Actualizar datos de un segmentador en Quality_dashboard"""
+    global CREW_MEMBERS, quality_segmentadores_col
+
+    try:
+        data = request.get_json()
+
+        if not data:
+            return jsonify({
+                "success": False,
+                "error": "No se enviaron datos"
+            }), 400
+
+        old_name = data.get("old_name", "").strip()
+        new_name = data.get("name", "").strip()
+        role = data.get("role", "")
+        email = data.get("email", "")
+
+        if not old_name:
+            return jsonify({
+                "success": False,
+                "error": "El nombre anterior es requerido"
+            }), 400
+
+        if not new_name:
+            return jsonify({
+                "success": False,
+                "error": "El nuevo nombre es requerido"
+            }), 400
+
+        if old_name not in CREW_MEMBERS:
+            return jsonify({
+                "success": False,
+                "error": f"El segmentador '{old_name}' no existe"
+            }), 404
+
+        # Si cambió el nombre, verificar que el nuevo no exista
+        if old_name != new_name and new_name in CREW_MEMBERS:
+            return jsonify({
+                "success": False,
+                "error": f"Ya existe un segmentador con el nombre '{new_name}'"
+            }), 400
+
+        # ACTUALIZAR EN QUALITY_DASHBOARD
+        if quality_segmentadores_col is None:
+            return jsonify({
+                "success": False,
+                "error": "Quality_dashboard no disponible"
+            }), 503
+
+        update_data = {
+            "name": new_name,
+            "role": role,
+            "email": email,
+            "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+        result = quality_segmentadores_col.update_one(
+            {"name": old_name},
+            {"$set": update_data}
+        )
+
+        if result.modified_count > 0 or quality_segmentadores_col.find_one({"name": new_name}):
+            # Actualizar memoria
+            if old_name != new_name:
+                index = CREW_MEMBERS.index(old_name)
+                CREW_MEMBERS[index] = new_name
+
+            print(f"✅ Segmentador actualizado: '{old_name}' -> '{new_name}'")
+
+            return jsonify({
+                "success": True,
+                "message": f"Segmentador '{new_name}' actualizado exitosamente",
+                "segmentador": update_data,
+                "team_size": len(CREW_MEMBERS)
+            })
+        else:
+            return jsonify({
+                "success": False,
+                "error": "No se pudo actualizar en la base de datos"
+            }), 500
+
+    except Exception as e:
+        print(f"❌ Error actualizando segmentador: {e}")
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
+
 @app.route("/api/check-mongo-files", methods=["GET"])
 def check_mongo_files():
-    """Verificar qué archivos están actualmente en training_metrics.masks.files"""
+    """Verificar qué archivos están actualmente en training_metrics.masks.files (OPTIMIZADO)"""
     global training_masks_col
 
     try:
@@ -479,13 +629,16 @@ def check_mongo_files():
                 "error": f"Error de conexión a training_metrics: {str(conn_error)}"
             }), 500
 
-        # Obtener lista de todos los archivos en training_metrics.masks.files
+        # OPTIMIZACIÓN: Solo proyectar campos necesarios y limitar resultados
         try:
+            # Límite configurable vía query param (default 100, max 500)
+            limit = min(int(request.args.get("limit", 100)), 500)
+
             files = list(training_masks_col.find(
                 {},
-                {"filename": 1, "uploadDate": 1, "metadata": 1, "length": 1}
-            ).sort("uploadDate", -1).limit(100))
-            print(f"📊 Se encontraron {len(files)} archivos en training_metrics")
+                {"filename": 1, "uploadDate": 1, "metadata.uploaded_by": 1, "length": 1, "_id": 0}
+            ).sort("uploadDate", -1).limit(limit))
+            print(f"📊 Se encontraron {len(files)} archivos en training_metrics (límite: {limit})")
         except Exception as query_error:
             print(f"❌ Error consultando archivos: {query_error}")
             return jsonify({
@@ -592,154 +745,158 @@ def get_batch_files(batch_id):
 
 @app.route("/api/sync-batch-files", methods=["POST"])
 def sync_batch_files():
-    """Sincronizar todos los batches con archivos subidos y actualizar mongo_uploaded"""
+    """Sincronizar batches con archivos (OPTIMIZADO: 1 query en lugar de 4500+)"""
     try:
-        print("🔄 Iniciando sincronización de archivos con batches...")
-        batches = list(batches_col.find({}, {"id": 1, "mongo_uploaded": 1}))
+        print("🔄 Iniciando sincronización OPTIMIZADA de archivos con batches...")
+
+        # OPTIMIZACIÓN 1: Solo traer campos necesarios de batches
+        batches = list(batches_col.find({}, {"id": 1, "mongo_uploaded": 1, "_id": 0}))
+
+        # OPTIMIZACIÓN 2: Extraer todos los números de batch de una vez
+        import re
+        batch_numbers = {}
+        for batch in batches:
+            batch_id = batch["id"]
+            # Extraer número del batch_id
+            match = re.search(r'(\d+)', batch_id)
+            if match:
+                batch_numbers[batch_id] = match.group(1)
+
+        # OPTIMIZACIÓN 3: UNA SOLA QUERY para TODOS los archivos
+        # Construir un regex que busque TODOS los números de batch
+        all_numbers = list(batch_numbers.values())
+        if not all_numbers:
+            return jsonify({
+                "success": True,
+                "batches_updated": 0,
+                "total_batches": 0,
+                "message": "No hay batches para sincronizar"
+            })
+
+        # Crear regex que busque cualquier número de batch
+        numbers_pattern = "|".join(all_numbers)
+        mega_pattern = f"(masks_)?(batch_|Batch_)?({numbers_pattern})"
+
+        print(f"📊 Buscando archivos para {len(all_numbers)} batches con 1 query...")
+
+        # UNA SOLA CONSULTA para todos los archivos
+        all_files = list(masks_col.find(
+            {"filename": {"$regex": mega_pattern, "$options": "i"}},
+            {"filename": 1, "uploadDate": 1, "_id": 0}  # Solo campos necesarios
+        ).sort("uploadDate", -1))
+
+        print(f"✅ Encontrados {len(all_files)} archivos en total")
+
+        # OPTIMIZACIÓN 4: Mapear archivos a batches en memoria (rápido)
+        batch_file_map = {}
+        for batch_id, batch_num in batch_numbers.items():
+            batch_file_map[batch_id] = []
+
+            # Buscar archivos que contengan el número del batch
+            for file in all_files:
+                filename = file.get("filename", "")
+                if batch_num in filename:
+                    batch_file_map[batch_id].append(file)
+
+        # OPTIMIZACIÓN 5: Actualizar batches en bulk
         updated_batches = 0
         sync_results = []
-        
+        bulk_operations = []
+
         for batch in batches:
             batch_id = batch["id"]
             current_mongo_status = batch.get("mongo_uploaded", False)
-            batch_number = batch_id.replace("batch_", "").replace("Batch_", "")
-            
-            # Buscar archivos para este batch con múltiples patrones más específicos
-            # Basado en los nombres reales encontrados en MongoDB
-            patterns = [
-                f"masks_batch_{batch_number}",          # masks_batch_400
-                f"masks_Batch_{batch_number}",          # masks_Batch_400  
-                f"batch_{batch_number}",                # batch_400
-                f"Batch_{batch_number}",                # Batch_400
-                f"batch_{batch_number} \\(",            # batch_400 (100) - patrón con paréntesis
-                f"Batch_{batch_number} \\(",            # Batch_400 (100)
-                f"^batch_{batch_number}$",              # batch_400 exacto
-                f"^{batch_number}$",                    # solo el número 400
-                batch_id,                               # batch_400 exacto
-            ]
-            
-            files_found = []
-            for pattern in patterns:
-                # Buscar con diferentes extensiones comunes
-                search_patterns = [
-                    pattern,
-                    f"{pattern}.tar.xz",
-                    f"{pattern}.tar.gz", 
-                    f"{pattern}.zip",
-                    f"{pattern}.tar"
-                ]
-                
-                for search_pattern in search_patterns:
-                    files = list(masks_col.find(
-                        {"filename": {"$regex": search_pattern, "$options": "i"}},  # Case insensitive
-                        {"filename": 1, "uploadDate": 1, "metadata": 1, "length": 1}
-                    ).sort("uploadDate", -1))
-                    files_found.extend(files)
-                    
-                    # Log para debug de batches específicos
-                    if files and (batch_id == "batch_400" or batch_number in ["4250", "4251", "4252"]):
-                        print(f"🔍 ENCONTRADO para {batch_id} con patrón '{search_pattern}': {[f['filename'] for f in files]}")
-            
-            # Remover duplicados
-            seen_filenames = set()
-            unique_files = []
-            for file in files_found:
-                if file["filename"] not in seen_filenames:
-                    unique_files.append(file)
-                    seen_filenames.add(file["filename"])
-            
-            has_files = len(unique_files) > 0
-            
-            # Log específico para batches de debug
-            if batch_id == "batch_400" or batch_number in ["4250", "4251", "4252"]:
-                print(f"📊 DEBUG {batch_id}:")
-                print(f"   - Número extraído: {batch_number}")
-                print(f"   - Archivos encontrados: {len(unique_files)}")
-                print(f"   - Nombres: {[f['filename'] for f in unique_files]}")
-                print(f"   - Estado actual mongo_uploaded: {current_mongo_status}")
-                print(f"   - Nuevo estado: {has_files}")
-            
-            # Actualizar información del batch
-            update_data = {
-                "mongo_uploaded": has_files,  # Actualizar el estado principal
-                "file_info": {
-                    "file_count": len(unique_files),
-                    "last_file_upload": unique_files[0]["uploadDate"] if unique_files else None,
-                    "has_files": has_files,
-                    "files": [f["filename"] for f in unique_files[:5]]  # Primeros 5 archivos
-                }
-            }
-            
+            files_for_batch = batch_file_map.get(batch_id, [])
+            has_files = len(files_for_batch) > 0
+
             # Solo actualizar si hay cambios
-            if current_mongo_status != has_files or not batch.get("file_info"):
-                batches_col.update_one(
-                    {"id": batch_id},
-                    {"$set": update_data}
-                )
+            if current_mongo_status != has_files:
+                bulk_operations.append({
+                    "filter": {"id": batch_id},
+                    "update": {
+                        "$set": {
+                            "mongo_uploaded": has_files,
+                            "file_info": {
+                                "file_count": len(files_for_batch),
+                                "last_file_upload": files_for_batch[0]["uploadDate"] if files_for_batch else None,
+                                "has_files": has_files
+                            }
+                        }
+                    }
+                })
                 updated_batches += 1
-                print(f"✅ Batch {batch_id}: mongo_uploaded actualizado de {current_mongo_status} a {has_files}")
-            
+
             sync_results.append({
                 "batch_id": batch_id,
-                "files_found": len(unique_files),
+                "files_found": len(files_for_batch),
                 "mongo_uploaded": has_files,
-                "latest_upload": unique_files[0]["uploadDate"] if unique_files else None,
                 "updated": current_mongo_status != has_files
             })
-        
-        print(f"🔄 Sincronización completa: {updated_batches} batches actualizados")
-        
+
+        # Ejecutar todas las actualizaciones de una vez (bulk write)
+        if bulk_operations:
+            from pymongo import UpdateOne
+            batches_col.bulk_write([UpdateOne(op["filter"], op["update"]) for op in bulk_operations])
+
+        print(f"🔄 Sincronización completa: {updated_batches} batches actualizados (OPTIMIZADO)")
+
         return jsonify({
             "success": True,
             "batches_updated": updated_batches,
             "total_batches": len(sync_results),
-            "message": f"Sincronización completa: {updated_batches} batches actualizados",
-            "results": sync_results
+            "total_files_found": len(all_files),
+            "message": f"Sincronización optimizada: {updated_batches} batches actualizados",
+            "results": sync_results[:50]  # Limitar resultado para no sobrecargar respuesta
         })
-        
+
     except Exception as e:
         print(f"❌ Error en sincronización: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route("/api/auto-create-batches", methods=["POST"])
 def auto_create_batches():
-    """Crear batches automáticamente basándose en archivos encontrados en MongoDB"""
+    """Crear batches automáticamente (OPTIMIZADO: solo filename, sin metadata pesada)"""
     try:
         print("🤖 Iniciando creación automática de batches...")
-        
-        # Obtener todos los archivos de MongoDB
+
+        # OPTIMIZACIÓN: Solo traer filename, no metadata ni length
         files = list(masks_col.find(
             {},
-            {"filename": 1, "uploadDate": 1, "metadata": 1, "length": 1}
-        ).sort("uploadDate", -1))
-        
+            {"filename": 1, "_id": 0}  # Solo filename necesario
+        ).limit(10000))  # Límite de seguridad
+
         # Extraer números de batch de los nombres de archivos
         import re
         batch_numbers = set()
         for file in files:
-            filename = file["filename"]
+            filename = file.get("filename", "")
             # Buscar patrones como batch_XXXX, Batch_XXXX
             batch_matches = re.findall(r'[Bb]atch[_\-]?(\d+)', filename)
             for match in batch_matches:
                 batch_numbers.add(match)
-        
-        print(f"📊 Números de batch encontrados en archivos: {sorted(list(batch_numbers))}")
-        
-        # Verificar qué batches ya existen
-        existing_batches = list(batches_col.find({}, {"id": 1}))
+
+        print(f"📊 Números de batch encontrados: {len(batch_numbers)}")
+
+        # OPTIMIZACIÓN: Solo IDs de batches existentes
+        existing_batches = list(batches_col.find({}, {"id": 1, "_id": 0}))
         existing_ids = {b["id"] for b in existing_batches}
-        
+
         created_batches = 0
         results = []
-        
+
+        # OPTIMIZACIÓN: Preparar bulk insert
+        batches_to_insert = []
+
         for batch_num in sorted(batch_numbers):
             batch_id = f"batch_{batch_num}"
-            
+
             if batch_id not in existing_ids:
-                # Crear el batch
+                # Preparar batch para inserción bulk
                 batch = {
                     "id": batch_id,
-                    "assignee": "Maggie",  # Asignar por defecto, se puede cambiar después
+                    "assignee": "Maggie",
                     "folder": f"{DATA_DIRECTORY}/{batch_id}",
                     "tasks": ["segmentar", "subir_mascaras", "revisar"],
                     "metadata": {
@@ -748,37 +905,42 @@ def auto_create_batches():
                         "priority": "media",
                         "reviewed_at": None
                     },
-                    "status": "NS",  # No segmentado por defecto
-                    "mongo_uploaded": True,  # Ya que el archivo existe
-                    "comments": f"Batch creado automáticamente - archivo detectado en MongoDB"
+                    "status": "NS",
+                    "mongo_uploaded": True,
+                    "comments": "Batch creado automáticamente"
                 }
-                
-                batches_col.insert_one(batch)
-                created_batches += 1
+
+                batches_to_insert.append(batch)
                 results.append({
                     "batch_id": batch_id,
                     "created": True,
                     "assignee": "Maggie"
                 })
-                print(f"✅ Batch {batch_id} creado automáticamente")
             else:
                 results.append({
                     "batch_id": batch_id,
                     "created": False,
                     "reason": "Ya existe"
                 })
-                print(f"⚠️ Batch {batch_id} ya existe")
-        
+
+        # OPTIMIZACIÓN: Insertar todos de una vez (bulk insert)
+        if batches_to_insert:
+            batches_col.insert_many(batches_to_insert)
+            created_batches = len(batches_to_insert)
+            print(f"✅ {created_batches} batches creados en bulk")
+
         return jsonify({
             "success": True,
             "created_batches": created_batches,
             "total_found": len(batch_numbers),
-            "message": f"Se crearon {created_batches} nuevos batches automáticamente",
-            "results": results
+            "message": f"Se crearon {created_batches} nuevos batches (optimizado)",
+            "results": results[:100]  # Limitar respuesta
         })
-        
+
     except Exception as e:
         print(f"❌ Error en auto_create_batches: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route("/api/init-batches", methods=["POST"])
@@ -855,24 +1017,14 @@ def reset_batches():
 
 @app.route("/api/missing-batches", methods=["GET"])
 def get_missing_batches():
-    """Obtener batches que FALTAN por segmentar (leyendo carpetas del filesystem)"""
+    """Obtener batches que FALTAN por segmentar (desde batches.json)"""
     try:
-        # Leer carpetas reales del directorio de datos
-        if os.path.exists(DATA_DIRECTORY):
-            all_possible_batches = []
-            for item in os.listdir(DATA_DIRECTORY):
-                item_path = os.path.join(DATA_DIRECTORY, item)
-                # Excluir archivos y directorios que no son batches
-                exclude_items = ['subfolder_names.txt', 'assets_task_01jxjr14ykeghb7nvakp9ey2d9_1749754687_img_1.webp',
-                                'imagenes ilustrativas', 'logo.png', 'logo.zip', 'Presentación_Cap_OPERADOR', 'PRESENT_LECTURA']
-                if os.path.isdir(item_path) and item not in exclude_items and not item.startswith('.'):
-                    all_possible_batches.append(item)
+        # Leer batches desde batches.json
+        with open("batches.json", "r", encoding="utf-8") as f:
+            data = json.load(f)
+            all_possible_batches = [batch["id"] for batch in data.get("batches", [])]
 
-            print(f"📁 Leídas {len(all_possible_batches)} carpetas desde {DATA_DIRECTORY}")
-            print(f"📂 Carpetas encontradas: {all_possible_batches[:10]}..." if len(all_possible_batches) > 10 else f"📂 Carpetas encontradas: {all_possible_batches}")
-        else:
-            print(f"⚠️ Directorio {DATA_DIRECTORY} no existe")
-            return jsonify({"error": f"Directorio de datos {DATA_DIRECTORY} no existe"}), 500
+        print(f"📁 Leídos {len(all_possible_batches)} batches desde batches.json")
 
         # Obtener batches que YA están en la base de datos
         existing_batch_ids = set()
@@ -883,7 +1035,7 @@ def get_missing_batches():
         missing_batches = [batch_id for batch_id in all_possible_batches
                           if batch_id not in existing_batch_ids]
 
-        print(f"📊 Total batches en filesystem: {len(all_possible_batches)}")
+        print(f"📊 Total batches en batches.json: {len(all_possible_batches)}")
         print(f"📊 Batches en DB: {len(existing_batch_ids)}")
         print(f"📊 Batches faltantes: {len(missing_batches)}")
 
@@ -892,8 +1044,8 @@ def get_missing_batches():
             "missing_batches": missing_batches,
             "total_missing": len(missing_batches),
             "total_existing": len(existing_batch_ids),
-            "data_directory": DATA_DIRECTORY,
-            "message": f"Se encontraron {len(missing_batches)} batches pendientes de segmentación"
+            "source": "batches.json",
+            "message": f"Se encontraron {len(missing_batches)} batches pendientes de asignar"
         })
 
     except Exception as e:
