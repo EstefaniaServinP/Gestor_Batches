@@ -267,6 +267,54 @@
       overflow: hidden;
       backdrop-filter: blur(10px);
     }
+
+    .member-actions {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      display: flex;
+      gap: 0.3rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 10;
+    }
+
+    .member-card:hover .member-actions {
+      opacity: 1;
+    }
+
+    .action-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.85rem;
+    }
+
+    .action-btn.edit {
+      background: rgba(59, 130, 246, 0.8);
+      color: white;
+    }
+
+    .action-btn.edit:hover {
+      background: rgba(59, 130, 246, 1);
+      transform: scale(1.1);
+    }
+
+    .action-btn.delete {
+      background: rgba(239, 68, 68, 0.8);
+      color: white;
+    }
+
+    .action-btn.delete:hover {
+      background: rgba(239, 68, 68, 1);
+      transform: scale(1.1);
+    }
     
     .member-card::before {
       content: '';
@@ -520,10 +568,10 @@
           <form id="addSegmentadorForm">
             <div class="mb-3">
               <label class="form-label">Nombre del Segmentador</label>
-              <input type="text" class="form-control" id="segmentador_name" name="segmentador_name" 
+              <input type="text" class="form-control" id="segmentador_name" name="segmentador_name"
                      placeholder="Ej: Ana García, Roberto López" required>
               <div class="form-text">
-                <i class="fas fa-user"></i> 
+                <i class="fas fa-user"></i>
                 Nombre completo del nuevo miembro del equipo
               </div>
             </div>
@@ -539,16 +587,16 @@
             </div>
             <div class="mb-3">
               <label class="form-label">Email (opcional)</label>
-              <input type="email" class="form-control" id="segmentador_email" name="segmentador_email" 
+              <input type="email" class="form-control" id="segmentador_email" name="segmentador_email"
                      placeholder="ejemplo@dominio.com">
               <div class="form-text">
-                <i class="fas fa-envelope"></i> 
+                <i class="fas fa-envelope"></i>
                 Email para notificaciones (opcional)
               </div>
             </div>
             <div class="alert alert-info">
               <i class="fas fa-info-circle"></i>
-              <strong>Nota:</strong> El nuevo segmentador aparecerá inmediatamente en el equipo 
+              <strong>Nota:</strong> El nuevo segmentador aparecerá inmediatamente en el equipo
               y en los desplegables de asignación de batches.
             </div>
           </form>
@@ -557,6 +605,51 @@
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
           <button type="button" class="btn btn-primary" onclick="addSegmentador()">
             <i class="fas fa-user-plus"></i> Agregar Segmentador
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal para Editar Segmentador -->
+  <div class="modal fade" id="editSegmentadorModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-user-edit"></i> Editar Segmentador
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editSegmentadorForm">
+            <input type="hidden" id="edit_old_name">
+            <div class="mb-3">
+              <label class="form-label">Nombre del Segmentador</label>
+              <input type="text" class="form-control" id="edit_segmentador_name" name="edit_segmentador_name"
+                     placeholder="Ej: Ana García, Roberto López" required>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Rol/Especialidad (opcional)</label>
+              <select class="form-select" id="edit_segmentador_role" name="edit_segmentador_role">
+                <option value="">Segmentador General</option>
+                <option value="Senior">Segmentador Senior</option>
+                <option value="Junior">Segmentador Junior</option>
+                <option value="Supervisor">Supervisor de Calidad</option>
+                <option value="Trainee">En Entrenamiento</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Email (opcional)</label>
+              <input type="email" class="form-control" id="edit_segmentador_email" name="edit_segmentador_email"
+                     placeholder="ejemplo@dominio.com">
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <button type="button" class="btn btn-primary" onclick="updateSegmentador()">
+            <i class="fas fa-save"></i> Guardar Cambios
           </button>
         </div>
       </div>
@@ -636,9 +729,17 @@
       sortedMembers.forEach(member => {
         const stats = batchStats[member] || { total: 0, pending: 0, inProgress: 0, completed: 0 };
         const initials = member.split(' ').map(name => name[0]).join('').toUpperCase();
-        
+
         const memberCard = $(`
           <div class="member-card" data-member="${member}">
+            <div class="member-actions">
+              <button class="action-btn edit" onclick="showEditSegmentadorModal('${member.replace(/'/g, "\\'")}'); event.stopPropagation();" title="Editar">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="action-btn delete" onclick="confirmDeleteSegmentador('${member.replace(/'/g, "\\'")}'); event.stopPropagation();" title="Eliminar">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
             <div class="member-avatar">${initials}</div>
             <div class="member-name">${member}</div>
             <div class="member-role">Especialista en Segmentación</div>
@@ -821,24 +922,24 @@
       const form = document.getElementById('addSegmentadorForm');
       const formData = new FormData(form);
       const data = Object.fromEntries(formData.entries());
-      
+
       // Validar nombre requerido
       if (!data.segmentador_name || data.segmentador_name.trim() === '') {
         showNotification('Por favor ingresa el nombre del segmentador', 'warning');
         return;
       }
-      
+
       const segmentadorName = data.segmentador_name.trim();
-      
+
       // Verificar que no exista ya
       if (teamMembers.includes(segmentadorName)) {
         showNotification(`El segmentador "${segmentadorName}" ya existe en el equipo`, 'warning');
         return;
       }
-      
+
       console.log('👤 Agregando nuevo segmentador:', data);
       showNotification('Agregando segmentador...', 'info');
-      
+
       // Enviar datos al servidor
       $.ajax({
         url: '/api/add-segmentador',
@@ -853,10 +954,10 @@
           if (response.success) {
             $('#addSegmentadorModal').modal('hide');
             showNotification(`¡Segmentador "${segmentadorName}" agregado exitosamente!`, 'success');
-            
+
             // Limpiar formulario
             document.getElementById('addSegmentadorForm').reset();
-            
+
             // Recargar la página para actualizar el equipo
             setTimeout(() => {
               window.location.reload();
@@ -869,6 +970,116 @@
           const errorMsg = xhr.responseJSON?.error || 'Error desconocido';
           showNotification('Error agregando segmentador: ' + errorMsg, 'error');
           console.error('❌ Error agregando segmentador:', xhr);
+        }
+      });
+    }
+
+    // Función para mostrar el modal de edición con los datos del segmentador
+    function showEditSegmentadorModal(memberName) {
+      console.log('✏️ Editando segmentador:', memberName);
+
+      // Guardar el nombre original
+      $('#edit_old_name').val(memberName);
+      $('#edit_segmentador_name').val(memberName);
+
+      // Por ahora no tenemos role/email en memoria, así que los dejamos vacíos
+      // En una versión futura podrías hacer un GET al servidor para obtener estos datos
+      $('#edit_segmentador_role').val('');
+      $('#edit_segmentador_email').val('');
+
+      // Mostrar modal
+      $('#editSegmentadorModal').modal('show');
+    }
+
+    // Función para actualizar un segmentador
+    function updateSegmentador() {
+      const oldName = $('#edit_old_name').val();
+      const newName = $('#edit_segmentador_name').val().trim();
+      const role = $('#edit_segmentador_role').val() || 'Segmentador General';
+      const email = $('#edit_segmentador_email').val() || '';
+
+      if (!newName) {
+        showNotification('Por favor ingresa el nombre del segmentador', 'warning');
+        return;
+      }
+
+      console.log('💾 Actualizando segmentador:', { oldName, newName, role, email });
+      showNotification('Actualizando segmentador...', 'info');
+
+      $.ajax({
+        url: '/api/update-segmentador',
+        method: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          old_name: oldName,
+          name: newName,
+          role: role,
+          email: email
+        }),
+        success: function(response) {
+          if (response.success) {
+            $('#editSegmentadorModal').modal('hide');
+            showNotification(`¡Segmentador actualizado exitosamente!`, 'success');
+
+            // Recargar la página para ver los cambios
+            setTimeout(() => {
+              window.location.reload();
+            }, 1500);
+          } else {
+            showNotification('Error actualizando segmentador: ' + (response.error || response.message), 'error');
+          }
+        },
+        error: function(xhr) {
+          const errorMsg = xhr.responseJSON?.error || 'Error desconocido';
+          showNotification('Error actualizando segmentador: ' + errorMsg, 'error');
+          console.error('❌ Error actualizando segmentador:', xhr);
+        }
+      });
+    }
+
+    // Función para confirmar y eliminar un segmentador
+    function confirmDeleteSegmentador(memberName) {
+      console.log('🗑️ Confirmando eliminación de:', memberName);
+
+      // Usar confirmación nativa del navegador
+      const confirmed = confirm(`¿Estás seguro de que quieres eliminar a "${memberName}" del equipo?\n\nEsta acción no se puede deshacer.`);
+
+      if (!confirmed) {
+        console.log('❌ Eliminación cancelada por el usuario');
+        return;
+      }
+
+      deleteSegmentador(memberName);
+    }
+
+    // Función para eliminar un segmentador
+    function deleteSegmentador(memberName) {
+      console.log('🗑️ Eliminando segmentador:', memberName);
+      showNotification('Eliminando segmentador...', 'info');
+
+      $.ajax({
+        url: '/api/remove-segmentador',
+        method: 'DELETE',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          name: memberName
+        }),
+        success: function(response) {
+          if (response.success) {
+            showNotification(`¡Segmentador "${memberName}" eliminado exitosamente!`, 'success');
+
+            // Recargar la página para ver los cambios
+            setTimeout(() => {
+              window.location.reload();
+            }, 1500);
+          } else {
+            showNotification('Error eliminando segmentador: ' + (response.error || response.message), 'error');
+          }
+        },
+        error: function(xhr) {
+          const errorMsg = xhr.responseJSON?.error || 'Error desconocido';
+          showNotification('Error eliminando segmentador: ' + errorMsg, 'error');
+          console.error('❌ Error eliminando segmentador:', xhr);
         }
       });
     }
