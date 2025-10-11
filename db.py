@@ -1,7 +1,7 @@
 import os
 from pymongo import MongoClient, ASCENDING
 
-MONGO_URI = os.environ.get("MONGO_URI", "mongodb://127.0.0.1:27018")
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb://127.0.0.1:27017")
 DB_NAME = os.environ.get("MONGO_DB", "segmentacion_db")
 QUALITY_DB_NAME = "Quality_dashboard"  # Base para segmentadores
 TRAINING_DB_NAME = "QUALITY_IEMSA"  # Base para máscaras (training_metrics.masks.files)

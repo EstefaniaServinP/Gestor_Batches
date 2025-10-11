@@ -240,9 +240,9 @@ def create_batch():
         }
         
         print(f"✅ Batch creado: {batch}")
-        
-        result = batches_col.insert_one(batch)
-        
+
+        batches_col.insert_one(batch)
+
         # Remover el ObjectId para la respuesta JSON
         batch_response = batch.copy()
         if '_id' in batch_response:
@@ -771,15 +771,22 @@ def sync_batch_files():
         # OPTIMIZACIÓN 1: Solo traer campos necesarios de batches
         batches = list(batches_col.find({}, {"id": 1, "mongo_uploaded": 1, "_id": 0}))
 
-        # OPTIMIZACIÓN 2: Extraer todos los números de batch de una vez
+        # OPTIMIZACIÓN 2: Extraer todos los identificadores de batch de una vez
         import re
         batch_numbers = {}
         for batch in batches:
             batch_id = batch["id"]
-            # Extraer número del batch_id
-            match = re.search(r'(\d+)', batch_id)
+            # Extraer el identificador completo después de "batch_"
+            # Ejemplos: batch_20250909T0034 -> 20250909T0034
+            #           batch_123 -> 123
+            match = re.search(r'batch_(.+)', batch_id, re.IGNORECASE)
             if match:
                 batch_numbers[batch_id] = match.group(1)
+            else:
+                # Fallback: extraer solo números si no sigue el patrón batch_XXX
+                match_num = re.search(r'(\d+)', batch_id)
+                if match_num:
+                    batch_numbers[batch_id] = match_num.group(1)
 
         # OPTIMIZACIÓN 3: UNA SOLA QUERY para TODOS los archivos
         # Construir un regex que busque TODOS los números de batch
@@ -792,11 +799,15 @@ def sync_batch_files():
                 "message": "No hay batches para sincronizar"
             })
 
-        # Crear regex que busque cualquier número de batch
-        numbers_pattern = "|".join(all_numbers)
+        # Crear regex que busque cualquier identificador de batch
+        # Escapar caracteres especiales en los identificadores
+        escaped_numbers = [re.escape(num) for num in all_numbers]
+        numbers_pattern = "|".join(escaped_numbers)
+        # Buscar patrones: masks_batch_XXXX, batch_XXXX, Batch_XXXX, masks_XXXX
         mega_pattern = f"(masks_)?(batch_|Batch_)?({numbers_pattern})"
 
         print(f"📊 Buscando archivos para {len(all_numbers)} batches con 1 query...")
+        print(f"🔍 Patrón de búsqueda: {mega_pattern[:100]}...")
 
         # UNA SOLA CONSULTA para todos los archivos desde training_metrics.masks.files
         all_files = list(training_masks_col.find(
@@ -808,14 +819,18 @@ def sync_batch_files():
 
         # OPTIMIZACIÓN 4: Mapear archivos a batches en memoria (rápido)
         batch_file_map = {}
-        for batch_id, batch_num in batch_numbers.items():
+        for batch_id, batch_identifier in batch_numbers.items():
             batch_file_map[batch_id] = []
 
-            # Buscar archivos que contengan el número del batch
+            # Buscar archivos que contengan el identificador del batch
+            # Verificar coincidencia exacta del identificador
             for file in all_files:
                 filename = file.get("filename", "")
-                if batch_num in filename:
+                # Buscar el identificador completo en el nombre del archivo
+                # Ejemplo: batch_20250909T0034 debe coincidir con masks_batch_20250909T0034
+                if batch_identifier in filename:
                     batch_file_map[batch_id].append(file)
+                    print(f"✅ Archivo '{filename}' coincide con batch '{batch_id}' (identificador: {batch_identifier})")
 
         # OPTIMIZACIÓN 5: Actualizar batches en bulk
         updated_batches = 0

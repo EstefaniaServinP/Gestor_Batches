@@ -938,13 +938,14 @@
     function updateTable() {
       console.log('📋 Actualizando tabla con', batches.length, 'batches');
       batchesTable.clear();
-      
-      // Filtrar solo batches que necesitan revisión (In y NS)
-      const batchesForReview = batches.filter(batch => 
-        batch.status === 'In' || batch.status === 'NS'
+
+      // Filtrar solo batches que necesitan revisión (In y NS) Y que estén asignados
+      const batchesForReview = batches.filter(batch =>
+        (batch.status === 'In' || batch.status === 'NS') &&
+        batch.assignee && batch.assignee.trim() !== ''
       );
-      
-      console.log(`📊 Mostrando ${batchesForReview.length} batches pendientes de revisión de ${batches.length} totales`);
+
+      console.log(`📊 Mostrando ${batchesForReview.length} batches ASIGNADOS pendientes de revisión de ${batches.length} totales`);
       
       batchesForReview.forEach(function(batch, index) {
         console.log(`Procesando batch ${index + 1}:`, batch);
