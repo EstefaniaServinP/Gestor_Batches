@@ -826,11 +826,18 @@
 
     function loadBatches() {
       console.log('🔄 Cargando batches...');
-      $.get('/api/batches')
+      $.get('/api/batches?per_page=1000')
         .done(function(data) {
-          console.log('✅ Batches cargados:', data.length);
-          console.log('📊 Datos recibidos:', data);
-          batches = data;
+          // Handle new paginated response format
+          if (data.batches) {
+            batches = data.batches;
+            console.log('✅ Batches cargados:', batches.length, 'de', data.pagination.total);
+          } else {
+            // Fallback for old format
+            batches = data;
+            console.log('✅ Batches cargados:', batches.length);
+          }
+          console.log('📊 Datos recibidos:', batches);
           updateStats();
           updateTable(); // Cargar la tabla
         })
