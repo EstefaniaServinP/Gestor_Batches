@@ -234,6 +234,149 @@ const batchesForReview = batches.filter(batch =>
 1. ✅ `setup_mongo_tunnel.sh` - Túnel SSH básico
 2. ✅ `setup_mongo_tunnel_autossh.sh` - Túnel persistente con reconexión
 
+---
+
+## 8. Actualización de Conexión MongoDB y Sincronización Automática de Máscaras
+
+**Fecha:** 2025-10-14
+
+### Problema:
+1. La conexión a QUALITY_IEMSA usaba túnel SSH (`127.0.0.1:27019`) cuando la base de datos estaba en el mismo servidor MongoDB
+2. Las máscaras recién subidas no se sincronizaban automáticamente con el dashboard
+3. El usuario tenía que ejecutar manualmente scripts de sincronización después de subir máscaras
+4. El dashboard mostraba batches antiguos que ya no existían
+
+### Solución Implementada:
+
+#### 1. **Actualización de Conexiones MongoDB**
+- Ambas conexiones ahora apuntan directamente a `mongodb://192.168.1.93:27017`
+- Eliminada necesidad de túnel SSH
+- Conexión más rápida y confiable
+
+**Archivos modificados:**
+- `db.py` (líneas 5, 9-15)
+- `.env.example` (líneas 6, 9-14)
+
+**Antes:**
+```python
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb://127.0.0.1:27017")
+TRAINING_MONGO_URI = os.environ.get(
+    "TRAINING_MONGO_URI",
+    "mongodb://127.0.0.1:27019/QUALITY_IEMSA?directConnection=true"
+)
+```
+
+**Ahora:**
+```python
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb://192.168.1.93:27017")
+TRAINING_MONGO_URI = os.environ.get(
+    "TRAINING_MONGO_URI",
+    "mongodb://192.168.1.93:27017/QUALITY_IEMSA"
+)
+```
+
+#### 2. **Reemplazo Completo de Batches**
+- Eliminados 156 batches antiguos
+- Creados 429 batches nuevos:
+  - 284 batches tipo F (`batch_000001F` - `batch_000284F`)
+  - 145 batches tipo T (`batch_T000002` - `batch_T000168`)
+
+**Script creado:** `replace_batches.py`
+
+#### 3. **Script de Sincronización de Máscaras**
+- Nuevo script para sincronizar máscaras con batches
+- Soporta formatos: `masks_batch_XXXXXF.tar.xz` y `masks_batch_TXXXXXX.tar.xz`
+- Actualiza campo `mongo_uploaded` y `file_info` en cada batch
+
+**Script creado:** `sync_masks_with_batches.py`
+
+**Funcionamiento:**
+```python
+# Extrae IDs de batch de nombres de archivo
+# masks_batch_000040F.tar.xz → batch_000040F
+# masks_batch_T000044.tar.xz → batch_T000044
+
+# Actualiza batch en DB
+batches_col.update_one(
+    {"id": batch_id},
+    {"$set": {
+        "mongo_uploaded": True,
+        "file_info": {
+            "file_count": len(masks),
+            "last_file_upload": latest_upload_date,
+            "has_files": True
+        }
+    }}
+)
+```
+
+#### 4. **Sincronización Automática en Dashboard**
+- Dashboard ahora sincroniza automáticamente al cargar
+- No requiere acción manual del usuario
+- Fallback en caso de error (carga batches de todas formas)
+
+**Archivo modificado:** `templates/dashboard.html` (líneas 635-647, 834-861)
+
+**Función agregada:**
+```javascript
+function syncMasksWithBatches() {
+  return new Promise((resolve, reject) => {
+    $.ajax({
+      url: '/api/sync-batch-files',
+      method: 'POST',
+      timeout: 30000,
+      success: function(response) {
+        console.log(`✅ Sincronización exitosa: ${response.batches_updated} batches actualizados`);
+        resolve(response);
+      },
+      error: function(xhr, status, error) {
+        console.error('❌ Error en sincronización:', error);
+        reject(error);
+      }
+    });
+  });
+}
+```
+
+**Integración en carga:**
+```javascript
+$(document).ready(function() {
+  initBatches();
+
+  // Sincronizar máscaras antes de cargar batches
+  syncMasksWithBatches().then(() => {
+    loadBatches();
+  }).catch(err => {
+    console.error('⚠️ Error sincronizando, cargando de todas formas');
+    loadBatches();
+  });
+});
+```
+
+### Resultados:
+- ✅ 58 batches con máscaras sincronizados
+- ✅ 371 batches sin máscaras
+- ✅ 125 archivos de máscaras detectados en QUALITY_IEMSA
+- ✅ Sincronización automática al recargar dashboard
+- ✅ No requiere túnel SSH
+
+### Verificación:
+```bash
+# Verificar conexión
+python3 -c "from db import ping_training_client; print(ping_training_client())"
+
+# Sincronizar manualmente (si es necesario)
+python3 sync_masks_with_batches.py
+
+# Verificar batches con máscaras
+python3 -c "from db import get_db; db = get_db(); print(db.batches.count_documents({'mongo_uploaded': True}))"
+```
+
+### Documentación creada:
+- `SOLUCION_SINCRONIZACION_MONGO.md` - Documentación completa de la solución
+
+---
+
 ### Pendiente:
 - 🔄 Arreglar menú hamburguesa (no mostrar página actual)
 

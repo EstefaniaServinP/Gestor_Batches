@@ -635,9 +635,16 @@
     $(document).ready(function() {
       // Inicializar batches desde JSON si es necesario
       initBatches();
-      
-      // Cargar datos
-      loadBatches();
+
+      // Sincronizar máscaras antes de cargar batches
+      syncMasksWithBatches().then(() => {
+        // Cargar datos después de sincronizar
+        loadBatches();
+      }).catch(err => {
+        console.error('⚠️ Error sincronizando máscaras, cargando batches de todas formas:', err);
+        // Cargar batches aunque falle la sincronización
+        loadBatches();
+      });
       
       // Inicializar campos del formulario
       initializeFormFields();
@@ -823,6 +830,36 @@
       
       console.log('📋 Formulario de nuevo batch reseteado');
     }
+
+    // Función para sincronizar máscaras con batches
+    function syncMasksWithBatches() {
+      console.log('🔄 Sincronizando máscaras con batches...');
+      return new Promise((resolve, reject) => {
+        $.ajax({
+          url: '/api/sync-batch-files',
+          method: 'POST',
+          contentType: 'application/json',
+          timeout: 30000, // 30 segundos de timeout
+          success: function(response) {
+            if (response.success) {
+              console.log(`✅ Sincronización exitosa: ${response.batches_updated} batches actualizados`);
+              console.log(`📊 Total archivos encontrados: ${response.total_files_found}`);
+              resolve(response);
+            } else {
+              console.warn('⚠️ Sincronización completada con errores:', response);
+              resolve(response); // Resolver de todas formas para no bloquear
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error('❌ Error en sincronización:', error);
+            console.error('Status:', status);
+            console.error('Response:', xhr.responseJSON);
+            reject(error);
+          }
+        });
+      });
+    }
+
 
     function loadBatches() {
       console.log('🔄 Cargando batches...');
