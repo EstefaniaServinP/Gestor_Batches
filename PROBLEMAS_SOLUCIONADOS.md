@@ -99,7 +99,56 @@ $.get('/api/batches?per_page=1000')
 
 ---
 
-## 5. Problema de Sincronización de Máscaras (masks_batch vs batch)
+## 5. MongoDB Remoto - Máscaras en Servidor Externo
+
+### Problema:
+- La aplicación intentaba conectarse a `127.0.0.1:27018` pero no había MongoDB escuchando
+- Las máscaras NO están en la laptop local, sino en un servidor remoto (de Carlos)
+- Se requiere túnel SSH para acceder al MongoDB remoto
+
+### Arquitectura Real:
+```
+MongoDB LOCAL (127.0.0.1:27017):
+├── segmentacion_db (batches, team)
+└── Quality_dashboard (segmentadores)
+
+MongoDB REMOTO (servidor Carlos):
+└── QUALITY_IEMSA (training_metrics.masks.files)
+    └── Acceso vía túnel SSH → localhost:27018
+```
+
+### Solución:
+1. **Scripts de Túnel SSH creados:**
+   - `setup_mongo_tunnel.sh` - Túnel básico con reintentos
+   - `setup_mongo_tunnel_autossh.sh` - Túnel persistente con reconexión automática
+
+2. **Configuración en db.py:**
+   - Conexión principal (27017): MongoDB local
+   - Conexión secundaria (27018): MongoDB remoto vía túnel SSH
+
+3. **Uso:**
+```bash
+# Opción 1: Túnel básico
+./setup_mongo_tunnel.sh
+
+# Opción 2: Túnel persistente (recomendado)
+./setup_mongo_tunnel_autossh.sh
+
+# Verificar túnel activo
+ps aux | grep autossh | grep 27018
+
+# Probar conexión
+mongosh "mongodb://127.0.0.1:27018/QUALITY_IEMSA"
+```
+
+### Archivos modificados:
+- `setup_mongo_tunnel.sh` (nuevo)
+- `setup_mongo_tunnel_autossh.sh` (nuevo)
+- `db.py` (líneas 4-14, 82-104)
+
+---
+
+## 6. Problema de Sincronización de Máscaras (masks_batch vs batch)
 
 ### Problema:
 - Las máscaras en MongoDB se guardan con el nombre `masks_batch_20250909T0034`
@@ -132,7 +181,7 @@ if match:
 
 ---
 
-## 6. Dashboard General Mostrando Batches Sin Asignar
+## 7. Dashboard General Mostrando Batches Sin Asignar
 
 ### Problema:
 - El dashboard general (`/dashboard`) mostraba TODOS los batches, incluyendo los que no tienen responsable asignado
@@ -164,8 +213,13 @@ const batchesForReview = batches.filter(batch =>
 
 ## Resumen de Mejoras
 
+### Infraestructura:
+1. ✅ Túnel SSH configurado para acceder a MongoDB remoto
+2. ✅ Scripts automatizados para gestión de túneles (básico + autossh)
+3. ✅ Dos conexiones MongoDB: local (27017) y remota (27018 vía túnel)
+
 ### Backend (`app.py` y `db.py`):
-1. ✅ Conexión correcta a QUALITY_IEMSA para máscaras
+1. ✅ Conexión correcta a QUALITY_IEMSA para máscaras (vía túnel SSH)
 2. ✅ Conexión correcta a Quality_dashboard para segmentadores
 3. ✅ API paginada funcionando correctamente
 4. ✅ Sincronización de máscaras con identificadores completos
@@ -176,7 +230,12 @@ const batchesForReview = batches.filter(batch =>
 3. ✅ Vista de equipo con estadísticas actualizadas
 4. ✅ Dashboard general filtra solo batches asignados
 
-### Todas las tareas completadas ✅
+### Scripts de Utilidad:
+1. ✅ `setup_mongo_tunnel.sh` - Túnel SSH básico
+2. ✅ `setup_mongo_tunnel_autossh.sh` - Túnel persistente con reconexión
+
+### Pendiente:
+- 🔄 Arreglar menú hamburguesa (no mostrar página actual)
 
 ---
 

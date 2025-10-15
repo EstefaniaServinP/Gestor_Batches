@@ -1,12 +1,21 @@
 import os
 from pymongo import MongoClient, ASCENDING
 
-MONGO_URI = os.environ.get("MONGO_URI", "mongodb://127.0.0.1:27017")
+# Conexión principal (puerto 27017) - Para segmentacion_db y Quality_dashboard
+MONGO_URI = os.environ.get("MONGO_URI", "mongodb://192.168.1.93:27017")
 DB_NAME = os.environ.get("MONGO_DB", "segmentacion_db")
 QUALITY_DB_NAME = "Quality_dashboard"  # Base para segmentadores
+
+# Conexión secundaria - Para QUALITY_IEMSA (máscaras en training_metrics.masks.files)
+# Ahora en el mismo servidor que la conexión principal
+TRAINING_MONGO_URI = os.environ.get(
+    "TRAINING_MONGO_URI",
+    "mongodb://192.168.1.93:27017/QUALITY_IEMSA"
+)
 TRAINING_DB_NAME = "QUALITY_IEMSA"  # Base para máscaras (training_metrics.masks.files)
 
 _client = None
+_training_client = None
 
 def get_client():
     """Crear/retornar el cliente de MongoDB sin hacer ping (no bloqueante en import)."""
@@ -74,17 +83,35 @@ def get_quality_db():
     print("⚠️", msg)
     return None
 
+def get_training_client():
+    """Crear/retornar el cliente de MongoDB para máscaras (puerto 27018)"""
+    global _training_client
+    if _training_client is None:
+        _training_client = MongoClient(TRAINING_MONGO_URI, serverSelectionTimeoutMS=5000)
+    return _training_client
+
+def ping_training_client():
+    """Intentar un ping rápido al servidor de training; devuelve (True, None) o (False, Exception)."""
+    try:
+        get_training_client().admin.command("ping")
+        return True, None
+    except Exception as e:
+        return False, e
+
 def get_training_db():
-    """Retorna la base de datos training_metrics para máscaras"""
-    ok, err = ping_client()
+    """Retorna la base de datos QUALITY_IEMSA para máscaras (puerto 27018)"""
+    ok, err = ping_training_client()
     if ok:
-        return get_client()[TRAINING_DB_NAME]
-    msg = f"No se pudo conectar a training_metrics: {err}"
+        return get_training_client()[TRAINING_DB_NAME]
+    msg = f"No se pudo conectar a QUALITY_IEMSA ({TRAINING_MONGO_URI}): {err}"
     print("⚠️", msg)
     return None
 
 def close_client():
-    global _client
+    global _client, _training_client
     if _client:
         _client.close()
         _client = None
+    if _training_client:
+        _training_client.close()
+        _training_client = None
