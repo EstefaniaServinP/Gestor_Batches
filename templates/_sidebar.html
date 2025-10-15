@@ -55,6 +55,14 @@
       </a>
     </li>
 
+    <!-- Nivel 1: Gestión de Datos -->
+    <li class="sidebar-item {% if request.path.startswith('/data-management') %}active{% endif %}">
+      <a href="/data-management" class="sidebar-link">
+        <i class="fas fa-database"></i>
+        <span>Gestión de Datos</span>
+      </a>
+    </li>
+
     <!-- Nivel 1: Métricas -->
     <li class="sidebar-item {% if request.path.startswith('/metrics') %}active{% endif %}">
       <a href="/metrics" class="sidebar-link">

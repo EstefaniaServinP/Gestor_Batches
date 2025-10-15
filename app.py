@@ -1499,12 +1499,354 @@ def export_metrics():
         print(f"❌ Error en metrics export: {e}")
         return f"Error: {str(e)}", 500
 
+# ============================================
+# MÓDULO DE GESTIÓN DE DATOS
+# ============================================
+
+@app.route("/data-management")
+def data_management():
+    """Página de gestión de datos (cargar/borrar batches)"""
+    return render_template("data_management.html", crew=CREW_MEMBERS)
+
+@app.route("/api/data/batches/upload", methods=["POST"])
+def upload_batches_json():
+    """Cargar batches desde un archivo JSON"""
+    global batches_col
+
+    if batches_col is None:
+        return jsonify({"success": False, "error": "No DB connection"}), 503
+
+    try:
+        data = request.json
+        batches = data.get("batches", [])
+
+        if not batches:
+            return jsonify({"success": False, "error": "No se encontraron batches en el JSON"}), 400
+
+        # Validar estructura de batches
+        required_fields = ["id"]
+        invalid_batches = []
+
+        for idx, batch in enumerate(batches):
+            if not all(field in batch for field in required_fields):
+                invalid_batches.append(idx)
+
+        if invalid_batches:
+            return jsonify({
+                "success": False,
+                "error": f"Batches inválidos en índices: {invalid_batches}"
+            }), 400
+
+        # Opción: reemplazar todos o solo agregar nuevos
+        mode = data.get("mode", "add")  # "add" o "replace"
+
+        if mode == "replace":
+            # Crear backup antes de borrar
+            backup_batches = list(batches_col.find({}, {"_id": 0}))
+            backup_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+            # Guardar backup en archivo temporal
+            import tempfile
+            backup_file = os.path.join(tempfile.gettempdir(), f"batches_backup_{backup_timestamp}.json")
+            with open(backup_file, 'w', encoding='utf-8') as f:
+                json.dump({"batches": backup_batches}, f, indent=2, default=str)
+
+            print(f"💾 Backup guardado en: {backup_file}")
+
+            # Borrar todos los batches existentes
+            deleted = batches_col.delete_many({})
+            print(f"🗑️ {deleted.deleted_count} batches eliminados")
+
+        # Insertar nuevos batches con campos por defecto
+        batches_to_insert = []
+        for batch in batches:
+            # Asegurar que tenga todos los campos necesarios
+            batch_doc = {
+                "id": batch.get("id"),
+                "assignee": batch.get("assignee", None),
+                "folder": batch.get("folder", f"{DATA_DIRECTORY}/{batch.get('id')}"),
+                "tasks": batch.get("tasks", ["segmentar", "subir_mascaras", "revisar"]),
+                "metadata": {
+                    "assigned_at": batch.get("metadata", {}).get("assigned_at", None),
+                    "due_date": batch.get("metadata", {}).get("due_date", ""),
+                    "priority": batch.get("metadata", {}).get("priority", "media"),
+                    "reviewed_at": batch.get("metadata", {}).get("reviewed_at", None)
+                },
+                "status": batch.get("status", "NS"),
+                "mongo_uploaded": batch.get("mongo_uploaded", True),
+                "comments": batch.get("comments", ""),
+                "created_at": batch.get("created_at", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            }
+            batches_to_insert.append(batch_doc)
+
+        # Insertar batches
+        result = batches_col.insert_many(batches_to_insert)
+
+        return jsonify({
+            "success": True,
+            "message": f"{len(result.inserted_ids)} batches cargados exitosamente",
+            "inserted_count": len(result.inserted_ids),
+            "mode": mode,
+            "backup_file": backup_file if mode == "replace" else None
+        })
+
+    except Exception as e:
+        print(f"❌ Error cargando batches: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/data/batches/delete-by-filter", methods=["POST"])
+def delete_batches_by_filter():
+    """Eliminar batches basándose en filtros"""
+    global batches_col
+
+    if batches_col is None:
+        return jsonify({"success": False, "error": "No DB connection"}), 503
+
+    try:
+        data = request.json
+        filter_criteria = {}
+
+        # Construir filtro basado en criterios
+        if "status" in data and data["status"]:
+            filter_criteria["status"] = data["status"]
+
+        if "assignee" in data and data["assignee"]:
+            filter_criteria["assignee"] = data["assignee"]
+
+        if "id_pattern" in data and data["id_pattern"]:
+            filter_criteria["id"] = {"$regex": data["id_pattern"]}
+
+        if "date_before" in data and data["date_before"]:
+            filter_criteria["created_at"] = {"$lt": data["date_before"]}
+
+        if "unassigned_only" in data and data["unassigned_only"]:
+            filter_criteria["assignee"] = None
+
+        # Verificar cuántos batches se borrarían
+        count = batches_col.count_documents(filter_criteria)
+
+        if count == 0:
+            return jsonify({
+                "success": False,
+                "error": "No se encontraron batches que coincidan con los filtros"
+            }), 404
+
+        # Crear backup antes de borrar
+        backup_batches = list(batches_col.find(filter_criteria, {"_id": 0}))
+        backup_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        import tempfile
+        backup_file = os.path.join(tempfile.gettempdir(), f"deleted_batches_{backup_timestamp}.json")
+        with open(backup_file, 'w', encoding='utf-8') as f:
+            json.dump({"batches": backup_batches}, f, indent=2, default=str)
+
+        print(f"💾 Backup de batches a eliminar guardado en: {backup_file}")
+
+        # Eliminar batches
+        result = batches_col.delete_many(filter_criteria)
+
+        return jsonify({
+            "success": True,
+            "message": f"{result.deleted_count} batches eliminados exitosamente",
+            "deleted_count": result.deleted_count,
+            "backup_file": backup_file
+        })
+
+    except Exception as e:
+        print(f"❌ Error eliminando batches: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/data/batches/export", methods=["GET"])
+def export_batches_json():
+    """Exportar todos los batches a JSON"""
+    global batches_col
+
+    if batches_col is None:
+        return jsonify({"success": False, "error": "No DB connection"}), 503
+
+    try:
+        # Obtener todos los batches
+        batches = list(batches_col.find({}, {"_id": 0}))
+
+        # Crear JSON
+        export_data = {
+            "program": "Gestor de Batches de Segmentación",
+            "created_at": datetime.now().strftime("%Y-%m-%dT%H:%M:%S"),
+            "crew": CREW_MEMBERS,
+            "total_batches": len(batches),
+            "batches": batches
+        }
+
+        # Generar nombre de archivo con timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"batches_export_{timestamp}.json"
+
+        # Crear respuesta
+        response = app.make_response(json.dumps(export_data, indent=2, default=str, ensure_ascii=False))
+        response.headers["Content-Disposition"] = f"attachment; filename={filename}"
+        response.headers["Content-Type"] = "application/json; charset=utf-8"
+
+        return response
+
+    except Exception as e:
+        print(f"❌ Error exportando batches: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/data/batches/stats", methods=["GET"])
+def get_batches_stats():
+    """Obtener estadísticas de batches"""
+    global batches_col
+
+    if batches_col is None:
+        return jsonify({"success": False, "error": "No DB connection"}), 503
+
+    try:
+        total = batches_col.count_documents({})
+
+        # Estadísticas por estado
+        status_stats = list(batches_col.aggregate([
+            {"$group": {"_id": "$status", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]))
+
+        # Estadísticas por asignado
+        assignee_stats = list(batches_col.aggregate([
+            {"$group": {"_id": "$assignee", "count": {"$sum": 1}}},
+            {"$sort": {"count": -1}}
+        ]))
+
+        # Batches sin asignar
+        unassigned = batches_col.count_documents({"assignee": None})
+
+        # Batches por formato de ID
+        id_patterns = {}
+        sample_batches = list(batches_col.find({}, {"id": 1, "_id": 0}).limit(1000))
+
+        for batch in sample_batches:
+            batch_id = batch.get("id", "")
+            # Detectar patrón
+            if batch_id.startswith("batch_T"):
+                pattern = "batch_T000XXX"
+            elif batch_id.startswith("batch_000"):
+                pattern = "batch_000XXX"
+            elif batch_id.startswith("batch_2025"):
+                pattern = "batch_2025XXXXXXXX"
+            else:
+                pattern = "otros"
+
+            id_patterns[pattern] = id_patterns.get(pattern, 0) + 1
+
+        return jsonify({
+            "success": True,
+            "stats": {
+                "total": total,
+                "unassigned": unassigned,
+                "by_status": [{"status": s["_id"], "count": s["count"]} for s in status_stats],
+                "by_assignee": [{"assignee": a["_id"], "count": a["count"]} for a in assignee_stats],
+                "by_id_pattern": id_patterns
+            }
+        })
+
+    except Exception as e:
+        print(f"❌ Error obteniendo estadísticas: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/batch-assignment/metrics", methods=["GET"])
+def get_batch_assignment_metrics():
+    """Obtener métricas detalladas para el módulo de asignación de batches"""
+    global batches_col
+
+    if batches_col is None:
+        return jsonify({"success": False, "error": "No DB connection"}), 503
+
+    try:
+        # Métricas globales
+        total = batches_col.count_documents({})
+
+        # Por estado
+        ns_count = batches_col.count_documents({"status": "NS"})  # No Segmentado
+        in_count = batches_col.count_documents({"status": "In"})  # Incompleto
+        s_count = batches_col.count_documents({"status": "S"})    # Segmentado
+
+        # Métricas por segmentador
+        segmentadores_metrics = {}
+
+        # Obtener lista de segmentadores del sistema
+        for member in CREW_MEMBERS:
+            # Total asignados al segmentador
+            total_assigned = batches_col.count_documents({"assignee": member})
+
+            # Por estado
+            ns = batches_col.count_documents({"assignee": member, "status": "NS"})
+            in_progress = batches_col.count_documents({"assignee": member, "status": "In"})
+            completed = batches_col.count_documents({"assignee": member, "status": "S"})
+
+            segmentadores_metrics[member] = {
+                "total": total_assigned,
+                "ns": ns,
+                "in_progress": in_progress,
+                "completed": completed,
+                "percentage_completed": round((completed / total_assigned * 100) if total_assigned > 0 else 0, 1)
+            }
+
+        # Batches sin asignar
+        unassigned = batches_col.count_documents({"assignee": None})
+
+        return jsonify({
+            "success": True,
+            "metrics": {
+                "global": {
+                    "total": total,
+                    "ns": ns_count,
+                    "in_progress": in_count,
+                    "completed": s_count,
+                    "unassigned": unassigned
+                },
+                "by_segmentador": segmentadores_metrics
+            }
+        })
+
+    except Exception as e:
+        print(f"❌ Error obteniendo métricas de asignación: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
 if __name__ == "__main__":
+    import socket
+
+    def find_free_port(start_port=5000, max_attempts=10):
+        """Encontrar un puerto libre disponible"""
+        for port in range(start_port, start_port + max_attempts):
+            try:
+                # Intentar crear un socket en el puerto
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.settimeout(1)
+                result = sock.connect_ex(('localhost', port))
+                sock.close()
+
+                if result != 0:  # Puerto disponible
+                    return port
+            except:
+                continue
+
+        # Si no encuentra puerto libre, usar uno aleatorio
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.bind(('', 0))
+        port = sock.getsockname()[1]
+        sock.close()
+        return port
+
     # Inicializar DB de forma segura al iniciar localmente
     try:
         init_db()
     except Exception as e:
         print("⚠️ Error inicializando DB en startup:", e)
-    app.run(debug=True, host="0.0.0.0", port=5000)
+
+    # Encontrar puerto disponible
+    port = find_free_port()
+    print(f"\n{'='*60}")
+    print(f"🚀 Servidor iniciando en puerto {port}")
+    print(f"{'='*60}\n")
+
+    app.run(debug=True, host="0.0.0.0", port=port)
 
 

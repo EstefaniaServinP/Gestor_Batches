@@ -667,42 +667,52 @@
       renderTeamMembers();
     });
 
-    function loadBatchStats() {
-      $.get('/api/batches')
-        .done(function(batches) {
-          // Calcular estadísticas por miembro usando el nuevo sistema de estados
+    async function loadBatchStats() {
+      try {
+        const timestamp = Date.now();
+        const response = await fetch(`/api/batch-assignment/metrics?ts=${timestamp}`, {
+          method: 'GET',
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Usar métricas del backend
+          const segmentadores = data.metrics.by_segmentador;
+
           batchStats = {};
           teamMembers.forEach(member => {
+            const memberData = segmentadores[member] || {total: 0, ns: 0, in_progress: 0, completed: 0};
             batchStats[member] = {
-              total: 0,
-              pending: 0,    // NS - No Segmentado
-              inProgress: 0, // FS - Incompletas  
-              completed: 0   // S - Segmentado
+              total: memberData.total,
+              pending: memberData.ns,        // NS - No Segmentado
+              inProgress: memberData.in_progress, // In - Incompletas
+              completed: memberData.completed     // S - Segmentado
             };
           });
 
-          batches.forEach(batch => {
-            const assignee = batch.assignee;
-            if (batchStats[assignee]) {
-              batchStats[assignee].total++;
-              // Usar el nuevo sistema de estados: NS, FS, S
-              if (batch.status === 'NS') {
-                batchStats[assignee].pending++;
-              } else if (batch.status === 'FS') {
-                batchStats[assignee].inProgress++;
-              } else if (batch.status === 'S') {
-                batchStats[assignee].completed++;
-              }
-            }
-          });
-
-          console.log('📊 Estadísticas del equipo calculadas:', batchStats);
+          console.log('📊 Estadísticas del equipo cargadas desde MongoDB:', batchStats);
           renderTeamMembers();
-        })
-        .fail(function() {
-          console.error('Error cargando estadísticas de batches');
-          renderTeamMembers();
+        }
+      } catch (error) {
+        console.error('Error cargando estadísticas de batches:', error);
+        // Fallback: inicializar con 0
+        batchStats = {};
+        teamMembers.forEach(member => {
+          batchStats[member] = { total: 0, pending: 0, inProgress: 0, completed: 0 };
         });
+        renderTeamMembers();
+      }
     }
 
     function renderTeamMembers() {

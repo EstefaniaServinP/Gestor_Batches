@@ -1,0 +1,528 @@
+{% extends "base.html" %}
+
+{% block title %}Gestión de Datos - Dashboard{% endblock %}
+
+{% block page_css %}
+<style>
+    body {
+      background: linear-gradient(135deg, #7C3AED 0%, #A78BFA 100%);
+      min-height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    .main-content {
+      position: relative;
+      z-index: 1;
+      padding: 2rem;
+    }
+
+    .page-header {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.25) 0%, rgba(255, 255, 255, 0.1) 100%);
+      backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 2rem 3rem;
+      margin-bottom: 2rem;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .page-header h1 {
+      color: white;
+      font-size: 2.5rem;
+      font-weight: 700;
+      margin: 0;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .page-header p {
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 1.1rem;
+      margin: 0.5rem 0 0 0;
+    }
+
+    .card-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .management-card {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 2rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .management-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .card-header-custom {
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #E5E7EB;
+    }
+
+    .card-icon {
+      width: 50px;
+      height: 50px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      margin-right: 1rem;
+    }
+
+    .card-icon.upload {
+      background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+      color: white;
+    }
+
+    .card-icon.delete {
+      background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+      color: white;
+    }
+
+    .card-icon.export {
+      background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+      color: white;
+    }
+
+    .card-icon.stats {
+      background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%);
+      color: white;
+    }
+
+    .card-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #1F2937;
+      margin: 0;
+    }
+
+    .card-description {
+      color: #6B7280;
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-action {
+      width: 100%;
+      padding: 0.8rem;
+      border-radius: 10px;
+      border: none;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-action.upload {
+      background: linear-gradient(135deg, #10B981 0%, #34D399 100%);
+      color: white;
+    }
+
+    .btn-action.delete {
+      background: linear-gradient(135deg, #EF4444 0%, #F87171 100%);
+      color: white;
+    }
+
+    .btn-action.export {
+      background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%);
+      color: white;
+    }
+
+    .btn-action:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-label {
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 0.5rem;
+      display: block;
+    }
+
+    .form-control-custom {
+      width: 100%;
+      padding: 0.6rem;
+      border: 2px solid #E5E7EB;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: border-color 0.3s ease;
+    }
+
+    .form-control-custom:focus {
+      outline: none;
+      border-color: #7C3AED;
+    }
+
+    .file-drop-zone {
+      border: 3px dashed #CBD5E1;
+      border-radius: 12px;
+      padding: 2rem;
+      text-align: center;
+      background: #F9FAFB;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 1rem;
+    }
+
+    .file-drop-zone:hover {
+      border-color: #7C3AED;
+      background: #F3F4F6;
+    }
+
+    .file-drop-zone.dragover {
+      border-color: #10B981;
+      background: #ECFDF5;
+    }
+
+    .file-info {
+      display: none;
+      margin-top: 1rem;
+      padding: 1rem;
+      background: #EFF6FF;
+      border-radius: 8px;
+      border-left: 4px solid #3B82F6;
+    }
+
+    .stats-container {
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 15px;
+      padding: 2rem;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .stat-box {
+      background: linear-gradient(135deg, #F3F4F6 0%, #E5E7EB 100%);
+      padding: 1.5rem;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #1F2937;
+    }
+
+    .stat-label {
+      font-size: 0.9rem;
+      color: #6B7280;
+      margin-top: 0.5rem;
+    }
+
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+      z-index: 9999;
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+
+    .notification.success {
+      background: #10B981;
+      color: white;
+    }
+
+    .notification.error {
+      background: #EF4444;
+      color: white;
+    }
+
+    .notification.warning {
+      background: #F59E0B;
+      color: white;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .modal-custom {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9998;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content-custom {
+      background: white;
+      border-radius: 15px;
+      padding: 2rem;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header-custom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 2px solid #E5E7EB;
+    }
+
+    .modal-title-custom {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1F2937;
+    }
+
+    .btn-close-custom {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      color: #6B7280;
+      cursor: pointer;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+    }
+
+    .checkbox-group {
+      margin: 1rem 0;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 1rem;
+    }
+
+    .spinner {
+      border: 3px solid #E5E7EB;
+      border-top: 3px solid #7C3AED;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+  <!-- Header -->
+  <div class="page-header">
+    <h1><i class="fas fa-database"></i> Gestión de Datos</h1>
+    <p>Cargar, exportar y administrar batches</p>
+  </div>
+
+  <!-- Estadísticas rápidas -->
+  <div class="stats-container" id="statsContainer">
+    <h3><i class="fas fa-chart-bar"></i> Estadísticas Actuales</h3>
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-box">
+        <div class="stat-value" id="totalBatches">-</div>
+        <div class="stat-label">Total Batches</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="unassignedBatches">-</div>
+        <div class="stat-label">Sin Asignar</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-value" id="assignedBatches">-</div>
+        <div class="stat-label">Asignados</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cards de acciones -->
+  <div class="card-container">
+    <!-- Card: Cargar Batches -->
+    <div class="management-card">
+      <div class="card-header-custom">
+        <div class="card-icon upload">
+          <i class="fas fa-upload"></i>
+        </div>
+        <div>
+          <h3 class="card-title">Cargar Batches</h3>
+        </div>
+      </div>
+      <p class="card-description">Sube un archivo JSON con nuevos batches para agregarlos o reemplazar los existentes.</p>
+
+      <div class="file-drop-zone" id="fileDropZone">
+        <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: #7C3AED; margin-bottom: 1rem;"></i>
+        <p style="margin: 0; font-weight: 600;">Arrastra un archivo JSON aquí</p>
+        <p style="margin: 0.5rem 0 0 0; font-size: 0.9rem; color: #6B7280;">o haz clic para seleccionar</p>
+        <input type="file" id="fileInput" accept=".json" style="display: none;">
+      </div>
+
+      <div class="file-info" id="fileInfo">
+        <p style="margin: 0; font-weight: 600; color: #3B82F6;">Archivo seleccionado:</p>
+        <p id="fileName" style="margin: 0.25rem 0 0 0; color: #1F2937;"></p>
+        <p id="fileSize" style="margin: 0; font-size: 0.9rem; color: #6B7280;"></p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Modo de carga</label>
+        <select class="form-control-custom" id="uploadMode">
+          <option value="add">Agregar a existentes</option>
+          <option value="replace">Reemplazar todos (con backup)</option>
+        </select>
+      </div>
+
+      <button class="btn-action upload" id="btnUpload" disabled>
+        <i class="fas fa-upload"></i> Cargar Batches
+      </button>
+    </div>
+
+    <!-- Card: Exportar Batches -->
+    <div class="management-card">
+      <div class="card-header-custom">
+        <div class="card-icon export">
+          <i class="fas fa-download"></i>
+        </div>
+        <div>
+          <h3 class="card-title">Exportar Batches</h3>
+        </div>
+      </div>
+      <p class="card-description">Descarga todos los batches actuales en formato JSON para respaldo o análisis.</p>
+
+      <button class="btn-action export" id="btnExport">
+        <i class="fas fa-download"></i> Exportar a JSON
+      </button>
+    </div>
+
+    <!-- Card: Eliminar Batches -->
+    <div class="management-card">
+      <div class="card-header-custom">
+        <div class="card-icon delete">
+          <i class="fas fa-trash-alt"></i>
+        </div>
+        <div>
+          <h3 class="card-title">Eliminar Batches</h3>
+        </div>
+      </div>
+      <p class="card-description">Elimina batches según filtros específicos. Se creará un backup automático.</p>
+
+      <button class="btn-action delete" id="btnDeleteModal">
+        <i class="fas fa-trash-alt"></i> Abrir Panel de Eliminación
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para eliminar batches -->
+<div class="modal-custom" id="deleteModal">
+  <div class="modal-content-custom">
+    <div class="modal-header-custom">
+      <h3 class="modal-title-custom">Eliminar Batches por Filtro</h3>
+      <button class="btn-close-custom" id="btnCloseModal">×</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Patrón de ID (regex)</label>
+      <input type="text" class="form-control-custom" id="deleteIdPattern" placeholder="Ej: ^batch_2025">
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Estado</label>
+      <select class="form-control-custom" id="deleteStatus">
+        <option value="">Todos</option>
+        <option value="NS">NS - No Segmentado</option>
+        <option value="PS">PS - Parcialmente Segmentado</option>
+        <option value="CS">CS - Completamente Segmentado</option>
+        <option value="R">R - Revisado</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label">Asignado a</label>
+      <select class="form-control-custom" id="deleteAssignee">
+        <option value="">Todos</option>
+        {% for member in crew %}
+        <option value="{{ member }}">{{ member }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="checkbox-group">
+      <label class="checkbox-label">
+        <input type="checkbox" id="deleteUnassignedOnly">
+        <span>Solo batches sin asignar</span>
+      </label>
+    </div>
+
+    <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+      <button class="btn-action delete" id="btnConfirmDelete" style="flex: 1;">
+        <i class="fas fa-trash-alt"></i> Eliminar
+      </button>
+      <button class="btn-action" id="btnCancelDelete" style="flex: 1; background: #6B7280; color: white;">
+        Cancelar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Notification -->
+<div class="notification" id="notification"></div>
+
+<!-- Loading -->
+<div class="loading" id="loading">
+  <div class="spinner"></div>
+  <p style="margin-top: 1rem; color: #6B7280;">Procesando...</p>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script src="{{ url_for('static', filename='js/data_management.js') }}"></script>
+{% endblock %}

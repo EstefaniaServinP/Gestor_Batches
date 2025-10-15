@@ -319,13 +319,36 @@
           {% for member in crew %}
           <div class="col-md-6">
             <div class="card h-100" style="border: 2px solid rgba(255, 255, 255, 0.3);">
-              <div class="card-header d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; border-bottom: none;">
-                <h5 class="mb-0 fw-bold"><i class="fas fa-user-circle"></i> {{ member }}</h5>
-                <span class="badge batch-count" style="background: white; color: #059669; font-weight: bold; font-size: 0.9rem;">0</span>
+              <div class="card-header" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; border-bottom: none;">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h5 class="mb-0 fw-bold"><i class="fas fa-user-circle"></i> {{ member }}</h5>
+                  <span class="badge batch-count" data-member="{{ member }}" style="background: white; color: #059669; font-weight: bold; font-size: 0.9rem;">0</span>
+                </div>
+                <!-- Métricas del segmentador -->
+                <div class="row g-1 text-center" style="font-size: 0.75rem;">
+                  <div class="col-4">
+                    <div style="background: rgba(255,255,255,0.2); padding: 0.3rem; border-radius: 6px;">
+                      <div class="fw-bold segmentador-ns" data-member="{{ member }}">0</div>
+                      <div style="opacity: 0.8;">NS</div>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div style="background: rgba(255,255,255,0.2); padding: 0.3rem; border-radius: 6px;">
+                      <div class="fw-bold segmentador-in" data-member="{{ member }}">0</div>
+                      <div style="opacity: 0.8;">In</div>
+                    </div>
+                  </div>
+                  <div class="col-4">
+                    <div style="background: rgba(255,255,255,0.2); padding: 0.3rem; border-radius: 6px;">
+                      <div class="fw-bold segmentador-completed" data-member="{{ member }}">0</div>
+                      <div style="opacity: 0.8;">S</div>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div class="card-body p-2" style="max-height: 300px; overflow-y: auto;">
-                <div class="drop-zone segmentador-batches" 
-                     data-assignee="{{ member }}" 
+                <div class="drop-zone segmentador-batches"
+                     data-assignee="{{ member }}"
                      style="min-height: 200px; background: rgba(255, 255, 255, 0.1); border: 2px dashed rgba(255, 255, 255, 0.4); border-radius: 12px; padding: 1rem; transition: all 0.3s ease;">
                   <!-- Los batches asignados a {{ member }} aparecerán aquí -->
                   <div class="text-center text-white-50 p-3">
@@ -514,35 +537,46 @@
       // Cargar datos
       loadBatches();
       loadMissingBatches();
+
+      // Auto-refresh de métricas cada 15 segundos
+      setInterval(async () => {
+        console.log('🔄 Auto-refresh de métricas...');
+        await updateStats();
+      }, 15000);
+
+      console.log('✅ Auto-refresh de métricas activado (cada 15 segundos)');
     });
 
-    function loadBatches() {
+    async function loadBatches() {
       console.log('🔄 Cargando batches...');
-      $.get('/api/batches?per_page=1000')
-        .done(function(data) {
-          // Handle new paginated response format
-          if (data.batches) {
-            batches = data.batches;
-            // Store pagination info for future use
-            window.currentPage = data.pagination.page;
-            window.totalPages = data.pagination.total_pages;
-            window.totalBatches = data.pagination.total;
-          } else {
-            // Fallback for old format
-            batches = data;
-          }
-
-          console.log('✅ Batches cargados:', batches.length, 'de', window.totalBatches || 'N/A');
-          console.log('📊 Datos recibidos:', batches);
-
-          updateStats();
-          updateDragDropInterface();
-          updateTable(); // Solo para la vista detallada
-        })
-        .fail(function(xhr) {
-          console.error('❌ Error cargando batches:', xhr);
-          alert('Error cargando batches: ' + (xhr.responseJSON?.error || 'Error desconocido'));
+      try {
+        const response = await fetch('/api/batches?per_page=1000', {
+          cache: 'no-store'
         });
+        const data = await response.json();
+
+        // Handle new paginated response format
+        if (data.batches) {
+          batches = data.batches;
+          // Store pagination info for future use
+          window.currentPage = data.pagination.page;
+          window.totalPages = data.pagination.total_pages;
+          window.totalBatches = data.pagination.total;
+        } else {
+          // Fallback for old format
+          batches = data;
+        }
+
+        console.log('✅ Batches cargados:', batches.length, 'de', window.totalBatches || 'N/A');
+        console.log('📊 Datos recibidos:', batches);
+
+        await updateStats();
+        updateDragDropInterface();
+        updateTable(); // Solo para la vista detallada
+      } catch (error) {
+        console.error('❌ Error cargando batches:', error);
+        alert('Error cargando batches: ' + error.message);
+      }
     }
 
     // Nueva función para actualizar la interfaz de drag & drop
@@ -809,9 +843,9 @@
       }
     }
 
-    function createBatchFromPending(batchId, assignee) {
+    async function createBatchFromPending(batchId, assignee) {
       console.log(`📝 Creando nuevo batch desde pendiente: ${batchId}`);
-      
+
       const batchData = {
         id: batchId,
         assignee: assignee,
@@ -827,23 +861,29 @@
         mongo_uploaded: false,
         comments: `Batch asignado a ${assignee} desde drag & drop`
       };
-      
-      $.ajax({
-        url: '/api/batches',
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(batchData),
-        success: function(response) {
-          console.log('✅ Nuevo batch creado:', response);
+
+      try {
+        const response = await fetch('/api/batches', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(batchData)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          console.log('✅ Nuevo batch creado:', result);
           showNotification(`Batch ${batchId} creado y asignado a ${assignee}`, 'success');
-          loadBatches(); // Recargar todo para sincronizar
-        },
-        error: function(xhr) {
-          console.error('❌ Error creando batch:', xhr);
-          showNotification('Error creando batch: ' + (xhr.responseJSON?.error || 'Error desconocido'), 'error');
-          updateDragDropInterface(); // Restaurar interfaz
+          await loadBatches(); // Recargar todo para sincronizar
+          await updateStats(); // Actualizar métricas
+        } else {
+          throw new Error(result.error || 'Error desconocido');
         }
-      });
+      } catch (error) {
+        console.error('❌ Error creando batch:', error);
+        showNotification('Error creando batch: ' + error.message, 'error');
+        updateDragDropInterface(); // Restaurar interfaz
+      }
     }
 
     function updateExistingBatch(batchId, newAssignee) {
@@ -872,36 +912,44 @@
         data: updateData
       });
 
-      // Enviar actualización al servidor
-      $.ajax({
-        url: `/api/batches/${batchId}`,
-        method: 'PUT',
-        contentType: 'application/json',
-        data: JSON.stringify(updateData),
-        success: function(response) {
-          console.log('✅ Batch actualizado correctamente:', response);
+      // Enviar actualización al servidor (async/await version)
+      (async () => {
+        try {
+          const response = await fetch(`/api/batches/${batchId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updateData)
+          });
 
-          // Actualizar datos localmente después de confirmar el servidor
-          batch.assignee = updateData.assignee;
-          batch.metadata = updateData.metadata;
+          const result = await response.json();
 
-          showNotification(
-            newAssignee ?
-              `Batch ${batchId} asignado a ${newAssignee}` :
-              `Batch ${batchId} regresado a "No Asignados"`,
-            'success'
-          );
+          if (result.success) {
+            console.log('✅ Batch actualizado correctamente:', result);
 
-          // Recargar la interfaz completa para sincronizar
-          loadBatches();
-        },
-        error: function(xhr) {
-          console.error('❌ Error actualizando batch:', xhr);
-          showNotification('Error asignando batch: ' + (xhr.responseJSON?.error || 'Error desconocido'), 'error');
+            // Actualizar datos localmente después de confirmar el servidor
+            batch.assignee = updateData.assignee;
+            batch.metadata = updateData.metadata;
+
+            showNotification(
+              newAssignee ?
+                `Batch ${batchId} asignado a ${newAssignee}` :
+                `Batch ${batchId} regresado a "No Asignados"`,
+              'success'
+            );
+
+            // Recargar la interfaz completa para sincronizar
+            await loadBatches();
+            await updateStats(); // Actualizar métricas
+          } else {
+            throw new Error(result.error || 'Error desconocido');
+          }
+        } catch (error) {
+          console.error('❌ Error actualizando batch:', error);
+          showNotification('Error asignando batch: ' + error.message, 'error');
           // Recargar interfaz para restaurar estado correcto
           updateDragDropInterface();
         }
-      });
+      })();
     }
 
     // Función para alternar entre vista drag & drop y vista detallada
@@ -937,17 +985,62 @@
       }
     }
 
-    function updateStats() {
-      const total = batches.length;
-      // Usar el nuevo sistema de estados: S, In, NS
-      const completed = batches.filter(b => b.status === 'S').length; // S = Segmentado (completado)
-      const inProgress = batches.filter(b => b.status === 'In').length; // In = Incompletas
-      const pending = batches.filter(b => b.status === 'NS').length; // NS = No Segmentado (pendiente)
+    async function updateStats() {
+      // Cargar métricas reales desde MongoDB con cache deshabilitado
+      try {
+        const timestamp = Date.now();
+        const response = await fetch(`/api/batch-assignment/metrics?ts=${timestamp}`, {
+          method: 'GET',
+          cache: 'no-store',
+          headers: {
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          }
+        });
 
-      $('#totalBatches').text(total);
-      $('#pendingBatches').text(pending);
-      $('#inProgressBatches').text(inProgress);
-      $('#completedBatches').text(completed);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          const metrics = data.metrics;
+
+          // Actualizar métricas globales
+          $('#totalBatches').text(metrics.global.total);
+          $('#pendingBatches').text(metrics.global.ns);
+          $('#inProgressBatches').text(metrics.global.in_progress);
+          $('#completedBatches').text(metrics.global.completed);
+
+          // Actualizar métricas por segmentador
+          const segmentadores = metrics.by_segmentador;
+          for (const [member, data] of Object.entries(segmentadores)) {
+            // Actualizar badge con total
+            $(`.batch-count[data-member="${member}"]`).text(data.total);
+
+            // Actualizar métricas individuales
+            $(`.segmentador-ns[data-member="${member}"]`).text(data.ns);
+            $(`.segmentador-in[data-member="${member}"]`).text(data.in_progress);
+            $(`.segmentador-completed[data-member="${member}"]`).text(data.completed);
+          }
+
+          console.log('✅ Métricas actualizadas desde MongoDB (sin caché)');
+        }
+      } catch (error) {
+        console.error('❌ Error cargando métricas:', error);
+        // Fallback: usar datos locales si falla la API
+        const total = batches.length;
+        const completed = batches.filter(b => b.status === 'S').length;
+        const inProgress = batches.filter(b => b.status === 'In').length;
+        const pending = batches.filter(b => b.status === 'NS').length;
+
+        $('#totalBatches').text(total);
+        $('#pendingBatches').text(pending);
+        $('#inProgressBatches').text(inProgress);
+        $('#completedBatches').text(completed);
+      }
     }
 
     function updateTable() {
@@ -1157,5 +1250,109 @@
         window.location.href = '/';
       }
     }
+
+    // Guardar cambios de un batch (estado, revisión, comentarios)
+    window.saveBatchChanges = function(batchId) {
+      console.log(`💾 Guardando cambios para batch: ${batchId}`);
+
+      // Obtener valores del formulario en la tabla
+      const statusSelect = $(`.segmentation-status-select[data-batch-id="${batchId}"]`);
+      const reviewSelect = $(`.review-select[data-batch-id="${batchId}"]`);
+      const commentsInput = $(`.comments-input[data-batch-id="${batchId}"]`);
+
+      const updateData = {
+        status: statusSelect.val(),
+        metadata: {
+          review_status: reviewSelect.val() || null
+        },
+        comments: commentsInput.val() || ''
+      };
+
+      console.log(`📤 Datos a actualizar:`, updateData);
+
+      $.ajax({
+        url: `/api/batches/${batchId}`,
+        method: 'PUT',
+        contentType: 'application/json',
+        data: JSON.stringify(updateData),
+        success: function(response) {
+          console.log('✅ Batch actualizado:', response);
+          showNotification(`Cambios guardados para ${batchId}`, 'success');
+
+          // Actualizar datos locales
+          const batch = batches.find(b => b.id === batchId);
+          if (batch) {
+            batch.status = updateData.status;
+            batch.comments = updateData.comments;
+            if (!batch.metadata) batch.metadata = {};
+            batch.metadata.review_status = updateData.metadata.review_status;
+          }
+
+          // Actualizar métricas en tiempo real
+          updateStats();
+
+          // Cambiar color del borde según revisión
+          if (updateData.metadata.review_status === 'aprobado') {
+            reviewSelect.addClass('border-success').removeClass('border-danger');
+          } else if (updateData.metadata.review_status === 'no_aprobado') {
+            reviewSelect.addClass('border-danger').removeClass('border-success');
+          } else {
+            reviewSelect.removeClass('border-success border-danger');
+          }
+        },
+        error: function(xhr) {
+          console.error('❌ Error guardando cambios:', xhr);
+          showNotification('Error guardando cambios: ' + (xhr.responseJSON?.error || 'Error desconocido'), 'error');
+        }
+      });
+    };
+
+    // Ver detalles de un batch
+    window.viewBatchDetails = function(batchId) {
+      const batch = batches.find(b => b.id === batchId);
+      if (!batch) {
+        showNotification('Batch no encontrado', 'error');
+        return;
+      }
+
+      alert(`Detalles del Batch: ${batchId}\n\n` +
+            `Asignado a: ${batch.assignee || 'Sin asignar'}\n` +
+            `Estado: ${batch.status}\n` +
+            `Fecha de asignación: ${batch.metadata?.assigned_at || 'N/A'}\n` +
+            `Prioridad: ${batch.metadata?.priority || 'media'}\n` +
+            `Revisión: ${batch.metadata?.review_status || 'Pendiente'}\n` +
+            `Comentarios: ${batch.comments || 'Sin comentarios'}`);
+    };
+
+    // Confirmar eliminación de batch
+    window.deleteBatchConfirm = function(batchId) {
+      if (!confirm(`¿Estás seguro de que quieres eliminar el batch ${batchId}?\n\nEsta acción no se puede deshacer.`)) {
+        return;
+      }
+
+      console.log(`🗑️ Eliminando batch: ${batchId}`);
+
+      $.ajax({
+        url: `/api/batches/${batchId}`,
+        method: 'DELETE',
+        success: function(response) {
+          console.log('✅ Batch eliminado:', response);
+          showNotification(`Batch ${batchId} eliminado correctamente`, 'success');
+
+          // Remover de datos locales
+          const index = batches.findIndex(b => b.id === batchId);
+          if (index !== -1) {
+            batches.splice(index, 1);
+          }
+
+          // Recargar interfaz
+          loadBatches();
+        },
+        error: function(xhr) {
+          console.error('❌ Error eliminando batch:', xhr);
+          showNotification('Error eliminando batch: ' + (xhr.responseJSON?.error || 'Error desconocido'), 'error');
+        }
+      });
+    };
 </script>
 {% endblock %}
