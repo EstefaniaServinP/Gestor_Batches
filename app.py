@@ -17,10 +17,12 @@ Fecha: Julio 23, 2025
 Equipo: Mauricio, Maggie, Ceci, Flor, Ignacio
 """
 
-from flask import Flask, render_template, request, jsonify, redirect
+from flask import Flask, render_template, request, jsonify, redirect, send_file
 from db import get_db, create_indexes
 import json
 import os
+import csv
+import io
 from datetime import datetime
 
 app = Flask(__name__)
@@ -632,8 +634,8 @@ def check_mongo_files():
 
         # OPTIMIZACIÓN: Solo proyectar campos necesarios y limitar resultados
         try:
-            # Límite configurable vía query param (default 100, max 500)
-            limit = min(int(request.args.get("limit", 100)), 500)
+            # Límite REDUCIDO: máximo 300 para no sobrecargar (antes 500)
+            limit = min(int(request.args.get("limit", 100)), 300)
 
             files = list(training_masks_col.find(
                 {},
@@ -905,10 +907,11 @@ def auto_create_batches():
             }), 503
 
         # OPTIMIZACIÓN: Solo traer filename, no metadata ni length desde training_metrics.masks.files
+        # LÍMITE REDUCIDO: 5000 archivos (reducir carga de memoria)
         files = list(training_masks_col.find(
             {},
             {"filename": 1, "_id": 0}  # Solo filename necesario
-        ).limit(10000))  # Límite de seguridad
+        ).limit(5000))  # Límite de seguridad reducido
 
         # Extraer números de batch de los nombres de archivos
         import re
@@ -922,9 +925,9 @@ def auto_create_batches():
 
         print(f"📊 Números de batch encontrados: {len(batch_numbers)}")
 
-        # OPTIMIZACIÓN: Solo IDs de batches existentes
-        existing_batches = list(batches_col.find({}, {"id": 1, "_id": 0}))
-        existing_ids = {b["id"] for b in existing_batches}
+        # OPTIMIZACIÓN: Solo IDs de batches existentes (proyección mínima)
+        # Usar set comprehension directamente para ahorrar memoria
+        existing_ids = {b["id"] for b in batches_col.find({}, {"id": 1, "_id": 0})}
 
         created_batches = 0
         results = []
@@ -1174,7 +1177,7 @@ def get_metrics_overview():
 
 @app.route("/api/metrics/team", methods=["GET"])
 def get_metrics_team():
-    """Obtener métricas por miembro del equipo con paridad de datos"""
+    """Obtener métricas por miembro del equipo con paridad de datos (OPTIMIZADO)"""
     try:
         global batches_col
         if batches_col is None:
@@ -1184,8 +1187,16 @@ def get_metrics_team():
             else:
                 return jsonify({"error": "No DB connection"}), 503
 
-        # Agregación para métricas por assignee
+        # OPTIMIZACIÓN: Agregación con proyección mínima y límite de batches
         pipeline = [
+            {
+                "$project": {  # Proyectar solo campos necesarios PRIMERO
+                    "id": 1,
+                    "assignee": 1,
+                    "status": 1,
+                    "metadata.assigned_at": 1
+                }
+            },
             {
                 "$addFields": {
                     "assignee_normalized": {
@@ -1199,12 +1210,9 @@ def get_metrics_team():
                             "else": "$assignee"
                         }
                     },
-                    # Usar metadata.assigned_at si existe, sino usar created_at o fecha actual
+                    # Usar metadata.assigned_at si existe, sino usar fecha por defecto
                     "sort_date": {
-                        "$ifNull": [
-                            "$metadata.assigned_at",
-                            {"$ifNull": ["$created_at", "1970-01-01"]}
-                        ]
+                        "$ifNull": ["$metadata.assigned_at", "1970-01-01"]
                     }
                 }
             },
@@ -1234,12 +1242,11 @@ def get_metrics_team():
         for result in results:
             assignee = result["_id"]
 
-            # Ordenar batches por fecha descendente (más reciente primero)
+            # OPTIMIZACIÓN: Ordenar y tomar solo 3 más recientes en una sola pasada
             batches = result["batches"]
-            batches.sort(key=lambda x: x.get("sort_date", "1970-01-01"), reverse=True)
-
-            # Tomar los 3 más recientes
-            recent_batches = [batch["id"] for batch in batches[:3]]
+            # Usar sorted con slice para evitar ordenar todos si hay muchos
+            recent_batches_full = sorted(batches, key=lambda x: x.get("sort_date", "1970-01-01"), reverse=True)[:3]
+            recent_batches = [batch["id"] for batch in recent_batches_full]
 
             # Calcular eficiencia: S / (S + FS)
             active_work = result["completed"] + result["in_progress"]
@@ -1808,6 +1815,320 @@ def get_batch_assignment_metrics():
 
     except Exception as e:
         print(f"❌ Error obteniendo métricas de asignación: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================================
+# ENDPOINTS DE DESCARGA Y RESPALDO
+# ============================================================================
+
+@app.route("/api/export/segmentador/<segmentador>", methods=["GET"])
+def export_segmentador_csv(segmentador):
+    """Exportar batches de un segmentador específico en formato CSV"""
+    global batches_col
+
+    if batches_col is None:
+        return jsonify({"success": False, "error": "No DB connection"}), 503
+
+    try:
+        print(f"📥 Exportando datos de segmentador: {segmentador}")
+
+        # Obtener batches del segmentador
+        batches = list(batches_col.find({"assignee": segmentador}, {"_id": 0}).sort("id", 1))
+
+        if not batches:
+            return jsonify({
+                "success": False,
+                "error": f"No se encontraron batches para {segmentador}"
+            }), 404
+
+        # Obtener la fecha de asignación del primer batch (o fecha actual si no hay)
+        first_batch_date = ""
+        if batches:
+            metadata = batches[0].get("metadata", {})
+            assigned_at = metadata.get("assigned_at", "")
+            if assigned_at:
+                # Extraer solo la fecha (YYYY-MM-DD) sin la hora
+                try:
+                    # Formato esperado: "2025-10-15 14:30:00"
+                    first_batch_date = assigned_at.split()[0].replace("-", "")  # 20251015
+                except:
+                    first_batch_date = datetime.now().strftime("%Y%m%d")
+            else:
+                first_batch_date = datetime.now().strftime("%Y%m%d")
+
+        # Crear CSV en memoria
+        output = io.StringIO()
+
+        # Definir columnas SIMPLIFICADAS (solo ID, Nombre, Estatus vacío)
+        fieldnames = ["Batch ID", "Responsable", "Estatus"]
+
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer.writeheader()
+
+        # Escribir datos
+        for batch in batches:
+            writer.writerow({
+                "Batch ID": batch.get("id", ""),
+                "Responsable": batch.get("assignee", ""),
+                "Estatus": ""  # Campo vacío para que lo llene el segmentador
+            })
+
+        # Preparar respuesta
+        output.seek(0)
+
+        # Nombre del archivo: segmentador_fechaAsignacion.csv
+        # Ejemplo: Mauricio_20251015.csv
+        filename = f"{segmentador}_{first_batch_date}.csv"
+
+        # Convertir a bytes para send_file
+        mem = io.BytesIO()
+        mem.write(output.getvalue().encode('utf-8-sig'))  # BOM para Excel
+        mem.seek(0)
+
+        print(f"✅ Exportados {len(batches)} batches de {segmentador}")
+
+        return send_file(
+            mem,
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name=filename
+        )
+
+    except Exception as e:
+        print(f"❌ Error exportando datos de {segmentador}: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/export/all-assignments", methods=["GET"])
+def export_all_assignments_csv():
+    """Exportar todos los batches asignados en formato CSV (resumen por segmentador)"""
+    global batches_col
+
+    if batches_col is None:
+        return jsonify({"success": False, "error": "No DB connection"}), 503
+
+    try:
+        print(f"📥 Exportando resumen de asignaciones de todo el equipo")
+
+        # Obtener estadísticas por segmentador
+        pipeline = [
+            {"$match": {"assignee": {"$ne": None}}},  # Solo asignados
+            {"$group": {
+                "_id": "$assignee",
+                "total": {"$sum": 1},
+                "ns": {"$sum": {"$cond": [{"$eq": ["$status", "NS"]}, 1, 0]}},
+                "in_progress": {"$sum": {"$cond": [{"$eq": ["$status", "In"]}, 1, 0]}},
+                "completed": {"$sum": {"$cond": [{"$eq": ["$status", "S"]}, 1, 0]}},
+                "batches": {"$push": "$id"}
+            }},
+            {"$sort": {"_id": 1}}
+        ]
+
+        results = list(batches_col.aggregate(pipeline))
+
+        if not results:
+            return jsonify({
+                "success": False,
+                "error": "No hay batches asignados"
+            }), 404
+
+        # Crear CSV en memoria
+        output = io.StringIO()
+
+        fieldnames = [
+            "Segmentador", "Total Batches", "No Segmentados (NS)",
+            "Incompletas (In)", "Completados (S)", "% Completado",
+            "Lista de Batches"
+        ]
+
+        writer = csv.DictWriter(output, fieldnames=fieldnames)
+        writer.writeheader()
+
+        # Escribir datos
+        for result in results:
+            segmentador = result["_id"]
+            total = result["total"]
+            completed = result["completed"]
+            percentage = round((completed / total * 100) if total > 0 else 0, 1)
+            batches_list = ", ".join(result["batches"])
+
+            writer.writerow({
+                "Segmentador": segmentador,
+                "Total Batches": total,
+                "No Segmentados (NS)": result["ns"],
+                "Incompletas (In)": result["in_progress"],
+                "Completados (S)": completed,
+                "% Completado": f"{percentage}%",
+                "Lista de Batches": batches_list
+            })
+
+        # Preparar respuesta
+        output.seek(0)
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"resumen_asignaciones_{timestamp}.csv"
+
+        mem = io.BytesIO()
+        mem.write(output.getvalue().encode('utf-8-sig'))
+        mem.seek(0)
+
+        print(f"✅ Exportado resumen de {len(results)} segmentadores")
+
+        return send_file(
+            mem,
+            mimetype='text/csv',
+            as_attachment=True,
+            download_name=filename
+        )
+
+    except Exception as e:
+        print(f"❌ Error exportando resumen de asignaciones: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/backup/database", methods=["GET"])
+def backup_database():
+    """Crear respaldo completo de la base de datos en JSON"""
+    global batches_col, segmentadores_col
+
+    if batches_col is None:
+        return jsonify({"success": False, "error": "No DB connection"}), 503
+
+    try:
+        print("💾 Creando respaldo completo de la base de datos...")
+
+        # Obtener todos los datos
+        batches = list(batches_col.find({}, {"_id": 0}))
+        segmentadores = list(segmentadores_col.find({}, {"_id": 0})) if segmentadores_col else []
+
+        # Crear estructura del respaldo
+        backup_data = {
+            "backup_info": {
+                "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "version": "1.0",
+                "source": "Dashboard de Segmentación"
+            },
+            "statistics": {
+                "total_batches": len(batches),
+                "total_segmentadores": len(segmentadores),
+                "batches_by_status": {
+                    "NS": sum(1 for b in batches if b.get("status") == "NS"),
+                    "In": sum(1 for b in batches if b.get("status") == "In"),
+                    "S": sum(1 for b in batches if b.get("status") == "S")
+                }
+            },
+            "segmentadores": segmentadores,
+            "batches": batches
+        }
+
+        # Generar nombre de archivo
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"backup_segmentacion_db_{timestamp}.json"
+
+        # Crear respuesta
+        response = app.make_response(
+            json.dumps(backup_data, indent=2, default=str, ensure_ascii=False)
+        )
+        response.headers["Content-Disposition"] = f"attachment; filename={filename}"
+        response.headers["Content-Type"] = "application/json; charset=utf-8"
+
+        print(f"✅ Respaldo creado: {len(batches)} batches, {len(segmentadores)} segmentadores")
+
+        return response
+
+    except Exception as e:
+        print(f"❌ Error creando respaldo: {e}")
+        return jsonify({"success": False, "error": str(e)}), 500
+
+# ============================================================================
+# ENDPOINT DE CARGA RÁPIDA CON COPY-PASTE
+# ============================================================================
+
+@app.route("/api/batches/quick-create", methods=["POST"])
+def quick_create_batches():
+    """Crear múltiples batches desde texto plano (copy-paste de lista)"""
+    global batches_col
+
+    if batches_col is None:
+        return jsonify({"success": False, "error": "No DB connection"}), 503
+
+    try:
+        data = request.json
+        batch_list_text = data.get("batch_list", "").strip()
+
+        if not batch_list_text:
+            return jsonify({"success": False, "error": "Lista de batches vacía"}), 400
+
+        print(f"📝 Procesando lista de batches desde texto...")
+
+        # Parsear la lista: separar por líneas y limpiar
+        lines = batch_list_text.split('\n')
+        batch_ids = []
+
+        for line in lines:
+            line = line.strip()
+            if line:  # Ignorar líneas vacías
+                # Si la línea contiene comas o espacios, dividir
+                parts = line.replace(',', ' ').split()
+                batch_ids.extend(parts)
+
+        # Limpiar y filtrar batch IDs válidos
+        batch_ids = [bid.strip() for bid in batch_ids if bid.strip()]
+
+        if not batch_ids:
+            return jsonify({"success": False, "error": "No se encontraron IDs de batches válidos"}), 400
+
+        print(f"📋 {len(batch_ids)} batch IDs detectados: {batch_ids[:5]}{'...' if len(batch_ids) > 5 else ''}")
+
+        # Verificar cuáles ya existen
+        existing_ids = set()
+        for bid in batch_ids:
+            if batches_col.find_one({"id": bid}):
+                existing_ids.add(bid)
+
+        # Crear los que no existen
+        created = []
+        skipped = []
+        current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        for bid in batch_ids:
+            if bid in existing_ids:
+                skipped.append(bid)
+                print(f"⏭️ Batch {bid} ya existe, omitido")
+                continue
+
+            # Crear batch nuevo
+            new_batch = {
+                "id": bid,
+                "assignee": None,
+                "status": "NS",  # No Segmentado
+                "folder": "",
+                "mongo_uploaded": False,
+                "comments": "",
+                "metadata": {
+                    "created_at": current_time,
+                    "priority": "media",
+                    "total_masks": 0,
+                    "completed_masks": 0
+                }
+            }
+
+            batches_col.insert_one(new_batch)
+            created.append(bid)
+            print(f"✅ Batch {bid} creado")
+
+        result_message = f"Creados: {len(created)}, Ya existían: {len(skipped)}"
+        print(f"✅ {result_message}")
+
+        return jsonify({
+            "success": True,
+            "message": result_message,
+            "created": created,
+            "skipped": skipped,
+            "total_processed": len(batch_ids)
+        })
+
+    except Exception as e:
+        print(f"❌ Error en carga rápida: {e}")
+        import traceback
+        traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == "__main__":

@@ -280,6 +280,81 @@
       </div>
     </div>
 
+    <!-- Botones de Exportación y Respaldo -->
+    <div class="card mb-3" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3);">
+      <div class="card-body py-3">
+        <div class="row align-items-center">
+          <div class="col-md-6">
+            <h6 class="mb-2" style="color: white;"><i class="fas fa-download"></i> Descargas y Respaldos</h6>
+            <small style="color: rgba(255, 255, 255, 0.8);">Exporta cargas de trabajo para compartir con el equipo</small>
+          </div>
+          <div class="col-md-6 text-md-end">
+            <div class="btn-group btn-group-sm" role="group">
+              <button type="button" class="btn btn-light" onclick="downloadAllAssignments()" title="Descargar resumen de todos los segmentadores">
+                <i class="fas fa-users"></i> Resumen Equipo
+              </button>
+              <button type="button" class="btn btn-success" onclick="downloadBackup()" title="Crear respaldo completo de la base de datos">
+                <i class="fas fa-database"></i> Respaldo DB
+              </button>
+            </div>
+          </div>
+        </div>
+        <!-- Selector de segmentador individual -->
+        <div class="row mt-2">
+          <div class="col-md-12">
+            <div class="input-group input-group-sm">
+              <span class="input-group-text" style="background: rgba(255, 255, 255, 0.2); color: white; border: 1px solid rgba(255, 255, 255, 0.3);">
+                <i class="fas fa-user"></i>
+              </span>
+              <select id="exportSegmentadorSelect" class="form-select form-select-sm" style="max-width: 250px;">
+                <option value="">Seleccionar segmentador...</option>
+                {% for member in crew %}
+                <option value="{{ member }}">{{ member }}</option>
+                {% endfor %}
+              </select>
+              <button type="button" class="btn btn-primary btn-sm" onclick="downloadSegmentadorData()">
+                <i class="fas fa-file-csv"></i> Descargar Carga de Trabajo
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tarjeta de Carga Rápida (Copy-Paste) -->
+    <div class="card mb-3" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3);">
+      <div class="card-body py-3">
+        <div class="row align-items-center">
+          <div class="col-md-12">
+            <h6 class="mb-2" style="color: white;"><i class="fas fa-bolt"></i> Carga Rápida de Batches</h6>
+            <small style="color: rgba(255, 255, 255, 0.8);">Pega la lista de batch IDs que te envió tu compañero (un ID por línea o separados por comas)</small>
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="col-md-9">
+            <textarea
+              id="quickBatchList"
+              class="form-control form-control-sm"
+              rows="3"
+              placeholder="Pega aquí la lista de batches...&#10;Ejemplo:&#10;batch_000001F&#10;batch_000002F&#10;batch_000003F&#10;...o separados por comas: batch_000001F, batch_000002F, batch_000003F"
+              style="font-family: monospace; font-size: 0.85rem; resize: vertical;"></textarea>
+          </div>
+          <div class="col-md-3 d-flex align-items-center">
+            <button type="button" class="btn btn-warning btn-sm w-100" onclick="quickCreateBatches()" style="height: fit-content;">
+              <i class="fas fa-magic"></i> Crear Batches<br><small>(Copy-Paste)</small>
+            </button>
+          </div>
+        </div>
+        <div class="row mt-2">
+          <div class="col-md-12">
+            <small style="color: rgba(255, 255, 255, 0.7);">
+              💡 <strong>Tip:</strong> Copia la lista de tu compañero, pégala aquí y da clic en "Crear Batches". Los que ya existan se omitirán automáticamente.
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Control de Vista -->
     <div class="d-flex justify-content-between align-items-center mb-3">
       <div>
@@ -294,67 +369,114 @@
 
     <!-- Drag & Drop Batch Assignment Interface -->
     <div class="row">
-      <!-- Batches No Asignados -->
-      <div class="col-md-4">
-        <div class="card h-100">
+      <!-- Batches No Asignados - CON BUSCADOR -->
+      <div class="col-md-12 mb-3">
+        <div class="card">
           <div class="card-header" style="background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%); color: white; border-bottom: 1px solid rgba(255, 255, 255, 0.2);">
-            <h5 class="mb-0"><i class="fas fa-inbox"></i> Batches No Asignados</h5>
-            <small style="color: rgba(255, 255, 255, 0.8);">Arrastra los batches hacia los segmentadores</small>
+            <div class="row align-items-center">
+              <div class="col-md-6">
+                <h5 class="mb-1"><i class="fas fa-inbox"></i> Batches No Asignados</h5>
+                <small style="color: rgba(255, 255, 255, 0.8);">
+                  <span id="unassignedCount">0</span> batches disponibles
+                </small>
+              </div>
+              <div class="col-md-6">
+                <!-- BUSCADOR -->
+                <div class="input-group input-group-sm">
+                  <span class="input-group-text" style="background: white; border: 1px solid rgba(255, 255, 255, 0.5);">
+                    <i class="fas fa-search"></i>
+                  </span>
+                  <input
+                    type="text"
+                    id="searchUnassignedBatches"
+                    class="form-control form-control-sm"
+                    placeholder="Buscar batch por ID..."
+                    style="border: 1px solid rgba(255, 255, 255, 0.5);">
+                  <button
+                    class="btn btn-sm btn-light"
+                    onclick="clearSearchUnassigned()"
+                    title="Limpiar búsqueda">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="card-body p-2" style="max-height: 600px; overflow-y: auto;">
-            <div id="unassignedBatches" class="drop-zone min-height-400">
+          <div class="card-body p-2" style="max-height: 400px; overflow-y: auto;">
+            <div id="unassignedBatches" class="drop-zone" style="min-height: 300px;">
               <!-- Los batches no asignados se cargarán aquí -->
               <div class="text-center text-muted p-4">
                 <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
                 <p>Cargando batches pendientes...</p>
               </div>
             </div>
+            <!-- Mensaje cuando no hay resultados -->
+            <div id="noResultsMessage" style="display: none; text-align: center; padding: 2rem; color: rgba(255, 255, 255, 0.7);">
+              <i class="fas fa-search fa-2x mb-2"></i>
+              <p class="mb-0">No se encontraron batches con ese criterio</p>
+              <small>Intenta con otro término de búsqueda</small>
+            </div>
           </div>
         </div>
       </div>
 
-      <!-- Segmentadores (Divididos en columnas) -->
-      <div class="col-md-8">
-        <div class="row g-3">
+      <!-- Segmentadores (Colapsables, más compactos) -->
+      <div class="col-md-12">
+        <div class="row g-2">
           {% for member in crew %}
-          <div class="col-md-6">
-            <div class="card h-100" style="border: 2px solid rgba(255, 255, 255, 0.3);">
-              <div class="card-header" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; border-bottom: none;">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                  <h5 class="mb-0 fw-bold"><i class="fas fa-user-circle"></i> {{ member }}</h5>
-                  <span class="badge batch-count" data-member="{{ member }}" style="background: white; color: #059669; font-weight: bold; font-size: 0.9rem;">0</span>
-                </div>
-                <!-- Métricas del segmentador -->
-                <div class="row g-1 text-center" style="font-size: 0.75rem;">
-                  <div class="col-4">
-                    <div style="background: rgba(255,255,255,0.2); padding: 0.3rem; border-radius: 6px;">
-                      <div class="fw-bold segmentador-ns" data-member="{{ member }}">0</div>
-                      <div style="opacity: 0.8;">NS</div>
-                    </div>
+          <div class="col-md-3">
+            <div class="card segmentador-card" data-member="{{ member }}" style="border: 2px solid rgba(255, 255, 255, 0.3); cursor: pointer; transition: all 0.3s ease;">
+              <!-- Header Compacto (siempre visible) -->
+              <div class="card-header segmentador-card-header" onclick="toggleSegmentadorCard('{{ member }}')" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; border-bottom: none; padding: 0.75rem;">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="d-flex align-items-center gap-2">
+                    <i class="fas fa-user-circle fa-lg"></i>
+                    <span class="fw-bold">{{ member }}</span>
                   </div>
-                  <div class="col-4">
-                    <div style="background: rgba(255,255,255,0.2); padding: 0.3rem; border-radius: 6px;">
-                      <div class="fw-bold segmentador-in" data-member="{{ member }}">0</div>
-                      <div style="opacity: 0.8;">In</div>
-                    </div>
-                  </div>
-                  <div class="col-4">
-                    <div style="background: rgba(255,255,255,0.2); padding: 0.3rem; border-radius: 6px;">
-                      <div class="fw-bold segmentador-completed" data-member="{{ member }}">0</div>
-                      <div style="opacity: 0.8;">S</div>
-                    </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge batch-count" data-member="{{ member }}" style="background: white; color: #059669; font-weight: bold; font-size: 0.85rem;">0</span>
+                    <i class="fas fa-chevron-down expand-icon" data-member="{{ member }}" style="transition: transform 0.3s;"></i>
                   </div>
                 </div>
               </div>
-              <div class="card-body p-2" style="max-height: 300px; overflow-y: auto;">
-                <div class="drop-zone segmentador-batches"
-                     data-assignee="{{ member }}"
-                     style="min-height: 200px; background: rgba(255, 255, 255, 0.1); border: 2px dashed rgba(255, 255, 255, 0.4); border-radius: 12px; padding: 1rem; transition: all 0.3s ease;">
-                  <!-- Los batches asignados a {{ member }} aparecerán aquí -->
-                  <div class="text-center text-white-50 p-3">
-                    <i class="fas fa-hand-paper fa-2x mb-2" style="color: #34D399;"></i>
-                    <p class="small mb-0 fw-bold">Zona de {{ member }}</p>
-                    <p class="small mb-0" style="color: rgba(255, 255, 255, 0.7);">Arrastra batches aquí</p>
+
+              <!-- Contenido Colapsable (métricas + zona de drop) -->
+              <div class="segmentador-card-body" data-member="{{ member }}" style="display: none;">
+                <!-- Métricas del segmentador -->
+                <div class="card-header" style="background: linear-gradient(135deg, #10B981 0%, #059669 100%); color: white; border-bottom: none; padding: 0.5rem;">
+                  <div class="row g-1 text-center" style="font-size: 0.75rem;">
+                    <div class="col-4">
+                      <div style="background: rgba(255,255,255,0.2); padding: 0.3rem; border-radius: 6px;">
+                        <div class="fw-bold segmentador-ns" data-member="{{ member }}">0</div>
+                        <div style="opacity: 0.8;">NS</div>
+                      </div>
+                    </div>
+                    <div class="col-4">
+                      <div style="background: rgba(255,255,255,0.2); padding: 0.3rem; border-radius: 6px;">
+                        <div class="fw-bold segmentador-in" data-member="{{ member }}">0</div>
+                        <div style="opacity: 0.8;">In</div>
+                      </div>
+                    </div>
+                    <div class="col-4">
+                      <div style="background: rgba(255,255,255,0.2); padding: 0.3rem; border-radius: 6px;">
+                        <div class="fw-bold segmentador-completed" data-member="{{ member }}">0</div>
+                        <div style="opacity: 0.8;">S</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Zona de Drop -->
+                <div class="card-body p-2" style="max-height: 300px; overflow-y: auto;">
+                  <div class="drop-zone segmentador-batches"
+                       data-assignee="{{ member }}"
+                       style="min-height: 200px; background: rgba(255, 255, 255, 0.1); border: 2px dashed rgba(255, 255, 255, 0.4); border-radius: 12px; padding: 1rem; transition: all 0.3s ease;">
+                    <!-- Los batches asignados a {{ member }} aparecerán aquí -->
+                    <div class="text-center text-white-50 p-3">
+                      <i class="fas fa-hand-paper fa-2x mb-2" style="color: #34D399;"></i>
+                      <p class="small mb-0 fw-bold">Zona de {{ member }}</p>
+                      <p class="small mb-0" style="color: rgba(255, 255, 255, 0.7);">Arrastra batches aquí</p>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -582,100 +704,81 @@
     // Nueva función para actualizar la interfaz de drag & drop
     function updateDragDropInterface() {
       console.log('🎯 Actualizando interfaz drag & drop...');
-      
-      // Cargar batches pendientes desde el endpoint de missing-batches
-      $.get('/api/missing-batches')
-        .done(function(response) {
-          console.log('📥 Respuesta de missing-batches:', response);
-          
-          // Extraer el array de batches de la respuesta
-          const missingBatchesList = response.missing_batches || response || [];
-          console.log('📥 Batches pendientes cargados:', missingBatchesList.length);
-          
-          // Obtener batches no asignados de la base de datos (CUALQUIER STATUS SIN RESPONSABLE)
-          const unassignedBatchesFromDB = batches.filter(batch => 
-            !batch.assignee || batch.assignee === null || batch.assignee === ''
-          );
-          
-          console.log(`📊 Batches sin responsable encontrados: ${unassignedBatchesFromDB.length}`);
-          unassignedBatchesFromDB.forEach(batch => {
-            console.log(`🔍 Batch sin asignar: ${batch.id} - Status: ${batch.status} - Assignee: "${batch.assignee || 'NULL'}"`);
-          });
-          
-          // Mostrar notificación si hay batches sin responsable que fueron movidos
-          if (unassignedBatchesFromDB.length > 0) {
-            showNotification(`Se movieron ${unassignedBatchesFromDB.length} batches sin responsable a la zona "No Asignados"`, 'info');
-          }
-          
-          // Combinar batches pendientes con batches no asignados de la DB
-          const allUnassignedBatches = [
-            // Batches pendientes (convertir a formato estándar)
-            ...missingBatchesList.map(batchId => ({
-              id: batchId,
-              assignee: null,
-              status: 'NS',
-              metadata: {
-                assigned_at: null,
-                due_date: null,
-                priority: 'media'
-              },
-              comments: 'Batch pendiente de asignación',
-              mongo_uploaded: false,
-              isPending: true // Marcador para identificar batches pendientes
-            })),
-            // Batches no asignados existentes en la DB
-            ...unassignedBatchesFromDB
-          ];
-          
-          // Obtener SOLO batches que SÍ tienen responsable asignado
-          const assignedBatches = batches.filter(batch => 
-            batch.assignee && batch.assignee !== null && batch.assignee !== '' && 
-            (batch.status === 'In' || batch.status === 'NS')
-          );
-          
-          console.log(`🎯 Batches CON responsable: ${assignedBatches.length}`);
-          console.log(`🎯 Batches SIN responsable: ${allUnassignedBatches.length}`);
-          
-          // Renderizar batches no asignados
-          renderUnassignedBatches(allUnassignedBatches);
-          
-          // Renderizar batches asignados por segmentador
-          renderAssignedBatches(assignedBatches);
-          
-          // Inicializar eventos de drag & drop
-          initializeDragAndDrop();
-        })
-        .fail(function(xhr) {
-          console.error('❌ Error cargando batches pendientes:', xhr);
-          // Fallback: usar solo batches de la DB
-          const unassignedBatches = batches.filter(batch => 
-            !batch.assignee || batch.assignee === null || batch.assignee === ''
-          );
-          const assignedBatches = batches.filter(batch => 
-            batch.assignee && batch.assignee !== null && batch.assignee !== '' && 
-            (batch.status === 'In' || batch.status === 'NS')
-          );
-          
-          renderUnassignedBatches(unassignedBatches);
-          renderAssignedBatches(assignedBatches);
-          initializeDragAndDrop();
+
+      // SIMPLIFICADO: Usar solo batches de MongoDB, sin depender de missing-batches
+
+      // Obtener batches no asignados (SIN responsable)
+      const unassignedBatches = batches.filter(batch =>
+        !batch.assignee || batch.assignee === null || batch.assignee === ''
+      );
+
+      // Obtener batches asignados (CON responsable)
+      const assignedBatches = batches.filter(batch =>
+        batch.assignee && batch.assignee !== null && batch.assignee !== ''
+      );
+
+      console.log(`📊 Batches SIN responsable (no asignados): ${unassignedBatches.length}`);
+      console.log(`📊 Batches CON responsable (asignados): ${assignedBatches.length}`);
+
+      // Mostrar detalles en consola
+      if (unassignedBatches.length > 0) {
+        console.log('📦 Batches no asignados:');
+        unassignedBatches.slice(0, 5).forEach(batch => {
+          console.log(`  - ${batch.id} (Status: ${batch.status})`);
         });
+        if (unassignedBatches.length > 5) {
+          console.log(`  ... y ${unassignedBatches.length - 5} más`);
+        }
+      }
+
+      // Renderizar batches no asignados
+      renderUnassignedBatches(unassignedBatches);
+
+      // Renderizar batches asignados por segmentador
+      renderAssignedBatches(assignedBatches);
+
+      // Inicializar eventos de drag & drop
+      initializeDragAndDrop();
     }
 
+    // Variable global para almacenar batches no asignados (para búsqueda)
+    let allUnassignedBatches = [];
+
     function renderUnassignedBatches(unassignedBatches) {
+      // Guardar en variable global para búsqueda
+      allUnassignedBatches = unassignedBatches;
+
+      // Actualizar contador
+      $('#unassignedCount').text(unassignedBatches.length);
+
       const container = $('#unassignedBatches');
+      const noResultsMsg = $('#noResultsMessage');
+
       container.empty();
-      
+      noResultsMsg.hide();
+
       if (unassignedBatches.length === 0) {
-        container.html(`
-          <div class="text-center text-muted p-4">
-            <i class="fas fa-check-circle fa-2x mb-3 text-success"></i>
-            <p>¡Todos los batches están asignados!</p>
-          </div>
-        `);
+        // Verificar si es por búsqueda o realmente no hay batches
+        const searchTerm = $('#searchUnassignedBatches').val().trim();
+        if (searchTerm) {
+          // Es por búsqueda, mostrar mensaje de "no resultados"
+          noResultsMsg.show();
+          container.hide();
+        } else {
+          // Realmente no hay batches
+          container.html(`
+            <div class="text-center text-muted p-4">
+              <i class="fas fa-check-circle fa-2x mb-3 text-success"></i>
+              <p>¡Todos los batches están asignados!</p>
+            </div>
+          `);
+          container.show();
+        }
         return;
       }
-      
+
+      container.show();
+
       unassignedBatches.forEach(batch => {
         const batchElement = createBatchElement(batch, 'no-assigned');
         container.append(batchElement);
@@ -895,6 +998,11 @@
 
       const oldAssignee = batch.assignee;
 
+      // Asegurar que metadata existe
+      if (!batch.metadata) {
+        batch.metadata = {};
+      }
+
       // Preparar datos para enviar al servidor
       const updateData = {
         assignee: newAssignee === '' || newAssignee === undefined ? null : newAssignee,
@@ -1053,11 +1161,16 @@
       console.log(`📊 Mostrando TODOS los ${allBatches.length} batches`);
 
       allBatches.forEach(function(batch) {
+        // Asegurar que metadata existe
+        if (!batch.metadata) {
+          batch.metadata = {};
+        }
+
         // Estado de MongoDB (Cargado a Mongo)
-        const mongoStatus = batch.mongo_uploaded ? 
-          `<i class="fas fa-check-circle text-success" title="Sí"></i> Sí` : 
+        const mongoStatus = batch.mongo_uploaded ?
+          `<i class="fas fa-check-circle text-success" title="Sí"></i> Sí` :
           `<i class="fas fa-times-circle text-danger" title="No"></i> No`;
-        
+
         // Selector de estatus de segmentación
         const statusSelect = `
           <select class="form-select form-select-sm segmentation-status-select" data-batch-id="${batch.id}" style="min-width: 120px;">
@@ -1066,23 +1179,23 @@
             <option value="S" ${batch.status === 'S' ? 'selected' : ''}>S - Segmentado (QUITAR DE COLA)</option>
           </select>
         `;
-        
+
         // Selector de revisión con Aprobado/No Aprobado e indicador visual
         const reviewStatus = batch.metadata.review_status || '';
         const reviewSelect = `
-          <select class="form-select form-select-sm review-select ${reviewStatus === 'aprobado' ? 'border-success' : reviewStatus === 'no_aprobado' ? 'border-danger' : ''}" 
+          <select class="form-select form-select-sm review-select ${reviewStatus === 'aprobado' ? 'border-success' : reviewStatus === 'no_aprobado' ? 'border-danger' : ''}"
                   data-batch-id="${batch.id}" style="min-width: 120px;">
             <option value="">Pendiente</option>
             <option value="aprobado" ${reviewStatus === 'aprobado' ? 'selected' : ''}>✅ Aprobado</option>
             <option value="no_aprobado" ${reviewStatus === 'no_aprobado' ? 'selected' : ''}>❌ No Aprobado</option>
           </select>
         `;
-        
+
         // Campo de comentarios editable
         const commentsInput = `
-          <textarea class="form-control form-control-sm comments-input" 
-                    data-batch-id="${batch.id}" 
-                    rows="2" 
+          <textarea class="form-control form-control-sm comments-input"
+                    data-batch-id="${batch.id}"
+                    rows="2"
                     style="min-width: 200px;">${batch.comments || ''}</textarea>
         `;
         
@@ -1093,12 +1206,16 @@
           </span>
         `;
         
+        // Asegurarse de que todos los campos tengan valores válidos
+        const assignee = batch.assignee || '<span class="text-muted fst-italic">Sin asignar</span>';
+        const assignedAt = (batch.metadata && batch.metadata.assigned_at) || '<span class="text-muted fst-italic">No asignado</span>';
+
         const row = [
           batchIdStatic,
-          batch.assignee,
+          assignee,
           mongoStatus,
           statusSelect,
-          batch.metadata.assigned_at,
+          assignedAt,
           reviewSelect,
           commentsInput,
           `
@@ -1354,5 +1471,330 @@
         }
       });
     };
+
+    // ============================================================================
+    // FUNCIONES DE EXPORTACIÓN Y RESPALDO
+    // ============================================================================
+
+    /**
+     * Descargar CSV con la carga de trabajo de un segmentador específico
+     */
+    window.downloadSegmentadorData = function() {
+      const select = document.getElementById('exportSegmentadorSelect');
+      const segmentador = select.value;
+
+      if (!segmentador) {
+        showNotification('Por favor selecciona un segmentador', 'warning');
+        return;
+      }
+
+      console.log(`📥 Descargando datos de ${segmentador}...`);
+      showNotification(`Preparando descarga de ${segmentador}...`, 'info');
+
+      // Abrir la URL de descarga en una nueva ventana
+      window.location.href = `/api/export/segmentador/${encodeURIComponent(segmentador)}`;
+
+      // Limpiar el select después de un momento
+      setTimeout(() => {
+        select.value = '';
+        showNotification(`✅ Descarga iniciada para ${segmentador}`, 'success');
+      }, 1000);
+    };
+
+    /**
+     * Descargar CSV con el resumen de asignaciones de todo el equipo
+     */
+    window.downloadAllAssignments = function() {
+      console.log('📥 Descargando resumen de asignaciones del equipo...');
+      showNotification('Preparando resumen del equipo...', 'info');
+
+      // Abrir la URL de descarga
+      window.location.href = '/api/export/all-assignments';
+
+      setTimeout(() => {
+        showNotification('✅ Descarga de resumen iniciada', 'success');
+      }, 1000);
+    };
+
+    /**
+     * Crear respaldo completo de la base de datos (JSON)
+     */
+    window.downloadBackup = function() {
+      console.log('💾 Creando respaldo completo de la base de datos...');
+
+      // Confirmar con el usuario
+      if (!confirm('¿Deseas crear un respaldo completo de la base de datos?\n\nEsto descargará todos los batches y segmentadores en formato JSON.')) {
+        return;
+      }
+
+      showNotification('Creando respaldo completo...', 'info');
+
+      // Abrir la URL de descarga
+      window.location.href = '/api/backup/database';
+
+      setTimeout(() => {
+        showNotification('✅ Respaldo creado exitosamente', 'success');
+      }, 1500);
+    };
+
+    // Shortcut: permitir descargar con Enter en el select de segmentador
+    $(document).ready(function() {
+      $('#exportSegmentadorSelect').on('keypress', function(e) {
+        if (e.which === 13) { // Enter key
+          e.preventDefault();
+          downloadSegmentadorData();
+        }
+      });
+    });
+
+    // ============================================================================
+    // FUNCIÓN DE CARGA RÁPIDA CON COPY-PASTE
+    // ============================================================================
+
+    /**
+     * Crear batches rápidamente desde texto plano (copy-paste)
+     */
+    window.quickCreateBatches = function() {
+      const textarea = document.getElementById('quickBatchList');
+      const batchList = textarea.value.trim();
+
+      if (!batchList) {
+        showNotification('Por favor pega la lista de batches primero', 'warning');
+        textarea.focus();
+        return;
+      }
+
+      console.log('🚀 Iniciando carga rápida de batches...');
+      showNotification('Procesando lista de batches...', 'info');
+
+      // Enviar al servidor
+      $.ajax({
+        url: '/api/batches/quick-create',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+          batch_list: batchList
+        }),
+        success: function(response) {
+          console.log('✅ Respuesta del servidor:', response);
+
+          if (response.success) {
+            const created = response.created.length;
+            const skipped = response.skipped.length;
+            const total = response.total_processed;
+
+            let message = `✅ Procesados ${total} batches:\n`;
+            message += `• Creados: ${created}\n`;
+            message += `• Ya existían: ${skipped}`;
+
+            showNotification(message, 'success');
+
+            // Limpiar el textarea
+            textarea.value = '';
+
+            // Mostrar detalles en consola
+            if (created > 0) {
+              console.log('📦 Batches creados:', response.created);
+            }
+            if (skipped > 0) {
+              console.log('⏭️ Batches omitidos (ya existían):', response.skipped);
+            }
+
+            // Recargar la lista de batches INMEDIATAMENTE
+            setTimeout(async () => {
+              console.log('🔄 Recargando batches después de carga rápida...');
+              await loadBatches();
+              showNotification('✅ Lista de batches actualizada. Los nuevos batches están en "Batches No Asignados"', 'success');
+            }, 500);
+
+          } else {
+            showNotification('❌ Error: ' + response.error, 'error');
+          }
+        },
+        error: function(xhr, status, error) {
+          console.error('❌ Error en carga rápida:');
+          console.error('  - Status:', status);
+          console.error('  - Error:', error);
+          console.error('  - Response Status:', xhr.status);
+          console.error('  - Response Text:', xhr.responseText);
+          console.error('  - XHR completo:', xhr);
+
+          let errorMsg = 'Error desconocido';
+          let detailedMsg = '';
+
+          // Error de conexión (servidor no responde)
+          if (xhr.status === 0) {
+            errorMsg = 'No se pudo conectar al servidor';
+            detailedMsg = '⚠️ SOLUCIÓN: Verifica que estés accediendo desde:\n\n';
+            detailedMsg += '✅ http://localhost:5000/assign\n';
+            detailedMsg += '✅ http://127.0.0.1:5000/assign\n\n';
+            detailedMsg += 'NO uses http://192.168.1.93:5000 (MongoDB está ahí, pero NO Flask)\n\n';
+            detailedMsg += 'Consulta SOLUCION_ERROR_CONEXION.md para más detalles';
+
+            console.error('');
+            console.error('🔧 DIAGNÓSTICO:');
+            console.error('  Status 0 indica que el servidor NO respondió.');
+            console.error('  Causas posibles:');
+            console.error('  1. Flask no está corriendo');
+            console.error('  2. Estás accediendo desde una IP incorrecta');
+            console.error('  3. Firewall bloqueando la conexión');
+            console.error('');
+            console.error('💡 SOLUCIÓN RÁPIDA:');
+            console.error('  Abre el dashboard desde: http://localhost:5000/assign');
+            console.error('');
+          }
+          // Error del servidor (500, 503, etc.)
+          else if (xhr.status >= 500) {
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+              errorMsg = xhr.responseJSON.error;
+            } else {
+              errorMsg = `Error del servidor (${xhr.status})`;
+            }
+          }
+          // Error del cliente (400, 404, etc.)
+          else if (xhr.status >= 400) {
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+              errorMsg = xhr.responseJSON.error;
+            } else if (xhr.responseText) {
+              errorMsg = xhr.responseText;
+            } else {
+              errorMsg = `Error ${xhr.status}`;
+            }
+          }
+          // Otros errores
+          else if (error) {
+            errorMsg = error;
+          }
+
+          showNotification('Error creando batches: ' + errorMsg, 'error');
+
+          if (detailedMsg) {
+            console.error(detailedMsg);
+            // Mostrar un alert con la solución (solo si es error de conexión)
+            setTimeout(() => {
+              if (confirm('❌ No se pudo conectar al servidor.\n\n¿Deseas ver la solución?')) {
+                alert(detailedMsg);
+              }
+            }, 500);
+          }
+        }
+      });
+    };
+
+    // Shortcut: permitir enviar con Ctrl+Enter en el textarea
+    $(document).ready(function() {
+      $('#quickBatchList').on('keydown', function(e) {
+        if (e.ctrlKey && e.which === 13) { // Ctrl + Enter
+          e.preventDefault();
+          quickCreateBatches();
+        }
+      });
+    });
+
+    // ============================================================================
+    // FUNCIÓN PARA COLAPSAR/EXPANDIR TARJETAS DE SEGMENTADORES
+    // ============================================================================
+
+    /**
+     * Toggle (mostrar/ocultar) el contenido de una tarjeta de segmentador
+     */
+    window.toggleSegmentadorCard = function(member) {
+      console.log(`🔄 Toggle tarjeta de ${member}`);
+
+      const cardBody = $(`.segmentador-card-body[data-member="${member}"]`);
+      const icon = $(`.expand-icon[data-member="${member}"]`);
+      const card = $(`.segmentador-card[data-member="${member}"]`);
+
+      // Toggle con animación suave
+      cardBody.slideToggle(300, function() {
+        // Rotar el ícono
+        if (cardBody.is(':visible')) {
+          icon.css('transform', 'rotate(180deg)');
+          card.css('background', 'rgba(255, 255, 255, 0.05)');
+        } else {
+          icon.css('transform', 'rotate(0deg)');
+          card.css('background', 'transparent');
+        }
+      });
+    };
+
+    /**
+     * Expandir todas las tarjetas de segmentadores
+     */
+    window.expandAllSegmentadores = function() {
+      console.log('📖 Expandiendo todas las tarjetas');
+
+      $('.segmentador-card-body').slideDown(300);
+      $('.expand-icon').css('transform', 'rotate(180deg)');
+      $('.segmentador-card').css('background', 'rgba(255, 255, 255, 0.05)');
+
+      showNotification('Todas las tarjetas expandidas', 'info');
+    };
+
+    /**
+     * Colapsar todas las tarjetas de segmentadores
+     */
+    window.collapseAllSegmentadores = function() {
+      console.log('📕 Colapsando todas las tarjetas');
+
+      $('.segmentador-card-body').slideUp(300);
+      $('.expand-icon').css('transform', 'rotate(0deg)');
+      $('.segmentador-card').css('background', 'transparent');
+
+      showNotification('Todas las tarjetas colapsadas', 'info');
+    };
+
+    // ============================================================================
+    // FUNCIONES DE BÚSQUEDA DE BATCHES NO ASIGNADOS
+    // ============================================================================
+
+    /**
+     * Buscar batches no asignados por ID
+     */
+    function searchUnassignedBatches() {
+      const searchTerm = $('#searchUnassignedBatches').val().trim().toLowerCase();
+
+      console.log(`🔍 Buscando: "${searchTerm}"`);
+
+      if (!searchTerm) {
+        // Si no hay término de búsqueda, mostrar todos
+        renderUnassignedBatches(allUnassignedBatches);
+        return;
+      }
+
+      // Filtrar batches que coincidan con el término
+      const filteredBatches = allUnassignedBatches.filter(batch =>
+        batch.id.toLowerCase().includes(searchTerm)
+      );
+
+      console.log(`✅ Encontrados ${filteredBatches.length} batches de ${allUnassignedBatches.length}`);
+
+      // Renderizar resultados filtrados
+      renderUnassignedBatches(filteredBatches);
+    }
+
+    /**
+     * Limpiar búsqueda
+     */
+    window.clearSearchUnassigned = function() {
+      console.log('🧹 Limpiando búsqueda');
+      $('#searchUnassignedBatches').val('');
+      renderUnassignedBatches(allUnassignedBatches);
+    };
+
+    // Inicializar evento de búsqueda en tiempo real
+    $(document).ready(function() {
+      $('#searchUnassignedBatches').on('input', function() {
+        searchUnassignedBatches();
+      });
+
+      // También buscar al presionar Enter
+      $('#searchUnassignedBatches').on('keypress', function(e) {
+        if (e.which === 13) { // Enter
+          e.preventDefault();
+          searchUnassignedBatches();
+        }
+      });
+    });
 </script>
 {% endblock %}

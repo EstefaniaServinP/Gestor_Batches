@@ -18,10 +18,18 @@ _client = None
 _training_client = None
 
 def get_client():
-    """Crear/retornar el cliente de MongoDB sin hacer ping (no bloqueante en import)."""
+    """Crear/retornar el cliente de MongoDB con pool de conexiones optimizado."""
     global _client
     if _client is None:
-        _client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
+        _client = MongoClient(
+            MONGO_URI,
+            serverSelectionTimeoutMS=5000,
+            maxPoolSize=20,  # Máximo 20 conexiones en el pool (4 workers x 3 threads = 12, +8 buffer)
+            minPoolSize=5,   # Mínimo 5 conexiones siempre abiertas
+            maxIdleTimeMS=30000,  # Cerrar conexiones inactivas después de 30s
+            connectTimeoutMS=5000,  # Timeout de conexión
+            socketTimeoutMS=30000,  # Timeout de operaciones
+        )
     return _client
 
 def ping_client(timeout_ms=2000):
@@ -84,10 +92,18 @@ def get_quality_db():
     return None
 
 def get_training_client():
-    """Crear/retornar el cliente de MongoDB para máscaras (puerto 27018)"""
+    """Crear/retornar el cliente de MongoDB para máscaras con pool optimizado"""
     global _training_client
     if _training_client is None:
-        _training_client = MongoClient(TRAINING_MONGO_URI, serverSelectionTimeoutMS=5000)
+        _training_client = MongoClient(
+            TRAINING_MONGO_URI,
+            serverSelectionTimeoutMS=5000,
+            maxPoolSize=15,  # Pool más pequeño para base secundaria
+            minPoolSize=3,   # Mínimo 3 conexiones
+            maxIdleTimeMS=30000,
+            connectTimeoutMS=5000,
+            socketTimeoutMS=30000,
+        )
     return _training_client
 
 def ping_training_client():

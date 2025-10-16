@@ -339,6 +339,31 @@
       background: linear-gradient(135deg, #FECACA 0%, #FEE2E2 100%);
       color: #991B1B;
     }
+
+    /* Estilos para la fila de filtros */
+    .filter-row th {
+      background: linear-gradient(135deg, #F3E8FF 0%, #FCE7F3 100%);
+      padding: 0.5rem;
+      vertical-align: middle;
+    }
+
+    .filter-input, .filter-select {
+      font-size: 0.85rem;
+      height: 32px;
+      border-radius: 6px;
+      border: 1px solid rgba(107, 70, 193, 0.3);
+      background: white;
+    }
+
+    .filter-input:focus, .filter-select:focus {
+      border-color: #B794F6;
+      box-shadow: 0 0 0 0.2rem rgba(183, 148, 246, 0.25);
+    }
+
+    .filter-input::placeholder {
+      color: rgba(107, 70, 193, 0.5);
+      font-size: 0.8rem;
+    }
 </style>
 {% endblock %}
 
@@ -364,6 +389,44 @@
               <th>Revisión</th>
               <th>Comentarios</th>
               <th>Acciones</th>
+            </tr>
+            <!-- Fila de filtros -->
+            <tr class="filter-row">
+              <th><input type="text" class="form-control form-control-sm filter-input" placeholder="Filtrar Batch ID..." data-column="0"></th>
+              <th>
+                <select class="form-select form-select-sm filter-select" data-column="1">
+                  <option value="">Todos</option>
+                  {% for member in crew %}
+                  <option value="{{ member }}">{{ member }}</option>
+                  {% endfor %}
+                </select>
+              </th>
+              <th>
+                <select class="form-select form-select-sm filter-select" data-column="2">
+                  <option value="">Todos</option>
+                  <option value="Sí">Sí</option>
+                  <option value="No">No</option>
+                </select>
+              </th>
+              <th>
+                <select class="form-select form-select-sm filter-select" data-column="3">
+                  <option value="">Todos</option>
+                  <option value="NS - No Segmentado">NS - No Segmentado</option>
+                  <option value="In - Incompleta">In - Incompleta</option>
+                  <option value="S - Segmentado">S - Segmentado</option>
+                </select>
+              </th>
+              <th><input type="text" class="form-control form-control-sm filter-input" placeholder="Filtrar fecha..." data-column="4"></th>
+              <th>
+                <select class="form-select form-select-sm filter-select" data-column="5">
+                  <option value="">Todos</option>
+                  <option value="Pendiente">Pendiente</option>
+                  <option value="Aprobado">Aprobado</option>
+                  <option value="No Aprobado">No Aprobado</option>
+                </select>
+              </th>
+              <th><input type="text" class="form-control form-control-sm filter-input" placeholder="Filtrar comentarios..." data-column="6"></th>
+              <th></th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -658,8 +721,13 @@
         },
         columnDefs: [
           { orderable: false, targets: -1 }
-        ]
+        ],
+        orderCellsTop: true,
+        fixedHeader: true
       });
+
+      // Inicializar filtros de columnas
+      initializeColumnFilters();
 
       // Aplicar filtro automático si se especifica en la URL
       if (filterAssignee) {
@@ -699,6 +767,31 @@
           console.error('❌ Error en inicialización:', xhr.responseJSON);
           showNotification('Error verificando inicialización de batches: ' + (xhr.responseJSON?.error || 'Error desconocido'), 'warning');
         });
+    }
+
+    // Función para inicializar los filtros de columnas
+    function initializeColumnFilters() {
+      console.log('🔧 Inicializando filtros de columnas...');
+
+      // Filtros de texto (Batch ID, Fecha, Comentarios)
+      $('.filter-input').on('keyup change', function() {
+        const columnIndex = $(this).data('column');
+        const searchValue = $(this).val();
+
+        console.log(`🔍 Filtrando columna ${columnIndex} con valor: "${searchValue}"`);
+        batchesTable.column(columnIndex).search(searchValue).draw();
+      });
+
+      // Filtros de select (Responsable, Cargado a Mongo, Estatus, Revisión)
+      $('.filter-select').on('change', function() {
+        const columnIndex = $(this).data('column');
+        const searchValue = $(this).val();
+
+        console.log(`🔍 Filtrando columna ${columnIndex} con valor: "${searchValue}"`);
+        batchesTable.column(columnIndex).search(searchValue).draw();
+      });
+
+      console.log('✅ Filtros de columnas inicializados');
     }
 
     // Función para cargar batches pendientes de segmentación

@@ -15,11 +15,11 @@ fi
 
 # Variables de entorno
 export MONGO_URI="${MONGO_URI:-mongodb://localhost:27017}"
-export GUNICORN_WORKERS="${GUNICORN_WORKERS:-8}"
+export GUNICORN_WORKERS="${GUNICORN_WORKERS:-4}"
 
 echo "📊 Configuración:"
 echo "   - MongoDB: $MONGO_URI"
-echo "   - Workers: $GUNICORN_WORKERS (de 12 hilos disponibles)"
+echo "   - Workers: $GUNICORN_WORKERS (OPTIMIZADO para 6 núcleos, deja recursos libres)"
 echo "   - Puerto: 5000"
 echo ""
 
