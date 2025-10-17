@@ -364,6 +364,27 @@
       color: rgba(107, 70, 193, 0.5);
       font-size: 0.8rem;
     }
+
+    /* Modo Asignar Batch */
+    #toggleAssignMode {
+      transition: all 0.3s ease;
+    }
+
+    #toggleAssignMode.active {
+      background: linear-gradient(135deg, #059669 0%, #34D399 100%);
+      color: white;
+      border-color: #059669;
+      box-shadow: 0 4px 15px rgba(5, 150, 105, 0.4);
+    }
+
+    .assign-mode-active {
+      background-color: #ecfdf5 !important;
+    }
+
+    .assignee-select {
+      min-width: 150px;
+      font-size: 0.9rem;
+    }
 </style>
 {% endblock %}
 
@@ -373,6 +394,16 @@
     <div class="dashboard-title">
       <h1><i class="fas fa-chart-line"></i> DASHBOARD GENERAL</h1>
       <p>Sistema de Gestión de Batches de Segmentación</p>
+
+      <!-- Botón Modo Asignar -->
+      <div class="mt-3">
+        <button id="toggleAssignMode" class="btn btn-outline-light btn-lg">
+          <i class="fas fa-user-plus"></i> <span id="assignModeText">Activar Modo Asignar Batch</span>
+        </button>
+        <div id="assignModeStatus" class="mt-2 text-white" style="display: none;">
+          <i class="fas fa-check-circle"></i> <strong>Modo Asignación Activo</strong> - Haz clic en "Responsable" para asignar batches
+        </div>
+      </div>
     </div>
     
     <!-- Tabla de Batches -->
@@ -631,6 +662,8 @@
     let batchesTable;
     let batches = [];
     let filterAssignee = '{{ filter_assignee or "" }}';
+    let assignModeActive = false; // Modo asignación activo/inactivo
+    const CREW_MEMBERS = {{ crew | tojson | safe }}; // Lista de segmentadores
     
     // Funciones del menú hamburguesa elegante
     function toggleMenu() {
@@ -729,11 +762,66 @@
       // Inicializar filtros de columnas
       initializeColumnFilters();
 
-      // Aplicar filtro automático si se especifica en la URL
-      if (filterAssignee) {
-        // Si hay un filtro específico de responsable, aplicarlo a la tabla
-        batchesTable.column(1).search(filterAssignee).draw();
-      }
+      // NO aplicar filtro de DataTables aquí porque YA se filtró en updateTable()
+      // El filtrado correcto ya se hace en las líneas 1083-1098 de updateTable()
+
+      // Botón para activar/desactivar Modo Asignar Batch
+      $('#toggleAssignMode').on('click', function() {
+        assignModeActive = !assignModeActive;
+
+        if (assignModeActive) {
+          // Activar modo asignación
+          $(this).addClass('active');
+          $('#assignModeText').text('Desactivar Modo Asignar Batch');
+          $('#assignModeStatus').show();
+          showNotification('Modo Asignación Activo - Ahora puedes asignar batches desde la columna Responsable', 'success');
+        } else {
+          // Desactivar modo asignación
+          $(this).removeClass('active');
+          $('#assignModeText').text('Activar Modo Asignar Batch');
+          $('#assignModeStatus').hide();
+          showNotification('Modo Asignación Desactivado', 'info');
+        }
+
+        // Recargar tabla para mostrar/ocultar dropdowns
+        updateTable();
+      });
+
+      // Evento delegado para cambios en assignee-select
+      $(document).on('change', '.assignee-select', function() {
+        const batchId = $(this).data('batch-id');
+        const newAssignee = $(this).val();
+
+        console.log(`Asignando batch ${batchId} a ${newAssignee || 'Sin asignar'}`);
+
+        // Guardar cambio automáticamente
+        const updateData = {
+          assignee: newAssignee || null,
+          metadata: {
+            assigned_at: newAssignee ? new Date().toISOString().split('T')[0] : null
+          }
+        };
+
+        $.ajax({
+          url: `/api/batches/${batchId}`,
+          method: 'PUT',
+          contentType: 'application/json',
+          data: JSON.stringify(updateData),
+          success: function(response) {
+            // Actualizar datos locales
+            const batch = batches.find(b => b.id === batchId);
+            if (batch) {
+              batch.assignee = newAssignee || null;
+              batch.metadata.assigned_at = updateData.metadata.assigned_at;
+            }
+
+            showNotification(`✅ Batch ${batchId} asignado a ${newAssignee || 'Sin asignar'}`, 'success');
+          },
+          error: function(xhr) {
+            showNotification(`❌ Error asignando batch: ${xhr.responseJSON?.error || 'Error desconocido'}`, 'error');
+          }
+        });
+      });
 
       // Evento para cuando se abra el modal de nuevo batch
       $('#newBatchModal').on('show.bs.modal', function() {
@@ -1069,13 +1157,44 @@
       console.log('📋 Actualizando tabla con', batches.length, 'batches');
       batchesTable.clear();
 
-      // Filtrar solo batches que necesitan revisión (In y NS) Y que estén asignados
-      const batchesForReview = batches.filter(batch =>
-        (batch.status === 'In' || batch.status === 'NS') &&
-        batch.assignee && batch.assignee.trim() !== ''
-      );
+      // Filtrar batches del DASHBOARD GENERAL vs INDIVIDUAL:
+      // - Dashboard General: Mostrar TODOS pero ordenar (completados al final)
+      // - Dashboard Individual: Mostrar TODOS del segmentador
 
-      console.log(`📊 Mostrando ${batchesForReview.length} batches ASIGNADOS pendientes de revisión de ${batches.length} totales`);
+      // Detectar filtro activo: desde URL (filterAssignee) o desde dropdown
+      const dropdownAssignee = $('#filter-assignee').val();
+      const urlAssignee = filterAssignee; // Variable de Jinja desde el backend
+      const selectedAssignee = dropdownAssignee || urlAssignee;
+      const isFilteredByAssignee = selectedAssignee !== '' && selectedAssignee !== null;
+
+      let batchesForReview;
+      if (isFilteredByAssignee) {
+        // DASHBOARD INDIVIDUAL: Mostrar TODOS los batches del segmentador
+        batchesForReview = batches.filter(batch =>
+          batch.assignee === selectedAssignee
+        );
+        console.log(`📊 [DASHBOARD INDIVIDUAL de ${selectedAssignee}] Mostrando TODOS los ${batchesForReview.length} batches asignados`);
+      } else {
+        // DASHBOARD GENERAL: Mostrar TODOS los batches (asignados + sin asignar)
+        // Orden: 1) Asignados pendientes, 2) Sin asignar, 3) Completados
+        batchesForReview = batches; // TODOS
+
+        // Ordenar por categoría
+        batchesForReview.sort((a, b) => {
+          const aAssignee = a.assignee && a.assignee.trim() !== '';
+          const bAssignee = b.assignee && b.assignee.trim() !== '';
+          const aCompleted = a.status === 'S' && a.metadata?.review_status === 'aprobado';
+          const bCompleted = b.status === 'S' && b.metadata?.review_status === 'aprobado';
+
+          // Categorías: 1=Asignado pendiente, 2=Sin asignar, 3=Completado
+          const aCategory = aCompleted ? 3 : (aAssignee ? 1 : 2);
+          const bCategory = bCompleted ? 3 : (bAssignee ? 1 : 2);
+
+          return aCategory - bCategory;
+        });
+
+        console.log(`📊 [DASHBOARD GENERAL] Mostrando TODOS los ${batchesForReview.length} batches (asignados→sin asignar→completados)`);
+      }
       
       batchesForReview.forEach(function(batch, index) {
         console.log(`Procesando batch ${index + 1}:`, batch);
@@ -1095,7 +1214,7 @@
         `;
         
         // Selector de revisión con Aprobado/No Aprobado e indicador visual
-        const reviewStatus = batch.metadata.review_status || '';
+        const reviewStatus = batch.metadata?.review_status || '';
         const approvedBadge = reviewStatus === 'aprobado' ? ' ✅' : reviewStatus === 'no_aprobado' ? ' ❌' : '';
         const reviewSelect = `
           <select class="form-select form-select-sm review-select ${reviewStatus === 'aprobado' ? 'border-success' : reviewStatus === 'no_aprobado' ? 'border-danger' : ''}" 
@@ -1121,12 +1240,31 @@
           </span>
         `;
         
+        // Columna Responsable: editable si assignModeActive está activo
+        let assigneeColumn;
+        if (assignModeActive) {
+          // Modo asignación: dropdown editable
+          let options = '<option value="">Sin asignar</option>';
+          CREW_MEMBERS.forEach(name => {
+            const selected = batch.assignee === name ? 'selected' : '';
+            options += `<option value="${name}" ${selected}>${name}</option>`;
+          });
+          assigneeColumn = `
+            <select class="form-select form-select-sm assignee-select" data-batch-id="${batch.id}">
+              ${options}
+            </select>
+          `;
+        } else {
+          // Modo normal: solo texto
+          assigneeColumn = batch.assignee || '<span class="text-muted">Sin asignar</span>';
+        }
+
         const row = [
           batchIdStatic,
-          batch.assignee,
+          assigneeColumn,
           mongoStatus,
           statusSelect,
-          batch.metadata.assigned_at,
+          batch.metadata?.assigned_at || '',  // Usar optional chaining y fallback
           reviewSelect,
           commentsInput,
           `
@@ -1155,12 +1293,10 @@
       });
       
       batchesTable.draw();
-      
-      // Aplicar filtro automático si se especifica
-      if (filterAssignee) {
-        batchesTable.column(1).search(filterAssignee).draw();
-      }
-      
+
+      // NO aplicar filtro de DataTables aquí porque YA filtramos en batchesForReview
+      // El filtro ya se aplicó en las líneas 1083-1098 según sea dashboard general o individual
+
       // Agregar eventos para cambios inline
       addInlineEditEvents();
       
