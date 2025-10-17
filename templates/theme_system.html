@@ -1,0 +1,178 @@
+<!-- ============================================
+     SISTEMA DE TEMA GLOBAL (DARK/LIGHT MODE)
+     ============================================
+     Incluir este archivo en todas las páginas para tener
+     un tema consistente con toggle de modo oscuro/claro
+     ============================================ -->
+
+<style>
+  /* ============================================
+     PALETA DE COLORES - MODO CLARO Y OSCURO
+     ============================================ */
+
+  /* Modo Claro (Default) */
+  :root {
+    --primary: #2563EB;
+    --primary-light: #3B82F6;
+    --primary-dark: #1E40AF;
+    --secondary: #10B981;
+    --accent: #F59E0B;
+    --danger: #EF4444;
+    --warning: #F59E0B;
+    --success: #10B981;
+    --info: #3B82F6;
+    --background: #F8FAFC;
+    --surface: #FFFFFF;
+    --text-primary: #1E293B;
+    --text-secondary: #64748B;
+    --border: #E2E8F0;
+    --hover: #F1F5F9;
+  }
+
+  /* Modo Oscuro */
+  [data-theme="dark"] {
+    --primary: #60A5FA;
+    --primary-light: #93C5FD;
+    --primary-dark: #3B82F6;
+    --secondary: #34D399;
+    --accent: #FBBF24;
+    --danger: #F87171;
+    --warning: #FBBF24;
+    --success: #34D399;
+    --info: #60A5FA;
+    --background: #0F172A;
+    --surface: #1E293B;
+    --text-primary: #F1F5F9;
+    --text-secondary: #94A3B8;
+    --border: #334155;
+    --hover: #293548;
+  }
+
+  /* Transiciones suaves al cambiar tema */
+  body {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  * {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+
+  /* Dark Mode Toggle Button */
+  .theme-toggle-btn {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    background: var(--border);
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    border: none;
+  }
+
+  .theme-toggle-btn:hover {
+    background: var(--hover);
+  }
+
+  .theme-toggle-slider {
+    width: 22px;
+    height: 22px;
+    background: var(--surface);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transform: translateX(0);
+  }
+
+  [data-theme="dark"] .theme-toggle-slider {
+    transform: translateX(30px);
+    background: var(--primary);
+  }
+
+  .theme-toggle-icon {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+  }
+
+  [data-theme="dark"] .theme-toggle-icon {
+    color: white;
+  }
+
+  .theme-label {
+    margin-left: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+</style>
+
+<script>
+  // ============================================
+  // SISTEMA DE TEMA GLOBAL
+  // ============================================
+
+  // Inicializar tema al cargar la página
+  (function initTheme() {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  })();
+
+  // Función global para toggle de tema
+  function toggleTheme() {
+    const htmlElement = document.documentElement;
+    const currentTheme = htmlElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    htmlElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+
+    // Actualizar UI de todos los toggles en la página
+    updateAllThemeToggles(newTheme);
+
+    // Mostrar notificación si existe la función
+    if (typeof showNotification === 'function') {
+      showNotification(
+        newTheme === 'dark' ? '🌙 Modo oscuro activado' : '☀️ Modo claro activado'
+      );
+    }
+  }
+
+  // Actualizar UI de todos los toggles
+  function updateAllThemeToggles(theme) {
+    const icons = document.querySelectorAll('.theme-toggle-icon');
+    const labels = document.querySelectorAll('.theme-label');
+
+    icons.forEach(icon => {
+      icon.className = theme === 'dark'
+        ? 'fas fa-moon theme-toggle-icon'
+        : 'fas fa-sun theme-toggle-icon';
+    });
+
+    labels.forEach(label => {
+      label.textContent = theme === 'dark' ? 'Modo Oscuro' : 'Modo Claro';
+    });
+  }
+
+  // Actualizar UI al cargar
+  document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    updateAllThemeToggles(savedTheme);
+  });
+</script>
+
+<!-- Componente HTML del Toggle (copiar donde se necesite) -->
+<!--
+<div style="display: flex; align-items: center; gap: 0.5rem;">
+  <button class="theme-toggle-btn" onclick="toggleTheme()">
+    <div class="theme-toggle-slider">
+      <i class="fas fa-sun theme-toggle-icon"></i>
+    </div>
+  </button>
+  <span class="theme-label">Modo Claro</span>
+</div>
+-->
