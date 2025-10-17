@@ -139,6 +139,12 @@ def batch_management():
     """Redirigir a la nueva ruta /assign"""
     return redirect("/assign")
 
+@app.route("/batch-assignment-v2")
+def batch_assignment_v2():
+    """Nueva interfaz de asignación de batches - Diseño moderno"""
+    global CREW_MEMBERS
+    return render_template("batch_assignment_v2.html", crew=CREW_MEMBERS)
+
 @app.route("/masks")
 def masks():
     global training_masks_col

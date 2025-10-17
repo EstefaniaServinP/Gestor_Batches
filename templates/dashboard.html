@@ -3033,7 +3033,14 @@ Escribe "CONFIRMAR" para proceder:`;
         const newPriority = $(this).val();
         updateBatchField(batchId, 'priority', newPriority, $(this));
       });
-      
+
+      // Evento para cambio de revisión (Aprobado/No Aprobado)
+      $('.review-select').off('change').on('change', function() {
+        const batchId = $(this).data('batch-id');
+        const newReviewStatus = $(this).val();
+        updateBatchField(batchId, 'review_status', newReviewStatus, $(this));
+      });
+
       // Evento para cambio de fecha de revisión
       $('.review-date-input').off('change').on('change', function() {
         const batchId = $(this).data('batch-id');
@@ -3062,6 +3069,8 @@ Escribe "CONFIRMAR" para proceder:`;
         updateData.metadata = { reviewed_at: value };
       } else if (field === 'priority') {
         updateData.metadata = { priority: value };
+      } else if (field === 'review_status') {
+        updateData.metadata = { review_status: value };
       } else {
         updateData[field] = value;
       }
@@ -3085,6 +3094,8 @@ Escribe "CONFIRMAR" para proceder:`;
               batch.metadata.reviewed_at = value;
             } else if (field === 'priority') {
               batch.metadata.priority = value;
+            } else if (field === 'review_status') {
+              batch.metadata.review_status = value;
             } else {
               batch[field] = value;
             }

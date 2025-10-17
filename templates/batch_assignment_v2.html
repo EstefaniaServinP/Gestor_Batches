@@ -1,0 +1,863 @@
+{% extends "base.html" %}
+
+{% block title %}Asignación de Batches - Dashboard{% endblock %}
+
+{% block page_css %}
+<style>
+  /* ============================================
+     PALETA DE COLORES - MODO CLARO Y OSCURO
+     ============================================ */
+
+  /* Modo Claro (Default) */
+  :root {
+    --primary: #2563EB;
+    --primary-light: #3B82F6;
+    --primary-dark: #1E40AF;
+    --secondary: #10B981;
+    --accent: #F59E0B;
+    --background: #F8FAFC;
+    --surface: #FFFFFF;
+    --text-primary: #1E293B;
+    --text-secondary: #64748B;
+    --border: #E2E8F0;
+    --hover: #F1F5F9;
+  }
+
+  /* Modo Oscuro */
+  [data-theme="dark"] {
+    --primary: #60A5FA;
+    --primary-light: #93C5FD;
+    --primary-dark: #3B82F6;
+    --secondary: #34D399;
+    --accent: #FBBF24;
+    --background: #0F172A;      /* Azul oscuro profundo */
+    --surface: #1E293B;         /* Gris azulado oscuro */
+    --text-primary: #F1F5F9;    /* Blanco suave */
+    --text-secondary: #94A3B8;  /* Gris claro */
+    --border: #334155;          /* Borde oscuro */
+    --hover: #293548;           /* Hover oscuro */
+  }
+
+  body {
+    background: var(--background);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: var(--text-primary);
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+
+  * {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+
+  .main-content {
+    padding: 1.5rem;
+    max-width: 1600px;
+    margin: 0 auto;
+  }
+
+  /* Header */
+  .page-header {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .page-header h1 {
+    color: var(--text-primary);
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .header-icon {
+    width: 48px;
+    height: 48px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.25rem;
+  }
+
+  .stats-pill {
+    background: var(--hover);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* Two Column Layout */
+  .assignment-container {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr;
+    gap: 1.5rem;
+    height: calc(100vh - 200px);
+  }
+
+  /* Left Panel - Batches */
+  .batches-panel {
+    background: var(--surface);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--hover);
+  }
+
+  .panel-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .search-box {
+    position: relative;
+  }
+
+  .search-box input {
+    width: 100%;
+    padding: 0.625rem 0.875rem 0.625rem 2.5rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    background: var(--surface);
+  }
+
+  .search-box input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+  }
+
+  .search-box i {
+    position: absolute;
+    left: 0.875rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+  }
+
+  .batches-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+  }
+
+  .batch-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.875rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    transition: all 0.2s;
+  }
+
+  .batch-item:hover {
+    background: var(--hover);
+    border-color: var(--primary-light);
+    transform: translateX(2px);
+  }
+
+  .batch-checkbox {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--primary);
+    cursor: pointer;
+  }
+
+  .batch-id {
+    flex: 1;
+    font-weight: 500;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+  }
+
+  .batch-status {
+    padding: 0.25rem 0.625rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+
+  .status-ns {
+    background: #FEF3C7;
+    color: #92400E;
+  }
+
+  .assign-dropdown {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    background: var(--surface);
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 120px;
+  }
+
+  .assign-dropdown:hover {
+    border-color: var(--primary);
+    background: var(--hover);
+  }
+
+  /* Bulk Actions */
+  .bulk-actions {
+    padding: 1rem 1.5rem;
+    border-top: 1px solid var(--border);
+    background: var(--hover);
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+
+  .selection-info {
+    flex: 1;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  .btn-bulk-assign {
+    padding: 0.625rem 1.25rem;
+    background: var(--primary);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .btn-bulk-assign:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  }
+
+  .btn-bulk-assign:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* Right Panel - Team */
+  .team-panel {
+    background: var(--surface);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .team-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  .team-member {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: all 0.2s;
+  }
+
+  .team-member:hover {
+    border-color: var(--primary);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  .member-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .member-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .member-info {
+    flex: 1;
+  }
+
+  .member-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 1rem;
+    margin: 0;
+  }
+
+  .member-role {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .member-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+
+  .stat-item {
+    text-align: center;
+    padding: 0.625rem;
+    background: var(--hover);
+    border-radius: 6px;
+  }
+
+  .stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0;
+  }
+
+  .stat-label {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .btn-view-batches {
+    width: 100%;
+    padding: 0.5rem;
+    margin-top: 0.75rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-view-batches:hover {
+    background: var(--hover);
+    border-color: var(--primary);
+    color: var(--primary);
+  }
+
+  /* Workload Indicator */
+  .workload-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 0.75rem;
+  }
+
+  .workload-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--secondary), var(--primary));
+    transition: width 0.3s;
+  }
+
+  /* Dark Mode Toggle */
+  .theme-toggle {
+    position: relative;
+    width: 60px;
+    height: 30px;
+    background: var(--border);
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+  }
+
+  .theme-toggle:hover {
+    background: var(--hover);
+  }
+
+  .theme-toggle-slider {
+    width: 22px;
+    height: 22px;
+    background: var(--surface);
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    transform: translateX(0);
+  }
+
+  [data-theme="dark"] .theme-toggle-slider {
+    transform: translateX(30px);
+    background: var(--primary);
+  }
+
+  .theme-toggle-icon {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+  }
+
+  [data-theme="dark"] .theme-toggle-icon {
+    color: white;
+  }
+
+  .theme-label {
+    margin-left: 0.75rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+  }
+
+  /* Scrollbar */
+  .batches-list::-webkit-scrollbar,
+  .team-list::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .batches-list::-webkit-scrollbar-track,
+  .team-list::-webkit-scrollbar-track {
+    background: var(--hover);
+  }
+
+  .batches-list::-webkit-scrollbar-thumb,
+  .team-list::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+  }
+
+  .batches-list::-webkit-scrollbar-thumb:hover,
+  .team-list::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+  }
+
+  /* Notification */
+  .notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    background: var(--surface);
+    border-radius: 8px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    display: none;
+    align-items: center;
+    gap: 0.75rem;
+    z-index: 1000;
+    border-left: 4px solid var(--secondary);
+  }
+
+  .notification.show {
+    display: flex;
+    animation: slideIn 0.3s ease;
+  }
+
+  @keyframes slideIn {
+    from {
+      transform: translateX(400px);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+
+  /* Responsive */
+  @media (max-width: 1200px) {
+    .assignment-container {
+      grid-template-columns: 1fr;
+      height: auto;
+    }
+
+    .batches-panel {
+      height: 500px;
+    }
+
+    .team-panel {
+      height: 400px;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content">
+  <!-- Header -->
+  <div class="page-header">
+    <h1>
+      <div class="header-icon">
+        <i class="fas fa-tasks"></i>
+      </div>
+      Asignación de Batches
+    </h1>
+    <div style="display: flex; align-items: center; gap: 1.5rem;">
+      <div class="stats-pill" id="totalStats">
+        Cargando...
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <div class="theme-toggle" id="themeToggle">
+          <div class="theme-toggle-slider">
+            <i class="fas fa-sun theme-toggle-icon" id="themeIcon"></i>
+          </div>
+        </div>
+        <span class="theme-label" id="themeLabel">Modo Claro</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two Column Layout -->
+  <div class="assignment-container">
+    <!-- Left: Batches List -->
+    <div class="batches-panel">
+      <div class="panel-header">
+        <h3 class="panel-title">
+          <i class="fas fa-list"></i>
+          Batches Disponibles
+          <span id="batchCount" style="color: var(--primary); font-size: 0.9rem;">(0)</span>
+        </h3>
+        <div class="search-box">
+          <i class="fas fa-search"></i>
+          <input type="text" id="searchBatch" placeholder="Buscar batch por ID...">
+        </div>
+      </div>
+
+      <div class="batches-list" id="batchesList">
+        <!-- Batches will be loaded here -->
+      </div>
+
+      <div class="bulk-actions">
+        <div class="selection-info" id="selectionInfo">
+          <i class="fas fa-check-circle"></i> 0 batches seleccionados
+        </div>
+        <select id="bulkAssignee" class="assign-dropdown" style="min-width: 150px;">
+          <option value="">Asignar a...</option>
+          {% for member in crew %}
+          <option value="{{ member }}">{{ member }}</option>
+          {% endfor %}
+        </select>
+        <button class="btn-bulk-assign" id="btnBulkAssign" disabled>
+          <i class="fas fa-user-check"></i>
+          Asignar Seleccionados
+        </button>
+      </div>
+    </div>
+
+    <!-- Right: Team Members -->
+    <div class="team-panel">
+      <div class="panel-header">
+        <h3 class="panel-title">
+          <i class="fas fa-users"></i>
+          Equipo de Segmentación
+        </h3>
+      </div>
+
+      <div class="team-list" id="teamList">
+        <!-- Team members will be loaded here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notification -->
+<div class="notification" id="notification">
+  <i class="fas fa-check-circle" style="color: var(--secondary); font-size: 1.25rem;"></i>
+  <span id="notificationText"></span>
+</div>
+
+<script>
+  let batches = [];
+  let selectedBatches = new Set();
+  const CREW_MEMBERS = {{ crew | tojson | safe }};
+
+  // Load batches
+  async function loadBatches() {
+    try {
+      const response = await fetch('/api/batches?per_page=5000');
+      const data = await response.json();
+      batches = data.batches;
+
+      renderBatches();
+      updateTeamStats();
+      updateTotalStats();
+    } catch (error) {
+      console.error('Error loading batches:', error);
+    }
+  }
+
+  // Render batches list
+  function renderBatches(filter = '') {
+    const batchesList = document.getElementById('batchesList');
+    const unassignedBatches = batches.filter(b =>
+      !b.assignee &&
+      b.id.toLowerCase().includes(filter.toLowerCase())
+    );
+
+    document.getElementById('batchCount').textContent = `(${unassignedBatches.length})`;
+
+    batchesList.innerHTML = unassignedBatches.map(batch => `
+      <div class="batch-item">
+        <input type="checkbox"
+               class="batch-checkbox"
+               data-batch-id="${batch.id}"
+               ${selectedBatches.has(batch.id) ? 'checked' : ''}>
+        <span class="batch-id">${batch.id}</span>
+        <span class="batch-status status-ns">No Segmentado</span>
+        <select class="assign-dropdown batch-assign" data-batch-id="${batch.id}">
+          <option value="">Asignar a...</option>
+          ${CREW_MEMBERS.map(member => `<option value="${member}">${member}</option>`).join('')}
+        </select>
+      </div>
+    `).join('');
+
+    // Add event listeners
+    document.querySelectorAll('.batch-checkbox').forEach(checkbox => {
+      checkbox.addEventListener('change', handleCheckboxChange);
+    });
+
+    document.querySelectorAll('.batch-assign').forEach(select => {
+      select.addEventListener('change', handleIndividualAssign);
+    });
+  }
+
+  // Handle checkbox change
+  function handleCheckboxChange(e) {
+    const batchId = e.target.dataset.batchId;
+    if (e.target.checked) {
+      selectedBatches.add(batchId);
+    } else {
+      selectedBatches.delete(batchId);
+    }
+    updateSelectionInfo();
+  }
+
+  // Update selection info
+  function updateSelectionInfo() {
+    const count = selectedBatches.size;
+    document.getElementById('selectionInfo').innerHTML = `
+      <i class="fas fa-check-circle"></i> ${count} batch${count !== 1 ? 'es' : ''} seleccionado${count !== 1 ? 's' : ''}
+    `;
+    document.getElementById('btnBulkAssign').disabled = count === 0;
+  }
+
+  // Handle individual assign
+  async function handleIndividualAssign(e) {
+    const batchId = e.target.dataset.batchId;
+    const assignee = e.target.value;
+
+    if (!assignee) return;
+
+    await assignBatch(batchId, assignee);
+    e.target.value = '';
+    loadBatches(); // Refresh
+  }
+
+  // Handle bulk assign
+  document.getElementById('btnBulkAssign').addEventListener('click', async () => {
+    const assignee = document.getElementById('bulkAssignee').value;
+    if (!assignee) {
+      showNotification('❌ Selecciona un segmentador', 'error');
+      return;
+    }
+
+    const batchIds = Array.from(selectedBatches);
+    for (const batchId of batchIds) {
+      await assignBatch(batchId, assignee);
+    }
+
+    selectedBatches.clear();
+    document.getElementById('bulkAssignee').value = '';
+    loadBatches();
+    showNotification(`✅ ${batchIds.length} batches asignados a ${assignee}`);
+  });
+
+  // Assign batch
+  async function assignBatch(batchId, assignee) {
+    try {
+      const response = await fetch(`/api/batches/${batchId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          assignee: assignee,
+          metadata: {
+            assigned_at: new Date().toISOString().split('T')[0]
+          }
+        })
+      });
+
+      if (response.ok) {
+        return true;
+      }
+    } catch (error) {
+      console.error('Error assigning batch:', error);
+    }
+    return false;
+  }
+
+  // Update team stats
+  function updateTeamStats() {
+    const teamList = document.getElementById('teamList');
+    const stats = {};
+
+    CREW_MEMBERS.forEach(member => {
+      const memberBatches = batches.filter(b => b.assignee === member);
+      const completed = memberBatches.filter(b =>
+        b.status === 'S' && b.metadata?.review_status === 'aprobado'
+      ).length;
+
+      stats[member] = {
+        assigned: memberBatches.length,
+        completed: completed,
+        workload: Math.min((memberBatches.length / 20) * 100, 100) // Max 20 batches = 100%
+      };
+    });
+
+    teamList.innerHTML = CREW_MEMBERS.map((member, index) => {
+      const colors = [
+        'linear-gradient(135deg, #2563EB, #3B82F6)',
+        'linear-gradient(135deg, #10B981, #34D399)',
+        'linear-gradient(135deg, #F59E0B, #FBBF24)',
+        'linear-gradient(135deg, #8B5CF6, #A78BFA)',
+        'linear-gradient(135deg, #EC4899, #F472B6)'
+      ];
+
+      return `
+        <div class="team-member">
+          <div class="member-header">
+            <div class="member-avatar" style="background: ${colors[index % colors.length]}">
+              ${member.charAt(0).toUpperCase()}
+            </div>
+            <div class="member-info">
+              <p class="member-name">${member}</p>
+              <p class="member-role">Segmentador</p>
+            </div>
+          </div>
+          <div class="member-stats">
+            <div class="stat-item">
+              <p class="stat-value">${stats[member].assigned}</p>
+              <p class="stat-label">Asignados</p>
+            </div>
+            <div class="stat-item">
+              <p class="stat-value">${stats[member].completed}</p>
+              <p class="stat-label">Completados</p>
+            </div>
+          </div>
+          <div class="workload-bar">
+            <div class="workload-fill" style="width: ${stats[member].workload}%"></div>
+          </div>
+          <button class="btn-view-batches" onclick="window.location.href='/dashboard?assignee=${member}'">
+            Ver Batches →
+          </button>
+        </div>
+      `;
+    }).join('');
+  }
+
+  // Update total stats
+  function updateTotalStats() {
+    const unassigned = batches.filter(b => !b.assignee).length;
+    const assigned = batches.filter(b => b.assignee).length;
+    document.getElementById('totalStats').textContent =
+      `${unassigned} sin asignar • ${assigned} asignados`;
+  }
+
+  // Search functionality
+  document.getElementById('searchBatch').addEventListener('input', (e) => {
+    renderBatches(e.target.value);
+  });
+
+  // Show notification
+  function showNotification(message, type = 'success') {
+    const notification = document.getElementById('notification');
+    document.getElementById('notificationText').textContent = message;
+    notification.className = 'notification show';
+
+    setTimeout(() => {
+      notification.classList.remove('show');
+    }, 3000);
+  }
+
+  // Dark Mode Toggle
+  const themeToggle = document.getElementById('themeToggle');
+  const themeIcon = document.getElementById('themeIcon');
+  const themeLabel = document.getElementById('themeLabel');
+  const htmlElement = document.documentElement;
+
+  // Load saved theme preference
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  htmlElement.setAttribute('data-theme', savedTheme);
+  updateThemeUI(savedTheme);
+
+  themeToggle.addEventListener('click', () => {
+    const currentTheme = htmlElement.getAttribute('data-theme');
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+    htmlElement.setAttribute('data-theme', newTheme);
+    localStorage.setItem('theme', newTheme);
+    updateThemeUI(newTheme);
+
+    showNotification(
+      newTheme === 'dark' ? '🌙 Modo oscuro activado' : '☀️ Modo claro activado'
+    );
+  });
+
+  function updateThemeUI(theme) {
+    if (theme === 'dark') {
+      themeIcon.className = 'fas fa-moon theme-toggle-icon';
+      themeLabel.textContent = 'Modo Oscuro';
+    } else {
+      themeIcon.className = 'fas fa-sun theme-toggle-icon';
+      themeLabel.textContent = 'Modo Claro';
+    }
+  }
+
+  // Initial load
+  loadBatches();
+  setInterval(loadBatches, 10000); // Refresh every 10 seconds
+</script>
+{% endblock %}
