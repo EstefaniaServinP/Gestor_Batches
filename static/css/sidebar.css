@@ -10,30 +10,32 @@
   z-index: 1500;
   width: 70px;
   height: 70px;
-  background: rgba(255, 255, 255, 0.25);
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: var(--surface);
+  border: 2px solid var(--border);
   border-radius: 20px;
-  color: white;
+  color: var(--text-primary);
   font-size: 1.5rem;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   backdrop-filter: blur(20px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .sidebar-toggle:hover {
-  background: rgba(255, 255, 255, 0.35);
+  background: var(--hover);
   transform: scale(1.05) rotate(5deg);
-  box-shadow: 0 12px 40px rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border-color: var(--primary);
 }
 
 .sidebar-toggle.active {
   transform: scale(0.95) rotate(90deg);
-  background: rgba(255, 255, 255, 0.4);
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
 }
 
 /* Overlay de fondo */
@@ -63,14 +65,14 @@
   right: -400px;
   width: 350px;
   height: 100vh;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+  background: var(--surface);
   backdrop-filter: blur(25px);
   z-index: 1400;
   transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 0;
   overflow-y: auto;
   box-shadow: -5px 0 50px rgba(0, 0, 0, 0.2);
-  border-left: 1px solid rgba(255, 255, 255, 0.2);
+  border-left: 1px solid var(--border);
 }
 
 .sidebar.open {
@@ -80,18 +82,17 @@
 /* Header del sidebar */
 .sidebar-header {
   padding: 3rem 2rem 2rem;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: var(--surface-hover, var(--hover));
+  border-bottom: 1px solid var(--border);
   text-align: center;
 }
 
 .sidebar-header h5 {
-  color: white;
+  color: var(--text-primary);
   margin: 0;
-  font-weight: 300;
+  font-weight: 600;
   font-size: 1.3rem;
   letter-spacing: 1px;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
 /* Menú principal */
@@ -105,18 +106,18 @@
   margin: 0.8rem 0;
 }
 
-/* Enlaces del sidebar - IMPORTANTE: Fuerza color blanco */
+/* Enlaces del sidebar - Adaptable a tema */
 .sidebar-link,
 .sidebar-trigger {
   display: flex;
   align-items: center;
   gap: 1.2rem;
   padding: 1.2rem 1.5rem;
-  color: rgba(255, 255, 255, 0.9) !important; /* Sobreescribe Bootstrap */
+  color: var(--text-primary) !important; /* Sobreescribe Bootstrap */
   text-decoration: none !important;
-  border-radius: 15px;
+  border-radius: 12px;
   border: 1px solid transparent;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 500;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -136,7 +137,7 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, var(--hover), transparent);
   transition: left 0.6s;
 }
 
@@ -150,12 +151,11 @@
 .sidebar-link:focus,
 .sidebar-trigger:hover,
 .sidebar-trigger:focus {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-  color: white !important;
-  transform: translateX(8px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-  outline: 2px solid rgba(255, 255, 255, 0.2);
+  background: var(--hover);
+  border-color: var(--border);
+  color: var(--primary) !important;
+  transform: translateX(-8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   outline-offset: 2px;
   opacity: 1;
 }
