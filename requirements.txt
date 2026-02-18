@@ -1,0 +1,19 @@
+# ============================================
+# DEPENDENCIAS - QUALITY KTECH DASHBOARD
+# ============================================
+
+# Framework Web
+Flask==3.0.0
+Flask-CORS==4.0.0
+
+# Base de Datos MongoDB
+pymongo==4.6.1
+
+# Variables de Entorno
+python-dotenv==1.0.0
+
+# Servidor WSGI (para producción)
+gunicorn==21.2.0
+
+# Utilidades
+python-dateutil==2.8.2
