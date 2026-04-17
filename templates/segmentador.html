@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Segmentador - Segmentación Presencia</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <style>
+    :root {
+      --bg-primary: #0d1117;
+      --bg-secondary: #161b22;
+      --bg-tertiary: #21262d;
+      --border: #30363d;
+      --text-primary: #e6edf3;
+      --text-secondary: #7d8590;
+      --accent: #58a6ff;
+      --success: #3fb950;
+      --warning: #d29922;
+      --danger: #f85149;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+
+    .login-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-card {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 3rem;
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .login-card h2 { margin-bottom: 2rem; text-align: center; }
+
+    .dashboard-header {
+      padding: 1.5rem 2rem;
+      background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+    }
+
+    .dashboard-header h1 { font-size: 1.75rem; font-weight: 600; margin: 0; }
+
+    .user-info { display: flex; align-items: center; gap: 1rem; }
+
+    .user-badge {
+      background-color: var(--bg-tertiary);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.875rem;
+    }
+
+    .card {
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      color: var(--text-primary);
+    }
+
+    .card-body { padding: 1.5rem; }
+
+    .form-control, .form-select {
+      background-color: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      color: var(--text-primary);
+    }
+
+    .form-control:focus, .form-select:focus {
+      background-color: var(--bg-tertiary);
+      border-color: var(--accent);
+      color: var(--text-primary);
+      box-shadow: 0 0 0 0.2rem rgba(88, 166, 255, 0.25);
+    }
+
+    .form-label { color: var(--text-secondary); font-weight: 500; margin-bottom: 0.5rem; }
+
+    .badge { padding: 0.375rem 0.75rem; font-weight: 500; border-radius: 6px; font-size: 0.75rem; }
+    .badge.bg-success { background-color: var(--success) !important; }
+    .badge.bg-danger { background-color: var(--danger) !important; }
+    .badge.bg-warning { background-color: var(--warning) !important; color: var(--bg-primary) !important; }
+    .badge.bg-info { background-color: var(--accent) !important; }
+
+    .btn { border-radius: 6px; font-weight: 500; padding: 0.5rem 1rem; transition: all 0.2s ease; }
+    .btn-primary { background-color: var(--accent); border-color: var(--accent); color: var(--bg-primary); }
+    .btn-primary:hover { background-color: #4a8cd6; border-color: #4a8cd6; }
+    .btn-success { background-color: var(--success); border-color: var(--success); }
+    .btn-outline-light { color: var(--text-primary); border-color: var(--border); }
+    .btn-outline-light:hover { background-color: var(--bg-tertiary); color: var(--text-primary); }
+
+    .hidden { display: none !important; }
+
+    .progress { background-color: var(--bg-tertiary); border-radius: 6px; height: 1.5rem; }
+    .progress-bar { transition: width 0.3s ease; }
+
+    .mascara-row {
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s ease;
+    }
+
+    .mascara-row:hover { border-color: var(--accent); }
+
+    .mascara-row.status-completed { border-left: 4px solid var(--success); }
+    .mascara-row.status-in_progress { border-left: 4px solid var(--accent); }
+    .mascara-row.status-skipped { border-left: 4px solid var(--text-secondary); }
+    .mascara-row.status-pending { border-left: 4px solid var(--warning); }
+
+    .range-value {
+      display: inline-block;
+      min-width: 3rem;
+      text-align: center;
+      font-weight: 600;
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="loginScreen" class="login-container">
+  <div class="login-card">
+    <h2><i class="fas fa-pencil-alt"></i> Segmentador</h2>
+    <form id="loginForm">
+      <div class="mb-3">
+        <label for="username" class="form-label">Usuario</label>
+        <input type="text" class="form-control" id="username" required>
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">Contraseña</label>
+        <input type="password" class="form-control" id="password" required>
+      </div>
+      <div id="loginError" class="alert alert-danger hidden" role="alert"></div>
+      <button type="submit" class="btn btn-primary w-100">
+        <i class="fas fa-sign-in-alt"></i> Iniciar Sesión
+      </button>
+    </form>
+  </div>
+</div>
+
+<!-- Segmentador Screen -->
+<div id="segmentadorScreen" class="hidden">
+  <!-- Header -->
+  <div class="dashboard-header">
+    <div>
+      <h1><i class="fas fa-pencil-alt"></i> Segmentador</h1>
+      <small class="text-secondary">Herramienta de segmentación por batches</small>
+    </div>
+    <div class="user-info">
+      <div class="user-badge">
+        <i class="fas fa-user"></i>
+        <span id="userDisplay"></span>
+        <span class="badge bg-info ms-2" id="roleDisplay"></span>
+      </div>
+      <a href="/" class="btn btn-outline-light btn-sm">
+        <i class="fas fa-arrow-left"></i> Dashboard
+      </a>
+      <button id="logoutBtn" class="btn btn-outline-light btn-sm">
+        <i class="fas fa-sign-out-alt"></i> Salir
+      </button>
+    </div>
+  </div>
+
+  <div class="container-fluid px-4">
+    <!-- Selector de Batch -->
+    <div class="card" id="batchSelectorCard">
+      <div class="card-body">
+        <h5 class="mb-3"><i class="fas fa-list"></i> Mis Batches</h5>
+        <div class="d-flex gap-2 align-items-end">
+          <div style="flex:1;max-width:500px">
+            <label class="form-label">Selecciona un batch</label>
+            <select id="batchSelect" class="form-select">
+              <option value="">-- Cargando batches --</option>
+            </select>
+          </div>
+          <button id="loadBatchBtn" class="btn btn-primary">
+            <i class="fas fa-folder-open"></i> Cargar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progreso del Batch -->
+    <div class="card hidden" id="batchProgressCard">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="mb-0"><i class="fas fa-tasks"></i> Progreso</h5>
+          <span id="batchIdDisplay" class="badge bg-info" style="font-size:0.9rem"></span>
+        </div>
+        <div class="row mb-3">
+          <div class="col-md-4">
+            <small class="text-secondary">Asignado a:</small>
+            <div id="batchAssigneeDisplay" class="fw-bold"></div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-secondary">Estado:</small>
+            <div id="batchStatusDisplay"></div>
+          </div>
+          <div class="col-md-4">
+            <small class="text-secondary">Completados:</small>
+            <div id="batchCompletedCount" class="fw-bold"></div>
+          </div>
+        </div>
+        <div class="progress">
+          <div id="batchProgressBar" class="progress-bar bg-success" role="progressbar"
+               style="width: 0%" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+            0%
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lista de Máscaras para Segmentar -->
+    <div class="card hidden" id="mascarasSegCard">
+      <div class="card-body">
+        <h5 class="mb-3"><i class="fas fa-mask"></i> Máscaras del Batch</h5>
+        <div id="mascarasSegList">
+          <!-- Se llena dinámicamente -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Segmentador JS -->
+<script src="/static/js/segmentador.js"></script>
+
+</body>
+</html>

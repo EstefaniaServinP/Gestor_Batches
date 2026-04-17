@@ -1,25 +1,53 @@
 /**
  * Dashboard Segmentación Presencia - JavaScript
- * Sistema con autenticación y gestión de máscaras
+ * Vista de Equipo de Segmentación con tarjetas de miembros
  */
 
 // ============================================
 // VARIABLES GLOBALES
 // ============================================
 let currentUser = null;
-let mascarasData = [];
-let currentPage = 1;
-let totalPages = 1;
-const itemsPerPage = 25;
+let teamMembers = [];
+let selectedMember = null;
 
 // ============================================
 // INICIALIZACIÓN
 // ============================================
 document.addEventListener('DOMContentLoaded', function() {
-  console.log('🚀 Dashboard Segmentación Presencia inicializado');
+  console.log('Dashboard Segmentación Presencia inicializado');
+  loadTheme();
   checkSession();
   setupEventListeners();
 });
+
+// ============================================
+// TEMA CLARO / OSCURO
+// ============================================
+function loadTheme() {
+  const saved = localStorage.getItem('theme');
+  if (saved === 'light') {
+    document.body.classList.add('light-mode');
+    updateThemeUI(true);
+  }
+}
+
+function toggleTheme() {
+  const isLight = document.body.classList.toggle('light-mode');
+  localStorage.setItem('theme', isLight ? 'light' : 'dark');
+  updateThemeUI(isLight);
+}
+
+function updateThemeUI(isLight) {
+  const icon = document.getElementById('themeIcon');
+  const label = document.getElementById('themeLabel');
+  if (isLight) {
+    icon.className = 'fas fa-moon';
+    label.textContent = 'Modo Oscuro';
+  } else {
+    icon.className = 'fas fa-sun';
+    label.textContent = 'Modo Claro';
+  }
+}
 
 // ============================================
 // AUTENTICACIÓN
@@ -42,25 +70,32 @@ async function checkSession() {
 }
 
 function setupEventListeners() {
-  // Login
   const loginForm = document.getElementById('loginForm');
-  if (loginForm) {
-    loginForm.addEventListener('submit', handleLogin);
-  }
+  if (loginForm) loginForm.addEventListener('submit', handleLogin);
 
-  // Logout
   const logoutBtn = document.getElementById('logoutBtn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', handleLogout);
-  }
+  if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
 
-  // Botón agregar máscara
-  const addBtn = document.getElementById('addMascaraBtn');
-  if (addBtn) {
-    addBtn.addEventListener('click', () => {
-      alert('Funcionalidad de agregar máscara por implementar');
-    });
-  }
+  const themeToggle = document.getElementById('themeToggle');
+  if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+
+  const closePanelBtn = document.getElementById('closePanelBtn');
+  if (closePanelBtn) closePanelBtn.addEventListener('click', closeBatchesPanel);
+
+  const saveMemberBtn = document.getElementById('saveMemberBtn');
+  if (saveMemberBtn) saveMemberBtn.addEventListener('click', saveNewMember);
+
+  const createBatchBtn = document.getElementById('createBatchBtn');
+  if (createBatchBtn) createBatchBtn.addEventListener('click', () => {
+    loadOperadoresSelect();
+    new bootstrap.Modal(document.getElementById('createBatchModal')).show();
+  });
+
+  const generateBatchBtn = document.getElementById('generateBatchBtn');
+  if (generateBatchBtn) generateBatchBtn.addEventListener('click', generateBatch);
+
+  const importBatchFile = document.getElementById('importBatchFile');
+  if (importBatchFile) importBatchFile.addEventListener('change', importBatch);
 }
 
 async function handleLogin(e) {
@@ -73,9 +108,7 @@ async function handleLogin(e) {
   try {
     const response = await fetch('/api/login', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username, password })
     });
 
@@ -100,6 +133,7 @@ async function handleLogout() {
   try {
     await fetch('/api/logout', { method: 'POST' });
     currentUser = null;
+    selectedMember = null;
     showLogin();
   } catch (error) {
     console.error('Error en logout:', error);
@@ -115,285 +149,384 @@ function showDashboard() {
   document.getElementById('loginScreen').classList.add('hidden');
   document.getElementById('dashboardScreen').classList.remove('hidden');
 
-  // Actualizar UI con datos de usuario
   document.getElementById('userDisplay').textContent = currentUser.nombre_completo;
   document.getElementById('roleDisplay').textContent = currentUser.rol.toUpperCase();
 
-  // Cargar datos
-  loadStats();
-  loadMascaras();
+  // Mostrar herramientas de batch para admin/supervisor
+  const rol = currentUser.rol;
+  if (rol === 'admin' || rol === 'supervisor') {
+    document.getElementById('batchTools').classList.remove('hidden');
+  }
+
+  loadTeamMembers();
 }
 
 // ============================================
-// CARGAR ESTADÍSTICAS
+// CARGAR MIEMBROS DEL EQUIPO
 // ============================================
-async function loadStats() {
+async function loadTeamMembers() {
   try {
-    const response = await fetch('/api/stats');
-    const stats = await response.json();
-
-    if (response.ok) {
-      document.getElementById('totalMascaras').textContent = stats.total_mascaras || 0;
-      document.getElementById('mascarasAprobadas').textContent = stats.mascaras_aprobadas || 0;
-      document.getElementById('mascarasPendientes').textContent = stats.mascaras_pendientes || 0;
-      document.getElementById('mascarasListasIA').textContent = stats.mascaras_listas_entrenar || 0;
-    } else {
-      console.error('Error cargando estadísticas:', stats.error);
+    const res = await fetch('/api/usuarios');
+    if (!res.ok) {
+      // Si no tiene permisos (operador), mostrar solo su propia tarjeta
+      teamMembers = [{
+        username: currentUser.username,
+        nombre_completo: currentUser.nombre_completo,
+        rol: currentUser.rol,
+        email: currentUser.email || '',
+        activo: true
+      }];
+      renderTeamGrid();
+      return;
     }
-  } catch (error) {
-    console.error('❌ Error cargando estadísticas:', error);
+
+    const users = await res.json();
+    teamMembers = users.filter(u => u.activo);
+    renderTeamGrid();
+  } catch (e) {
+    console.error('Error cargando equipo:', e);
   }
 }
 
 // ============================================
-// CARGAR MÁSCARAS
+// RENDERIZAR GRID DE EQUIPO
 // ============================================
-async function loadMascaras(page = 1) {
-  try {
-    showLoading();
-
-    const response = await fetch(`/api/mascaras?page=${page}&per_page=${itemsPerPage}`);
-    const data = await response.json();
-
-    if (response.ok) {
-      mascarasData = data.mascaras || [];
-      currentPage = data.page || 1;
-      totalPages = data.total_pages || 1;
-
-      console.log(`📊 Máscaras cargadas: ${mascarasData.length} de ${data.total}`);
-
-      if (mascarasData.length === 0) {
-        showEmptyState();
-      } else {
-        renderMascarasTable();
-      }
-    } else {
-      console.error('Error cargando máscaras:', data.error);
-      showEmptyState();
-    }
-  } catch (error) {
-    console.error('❌ Error cargando máscaras:', error);
-    showEmptyState();
-  }
-}
-
-// ============================================
-// RENDERIZAR TARJETAS DE MÁSCARAS
-// ============================================
-function renderMascarasTable() {
-  const grid = document.getElementById('mascarasGrid');
+function renderTeamGrid() {
+  const grid = document.getElementById('teamGrid');
   grid.innerHTML = '';
 
-  mascarasData.forEach(mascara => {
-    const card = createMascaraCard(mascara);
+  teamMembers.forEach(member => {
+    const card = createTeamCard(member);
     grid.appendChild(card);
   });
 
-  // Mostrar grid y ocultar estados de carga
-  document.getElementById('loadingSpinner').style.display = 'none';
-  document.getElementById('emptyState').classList.add('hidden');
-  document.getElementById('cardsContainer').classList.remove('hidden');
+  // Tarjeta "Agregar Nuevo Segmentador" (solo admin/supervisor)
+  if (currentUser.rol === 'admin' || currentUser.rol === 'supervisor') {
+    const addCard = document.createElement('div');
+    addCard.className = 'team-card add-card';
+    addCard.innerHTML = `
+      <div class="add-icon"><i class="fas fa-plus"></i></div>
+      <div class="add-label">Agregar Nuevo Segmentador</div>
+    `;
+    addCard.addEventListener('click', () => {
+      new bootstrap.Modal(document.getElementById('addMemberModal')).show();
+    });
+    grid.appendChild(addCard);
+  }
 }
 
-function createMascaraCard(mascara) {
-  // Crear columna Bootstrap
-  const col = document.createElement('div');
-  col.className = 'col-12 col-md-6 col-lg-4 col-xl-3';
-
-  // Crear tarjeta
+function createTeamCard(member) {
   const card = document.createElement('div');
-  card.className = 'mascara-card';
+  card.className = 'team-card';
 
-  // Imagen o placeholder
-  const imgContainer = document.createElement('div');
-  if (mascara.imagen_url) {
-    const img = document.createElement('img');
-    img.src = mascara.imagen_url;
-    img.className = 'card-img-top';
-    img.alt = mascara.mascara_id;
-    imgContainer.appendChild(img);
-  } else {
-    imgContainer.className = 'card-img-placeholder';
-    imgContainer.innerHTML = '<i class="fas fa-mask"></i>';
-  }
-  card.appendChild(imgContainer);
+  const initials = getInitials(member.nombre_completo);
+  const rolLabel = getRolLabel(member.rol);
 
-  // Cuerpo de la tarjeta
-  const cardBody = document.createElement('div');
-  cardBody.className = 'card-body';
+  card.innerHTML = `
+    <div class="avatar">${initials}</div>
+    <div class="member-name">${member.nombre_completo}</div>
+    <div class="member-role">${rolLabel}</div>
+    <div class="member-stats">
+      <i class="fas fa-at"></i> ${member.username}
+    </div>
+  `;
 
-  // Título
-  const title = document.createElement('h5');
-  title.className = 'card-title';
-  title.innerHTML = `<i class="fas fa-id-badge"></i> ${mascara.mascara_id || 'N/A'}`;
-  cardBody.appendChild(title);
-
-  // Información
-  const infoRows = [
-    { label: 'Operador', value: mascara.operador || 'Sin asignar', icon: 'fa-user' },
-    { label: 'Estado', value: getEstadoBadge(mascara.estado), icon: 'fa-info-circle', isHtml: true },
-    { label: 'Revisión', value: getRevisionBadge(mascara.review_status), icon: 'fa-clipboard-check', isHtml: true },
-    { label: 'Entrenado', value: getEntrenadoBadge(mascara.entrenado), icon: 'fa-robot', isHtml: true },
-    { label: 'Fecha', value: formatDate(mascara.fecha_creacion), icon: 'fa-calendar' }
-  ];
-
-  infoRows.forEach(row => {
-    const infoRow = document.createElement('div');
-    infoRow.className = 'info-row';
-
-    const label = document.createElement('span');
-    label.className = 'info-label';
-    label.innerHTML = `<i class="fas ${row.icon}"></i> ${row.label}`;
-
-    const value = document.createElement('span');
-    value.className = 'info-value';
-    if (row.isHtml) {
-      value.innerHTML = row.value;
-    } else {
-      value.textContent = row.value;
-    }
-
-    infoRow.appendChild(label);
-    infoRow.appendChild(value);
-    cardBody.appendChild(infoRow);
+  // Doble clic para ver batches
+  card.addEventListener('dblclick', () => {
+    openBatchesPanel(member);
   });
 
-  card.appendChild(cardBody);
-
-  // Footer con botones
-  const cardFooter = document.createElement('div');
-  cardFooter.className = 'card-footer';
-
-  // Botón Ver
-  const btnVer = document.createElement('button');
-  btnVer.className = 'btn btn-sm btn-primary btn-action';
-  btnVer.innerHTML = '<i class="fas fa-eye"></i> Ver';
-  btnVer.onclick = () => viewMascaraDetails(mascara.mascara_id);
-  cardFooter.appendChild(btnVer);
-
-  // Botones de revisión (solo admin y supervisor)
-  if (currentUser && (currentUser.rol === 'admin' || currentUser.rol === 'supervisor')) {
-    if (mascara.review_status !== 'aprobado') {
-      const btnAprobar = document.createElement('button');
-      btnAprobar.className = 'btn btn-sm btn-success btn-action';
-      btnAprobar.innerHTML = '<i class="fas fa-check"></i> Aprobar';
-      btnAprobar.onclick = () => revisarMascara(mascara.mascara_id, 'aprobado');
-      cardFooter.appendChild(btnAprobar);
-    }
-
-    if (mascara.review_status !== 'rechazado') {
-      const btnRechazar = document.createElement('button');
-      btnRechazar.className = 'btn btn-sm btn-danger btn-action';
-      btnRechazar.innerHTML = '<i class="fas fa-times"></i> Rechazar';
-      btnRechazar.onclick = () => revisarMascara(mascara.mascara_id, 'rechazado');
-      cardFooter.appendChild(btnRechazar);
-    }
-  }
-
-  card.appendChild(cardFooter);
-  col.appendChild(card);
-
-  return col;
+  return card;
 }
 
-function getEstadoBadge(estado) {
-  return `<span class="badge bg-secondary">${estado || 'Pendiente'}</span>`;
+function getInitials(name) {
+  if (!name) return '?';
+  const parts = name.split(' ').filter(Boolean);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return parts[0].substring(0, 2).toUpperCase();
 }
 
-function getRevisionBadge(reviewStatus) {
-  if (reviewStatus === 'aprobado') {
-    return '<span class="badge bg-success">Aprobado</span>';
-  } else if (reviewStatus === 'rechazado') {
-    return '<span class="badge bg-danger">Rechazado</span>';
-  } else {
-    return '<span class="badge bg-warning">Pendiente</span>';
-  }
-}
-
-function getEntrenadoBadge(entrenado) {
-  if (entrenado) {
-    return '<span class="badge bg-success"><i class="fas fa-check"></i> Sí</span>';
-  } else {
-    return '<span class="badge bg-secondary"><i class="fas fa-times"></i> No</span>';
-  }
+function getRolLabel(rol) {
+  const map = {
+    admin: 'Administrador',
+    supervisor: 'Supervisor',
+    operador: 'Operador'
+  };
+  return map[rol] || rol;
 }
 
 // ============================================
-// FUNCIONES DE ACCIÓN
+// PANEL DE BATCHES (al hacer doble clic)
 // ============================================
-async function revisarMascara(mascaraId, reviewStatus) {
-  const accion = reviewStatus === 'aprobado' ? 'aprobar' : 'rechazar';
+async function openBatchesPanel(member) {
+  selectedMember = member;
+  document.getElementById('panelMemberName').textContent = member.nombre_completo;
 
-  if (!confirm(`¿Estás seguro de ${accion} la máscara ${mascaraId}?`)) {
-    return;
-  }
+  const panel = document.getElementById('batchesPanel');
+  const emptyDiv = document.getElementById('panelBatchesEmpty');
+  const tableDiv = document.getElementById('panelBatchesTable');
+
+  panel.classList.remove('hidden');
+  emptyDiv.classList.add('hidden');
+  tableDiv.classList.add('hidden');
 
   try {
-    const response = await fetch(`/api/mascaras/${mascaraId}/revisar`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ review_status: reviewStatus })
-    });
+    const res = await fetch(`/api/batches?assignee_id=${encodeURIComponent(member.username)}`);
+    const data = await res.json();
 
-    const result = await response.json();
-
-    if (response.ok) {
-      console.log(`✅ Máscara ${reviewStatus}:`, result);
-      // Recargar datos
-      await loadMascaras(currentPage);
-      await loadStats();
-    } else {
-      console.error(`Error al ${accion}:`, result.error);
-      alert(result.error || `Error al ${accion} la máscara`);
+    if (!data.success || data.batches.length === 0) {
+      emptyDiv.classList.remove('hidden');
+      return;
     }
-  } catch (error) {
-    console.error(`❌ Error al ${accion}:`, error);
-    alert(`Error al ${accion} la máscara`);
+
+    renderPanelBatches(data.batches);
+    tableDiv.classList.remove('hidden');
+  } catch (e) {
+    console.error('Error cargando batches del miembro:', e);
+    emptyDiv.classList.remove('hidden');
   }
+
+  // Scroll al panel
+  panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-function viewMascaraDetails(mascaraId) {
-  console.log('Ver detalles de máscara:', mascaraId);
-  alert(`Detalles de máscara ${mascaraId}\n(Funcionalidad por implementar)`);
+function closeBatchesPanel() {
+  document.getElementById('batchesPanel').classList.add('hidden');
+  selectedMember = null;
 }
 
-// ============================================
-// FUNCIONES DE UTILIDAD
-// ============================================
+function renderPanelBatches(batches) {
+  const tbody = document.getElementById('panelBatchesBody');
+  tbody.innerHTML = '';
+
+  batches.forEach(b => {
+    const pct = b.total_items > 0 ? Math.round((b.completed_items / b.total_items) * 100) : 0;
+    const statusBadge = getBatchStatusBadge(b.status);
+
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td><code style="color:var(--accent)">${b.batch_id}</code></td>
+      <td>${b.total_items}</td>
+      <td>${b.completed_items}</td>
+      <td>
+        <div class="d-flex align-items-center gap-2">
+          <div class="progress flex-grow-1">
+            <div class="progress-bar bg-success" style="width:${pct}%"></div>
+          </div>
+          <small>${pct}%</small>
+        </div>
+      </td>
+      <td>${statusBadge}</td>
+      <td>${formatDate(b.created_at)}</td>
+      <td>
+        <button class="btn btn-sm btn-outline-light" onclick="downloadBatchJson('${b.batch_id}')" title="Descargar JSON">
+          <i class="fas fa-download"></i>
+        </button>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function getBatchStatusBadge(status) {
+  const map = {
+    assigned: '<span class="badge bg-warning">Asignado</span>',
+    in_progress: '<span class="badge bg-info">En Progreso</span>',
+    completed: '<span class="badge bg-success">Completado</span>'
+  };
+  return map[status] || `<span class="badge bg-secondary">${status}</span>`;
+}
+
 function formatDate(dateString) {
   if (!dateString) return 'N/A';
-
   try {
     const date = new Date(dateString);
     return date.toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit'
+      year: 'numeric', month: '2-digit', day: '2-digit',
+      hour: '2-digit', minute: '2-digit'
     });
-  } catch (error) {
+  } catch (e) {
     return dateString;
   }
 }
 
-function showLoading() {
-  document.getElementById('loadingSpinner').style.display = 'flex';
-  document.getElementById('emptyState').classList.add('hidden');
-  document.getElementById('cardsContainer').classList.add('hidden');
+// ============================================
+// AGREGAR NUEVO SEGMENTADOR
+// ============================================
+async function saveNewMember() {
+  const nombre = document.getElementById('newMemberNombre').value.trim();
+  const username = document.getElementById('newMemberUsername').value.trim();
+  const password = document.getElementById('newMemberPassword').value;
+  const email = document.getElementById('newMemberEmail').value.trim();
+  const rol = document.getElementById('newMemberRol').value;
+  const errorDiv = document.getElementById('addMemberError');
+
+  if (!nombre || !username || !password) {
+    errorDiv.textContent = 'Nombre, username y contraseña son requeridos';
+    errorDiv.classList.remove('hidden');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/usuarios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nombre_completo: nombre,
+        username: username,
+        password: password,
+        email: email,
+        rol: rol
+      })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      errorDiv.classList.add('hidden');
+      bootstrap.Modal.getInstance(document.getElementById('addMemberModal')).hide();
+
+      // Limpiar formulario
+      document.getElementById('newMemberNombre').value = '';
+      document.getElementById('newMemberUsername').value = '';
+      document.getElementById('newMemberPassword').value = '';
+      document.getElementById('newMemberEmail').value = '';
+      document.getElementById('newMemberRol').value = 'operador';
+
+      // Recargar equipo
+      loadTeamMembers();
+    } else {
+      errorDiv.textContent = data.error || 'Error al crear usuario';
+      errorDiv.classList.remove('hidden');
+    }
+  } catch (e) {
+    console.error('Error creando miembro:', e);
+    errorDiv.textContent = 'Error de conexión';
+    errorDiv.classList.remove('hidden');
+  }
 }
 
-function showEmptyState() {
-  document.getElementById('loadingSpinner').style.display = 'none';
-  document.getElementById('emptyState').classList.remove('hidden');
-  document.getElementById('cardsContainer').classList.add('hidden');
+// ============================================
+// BATCHES - CREAR / IMPORTAR / DESCARGAR
+// ============================================
+
+async function loadOperadoresSelect() {
+  try {
+    const res = await fetch('/api/usuarios');
+    const users = await res.json();
+    const select = document.getElementById('batchAssigneeSelect');
+    if (!select) return;
+    select.innerHTML = '';
+    users.filter(u => u.activo).forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u.username;
+      opt.textContent = `${u.nombre_completo} (${u.rol})`;
+      select.appendChild(opt);
+    });
+  } catch (e) {
+    console.error('Error cargando operadores:', e);
+  }
+}
+
+async function generateBatch() {
+  const assignee = document.getElementById('batchAssigneeSelect').value;
+  const rawIds = document.getElementById('batchMascaraIds').value;
+  const mascara_ids = rawIds.split(/[\s,]+/).map(s => s.trim()).filter(Boolean);
+  const errorDiv = document.getElementById('createBatchError');
+
+  if (!assignee || mascara_ids.length === 0) {
+    errorDiv.textContent = 'Selecciona un operador e ingresa al menos un ID de máscara';
+    errorDiv.classList.remove('hidden');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/batches/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ assignee_user_id: assignee, mascara_ids })
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      // Descargar JSON
+      const blob = new Blob([JSON.stringify(data.batch, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${data.batch.batch_id}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+
+      // Cerrar modal y limpiar
+      errorDiv.classList.add('hidden');
+      document.getElementById('batchMascaraIds').value = '';
+      bootstrap.Modal.getInstance(document.getElementById('createBatchModal')).hide();
+
+      // Refrescar panel si está abierto
+      if (selectedMember && selectedMember.username === assignee) {
+        openBatchesPanel(selectedMember);
+      }
+    } else {
+      errorDiv.textContent = data.error || 'Error al generar batch';
+      errorDiv.classList.remove('hidden');
+    }
+  } catch (e) {
+    console.error('Error generando batch:', e);
+    errorDiv.textContent = 'Error de conexión';
+    errorDiv.classList.remove('hidden');
+  }
+}
+
+async function importBatch(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  try {
+    const text = await file.text();
+    const jsonData = JSON.parse(text);
+
+    const res = await fetch('/api/batches/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(jsonData)
+    });
+
+    const data = await res.json();
+    alert(data.message || (data.success ? 'Importado correctamente' : 'Error al importar'));
+
+    if (data.success && selectedMember) {
+      openBatchesPanel(selectedMember);
+    }
+  } catch (e) {
+    console.error('Error importando batch:', e);
+    alert('Error al leer o parsear el archivo JSON');
+  }
+
+  // Reset input
+  document.getElementById('importBatchFile').value = '';
+}
+
+async function downloadBatchJson(batchId) {
+  try {
+    const res = await fetch(`/api/batches/${batchId}`);
+    const batch = await res.json();
+    delete batch._id;
+    const blob = new Blob([JSON.stringify(batch, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${batchId}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    console.error('Error descargando batch:', e);
+  }
 }
 
 // ============================================
 // EXPORTAR FUNCIONES GLOBALES
 // ============================================
-window.loadMascaras = loadMascaras;
-window.loadStats = loadStats;
-window.revisarMascara = revisarMascara;
+window.downloadBatchJson = downloadBatchJson;

@@ -28,6 +28,7 @@ MONGO_URI = f"mongodb://{MONGO_HOST}:{MONGO_PORT}/"
 USUARIOS_COLLECTION = os.getenv("USUARIOS_COLLECTION", "usuarios")
 MASCARAS_COLLECTION = os.getenv("MASCARAS_COLLECTION", "mascaras")
 ESTADISTICAS_COLLECTION = os.getenv("ESTADISTICAS_COLLECTION", "estadisticas")
+BATCHES_COLLECTION = os.getenv("BATCHES_COLLECTION", "batches")
 
 # ============================================
 # CLIENTE MONGODB (SINGLETON)
@@ -37,6 +38,7 @@ _db = None
 _usuarios_col = None
 _mascaras_col = None
 _estadisticas_col = None
+_batches_col = None
 _gridfs = None
 
 
@@ -107,6 +109,17 @@ def get_estadisticas_collection():
     return _estadisticas_col
 
 
+def get_batches_collection():
+    """Obtiene la colección de batches"""
+    global _batches_col
+    if _batches_col is None:
+        db = get_db()
+        if db is not None:
+            _batches_col = db[BATCHES_COLLECTION]
+            print(f"✅ Colección batches lista: {BATCHES_COLLECTION}")
+    return _batches_col
+
+
 def get_gridfs():
     """Obtiene el cliente GridFS para archivos de máscaras"""
     global _gridfs
@@ -120,7 +133,7 @@ def get_gridfs():
 
 def close_connection():
     """Cierra la conexión a MongoDB"""
-    global _client, _db, _usuarios_col, _mascaras_col, _estadisticas_col, _gridfs
+    global _client, _db, _usuarios_col, _mascaras_col, _estadisticas_col, _batches_col, _gridfs
     if _client:
         _client.close()
         _client = None
@@ -128,6 +141,7 @@ def close_connection():
         _usuarios_col = None
         _mascaras_col = None
         _estadisticas_col = None
+        _batches_col = None
         _gridfs = None
         print("✅ Conexión MongoDB cerrada")
 
@@ -167,6 +181,10 @@ def init_db():
         db.create_collection(ESTADISTICAS_COLLECTION)
         print(f"✅ Colección '{ESTADISTICAS_COLLECTION}' creada")
 
+    if BATCHES_COLLECTION not in existing_collections:
+        db.create_collection(BATCHES_COLLECTION)
+        print(f"✅ Colección '{BATCHES_COLLECTION}' creada")
+
     # Obtener referencias a colecciones
     usuarios_col = get_usuarios_collection()
     mascaras_col = get_mascaras_collection()
@@ -196,6 +214,12 @@ def _create_indexes(usuarios_col, mascaras_col):
 
         # Índice compuesto para consultas frecuentes
         mascaras_col.create_index([("review_status", 1), ("entrenado", 1)])
+
+        # Índices para batches
+        batches_col = get_batches_collection()
+        batches_col.create_index("batch_id", unique=True)
+        batches_col.create_index("assignee.user_id")
+        batches_col.create_index([("assignee.user_id", 1), ("status", 1)])
 
         print("✅ Índices creados")
     except Exception as e:
@@ -264,7 +288,7 @@ def verificar_usuario(username, password):
     from werkzeug.security import check_password_hash
 
     usuarios_col = get_usuarios_collection()
-    if not usuarios_col:
+    if usuarios_col is None:
         return None
 
     usuario = usuarios_col.find_one({"username": username, "activo": True})
@@ -279,7 +303,7 @@ def verificar_usuario(username, password):
 def get_usuario_by_username(username):
     """Obtiene un usuario por username"""
     usuarios_col = get_usuarios_collection()
-    if not usuarios_col:
+    if usuarios_col is None:
         return None
 
     usuario = usuarios_col.find_one({"username": username})
