@@ -1,0 +1,50 @@
+{
+  "mode": "add",
+  "batches": [
+    {
+      "id": "batch_test_001",
+      "assignee": "",
+      "folder": "/data/batch_test_001",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_test_002",
+      "assignee": "",
+      "folder": "/data/batch_test_002",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    },
+    {
+      "id": "batch_test_003",
+      "assignee": "",
+      "folder": "/data/batch_test_003",
+      "tasks": ["segmentar", "subir_mascaras", "revisar"],
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "baja",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": ""
+    }
+  ]
+}
