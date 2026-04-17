@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}{{ error_title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card shadow-lg border-danger">
+        <div class="card-header bg-danger text-white">
+          <h4 class="mb-0">
+            <i class="fas fa-exclamation-triangle"></i> {{ error_title }}
+          </h4>
+        </div>
+        <div class="card-body text-center p-5">
+          <i class="fas fa-lock fa-5x text-danger mb-4"></i>
+          <h5 class="card-title mb-3">{{ error_message }}</h5>
+
+          {% if current_user %}
+          <p class="text-muted">
+            <strong>Usuario:</strong> {{ current_user }}<br>
+            <strong>Rol:</strong>
+            {% if user_role == "admin" %}
+              <span class="badge bg-primary">Administrador</span>
+            {% else %}
+              <span class="badge bg-secondary">Segmentador</span>
+            {% endif %}
+          </p>
+          {% endif %}
+
+          <hr class="my-4">
+
+          <div class="d-grid gap-2 col-md-6 mx-auto">
+            {% if current_user %}
+            <a href="/dashboard/{{ current_user }}" class="btn btn-primary btn-lg">
+              <i class="fas fa-home"></i> Ir a Mi Dashboard
+            </a>
+            {% endif %}
+            <a href="/team" class="btn btn-outline-secondary">
+              <i class="fas fa-users"></i> Ver Equipo
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

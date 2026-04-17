@@ -30,6 +30,9 @@ app = Flask(__name__)
 # Configuración del directorio de datos
 DATA_DIRECTORY = os.environ.get("DATA_DIRECTORY", "/home/faservin/american_project")
 
+# Seguridad
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "DeepEye2025")
+
 # No crear la conexión en import time
 db = None
 
@@ -37,60 +40,100 @@ batches_col = None
 masks_col = None
 segmentadores_col = None
 
-# Nuevas conexiones para Quality_dashboard y training_metrics
+# Conexiones a Quality_Hope (base de datos unificada)
 quality_db = None
 quality_segmentadores_col = None
 training_db = None
 training_masks_col = None
 
+def get_user_role(username):
+    """Obtener el rol de un usuario desde la base de datos. Devuelve 'admin' o 'segmentador'."""
+    global quality_segmentadores_col
+    if quality_segmentadores_col is None:
+        return "segmentador"
+    try:
+        user = quality_segmentadores_col.find_one({"name": username})
+        if user and "role" in user:
+            return user.get("role", "segmentador")
+        return "segmentador"
+    except Exception as e:
+        print(f"[WARN] Error obteniendo rol de {username}: {e}")
+        return "segmentador"
+
+def is_admin(username):
+    """Verificar si un usuario tiene rol de administrador."""
+    return get_user_role(username) == "admin"
+
+def admin_required(f):
+    """Decorator para proteger rutas que solo admins pueden acceder."""
+    from functools import wraps
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        current_user = kwargs.get('assignee') or request.args.get('user')
+        if not current_user and request.is_json:
+            current_user = request.json.get('current_user')
+        if not current_user:
+            return redirect('/team')
+        if not is_admin(current_user):
+            return render_template(
+                'error.html',
+                error_title="Acceso Denegado",
+                error_message="Solo administradores pueden acceder a esta sección.",
+                current_user=current_user
+            ), 403
+        return f(*args, **kwargs)
+
+    return decorated_function
+
 def init_db():
     global db, batches_col, masks_col, segmentadores_col, CREW_MEMBERS
     global quality_db, quality_segmentadores_col, training_db, training_masks_col
 
-    # Conexión a segmentacion_db (batches principales)
+    # Conexión a Quality_Hope (batches, segmentadores, masks, reportes)
     db = get_db(raise_on_fail=False)
     if db is not None:
         batches_col = db["batches"]
-        masks_col = db["masks"]
+        masks_col = db["masks.files"]
         segmentadores_col = db["segmentadores"]
         create_indexes()
-        print("✅ Conectado a segmentacion_db")
+        print("✅ Conectado a Quality_Hope")
     else:
-        print("⚠️ segmentacion_db no disponible")
+        print("⚠️ Quality_Hope no disponible")
 
-    # Conexión a Quality_dashboard (segmentadores persistentes)
+    # segmentadores — misma BD Quality_Hope
     from db import get_quality_db
     quality_db = get_quality_db()
     if quality_db is not None:
         quality_segmentadores_col = quality_db["segmentadores"]
         load_segmentadores_from_db()
-        print("✅ Conectado a Quality_dashboard.segmentadores")
+        print("✅ Quality_Hope.segmentadores listo")
     else:
-        print("⚠️ Quality_dashboard no disponible")
+        print("⚠️ Quality_Hope.segmentadores no disponible")
 
-    # Conexión a QUALITY_IEMSA (máscaras subidas en GridFS)
+    # masks.files — misma BD Quality_Hope
     from db import get_training_db
     training_db = get_training_db()
     if training_db is not None:
-        training_masks_col = training_db["training_metrics.masks.files"]
-        print("✅ Conectado a QUALITY_IEMSA.training_metrics.masks.files")
+        training_masks_col = training_db["masks.files"]
+        print("✅ Quality_Hope.masks.files listo")
     else:
-        print("⚠️ QUALITY_IEMSA no disponible")
+        print("⚠️ Quality_Hope.masks.files no disponible")
 
 def load_segmentadores_from_db():
-    """Cargar lista de segmentadores desde Quality_dashboard.segmentadores"""
+    """Cargar lista de segmentadores desde Quality_Hope.segmentadores"""
     global CREW_MEMBERS, quality_segmentadores_col
     try:
         if quality_segmentadores_col is not None:
-            # Verificar si hay segmentadores en Quality_dashboard
+            # Verificar si hay segmentadores en Quality_Hope.segmentadores
             count = quality_segmentadores_col.count_documents({})
             if count > 0:
-                # Cargar desde Quality_dashboard
+                # Cargar desde Quality_Hope.segmentadores
                 segmentadores = list(quality_segmentadores_col.find({}, {"_id": 0, "name": 1}).sort("name", 1))
                 CREW_MEMBERS = [seg["name"] for seg in segmentadores]
-                print(f"✅ {len(CREW_MEMBERS)} segmentadores cargados desde Quality_dashboard: {CREW_MEMBERS}")
+                print(f"✅ {len(CREW_MEMBERS)} segmentadores cargados desde Quality_Hope.segmentadores: {CREW_MEMBERS}")
             else:
-                # Primera vez: guardar los segmentadores iniciales en Quality_dashboard
+                # Primera vez: guardar los segmentadores iniciales en Quality_Hope.segmentadores
                 initial_segmentadores = ["Mauricio", "Maggie", "Ceci", "Flor", "Ignacio"]
                 for name in initial_segmentadores:
                     quality_segmentadores_col.insert_one({
@@ -100,15 +143,15 @@ def load_segmentadores_from_db():
                         "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     })
                 CREW_MEMBERS = initial_segmentadores
-                print(f"✅ Segmentadores iniciales guardados en Quality_dashboard: {CREW_MEMBERS}")
+                print(f"✅ Segmentadores iniciales guardados en Quality_Hope.segmentadores: {CREW_MEMBERS}")
         else:
-            # Fallback a lista hardcodeada si Quality_dashboard no está disponible
+            # Fallback a lista hardcodeada si Quality_Hope no está disponible
             CREW_MEMBERS = ["Mauricio", "Maggie", "Ceci", "Flor", "Ignacio"]
-            print(f"⚠️ Quality_dashboard no disponible, usando lista por defecto")
+            print(f"⚠️ Quality_Hope.segmentadores no disponible, usando lista por defecto")
     except Exception as e:
         # Fallback a lista hardcodeada si hay error
         CREW_MEMBERS = ["Mauricio", "Maggie", "Ceci", "Flor", "Ignacio"]
-        print(f"⚠️ Error cargando segmentadores desde Quality_dashboard: {e}")
+        print(f"⚠️ Error cargando segmentadores desde Quality_Hope.segmentadores: {e}")
 
 # Lista de miembros del equipo (será cargada desde MongoDB en init_db)
 CREW_MEMBERS = []
@@ -153,11 +196,11 @@ def masks():
         from db import get_training_db
         training_db_local = get_training_db()
         if training_db_local is not None:
-            training_masks_col = training_db_local["training_metrics.masks.files"]
+            training_masks_col = training_db_local["masks.files"]
         else:
-            return jsonify({"error": "No DB connection to QUALITY_IEMSA"}), 503
+            return jsonify({"error": "No DB connection to Quality_Hope"}), 503
 
-    # Trae todos los documentos de máscaras desde QUALITY_IEMSA.training_metrics.masks.files
+    # Trae todos los documentos de máscaras desde Quality_Hope.masks.files
     docs = list(training_masks_col.find({}, {"_id": 0, "filename": 1, "uploadDate": 1}))
     return render_template("masks.html", files=docs)
 
@@ -378,7 +421,7 @@ def delete_batch(batch_id):
 
 @app.route("/api/add-segmentador", methods=["POST"])
 def add_segmentador():
-    """Agregar un nuevo segmentador al equipo y guardarlo en Quality_dashboard"""
+    """Agregar un nuevo segmentador al equipo y guardarlo en Quality_Hope.segmentadores"""
     global CREW_MEMBERS, quality_segmentadores_col
 
     try:
@@ -391,8 +434,9 @@ def add_segmentador():
             }), 400
 
         name = data.get("name", "").strip()
-        role = data.get("role", "Segmentador General")
+        role = data.get("role", "segmentador")
         email = data.get("email", "")
+        admin_password = data.get("admin_password", "")
 
         # Validar que se proporcione un nombre
         if not name:
@@ -400,6 +444,13 @@ def add_segmentador():
                 "success": False,
                 "error": "El nombre del segmentador es requerido"
             }), 400
+
+        # Validar contraseña si es admin
+        if role == "admin":
+            if not admin_password:
+                return jsonify({"success": False, "error": "Se requiere contraseña de administrador"}), 403
+            if admin_password != ADMIN_PASSWORD:
+                return jsonify({"success": False, "error": "Contraseña de administrador incorrecta"}), 403
 
         # Verificar que no exista ya
         if name in CREW_MEMBERS:
@@ -412,7 +463,7 @@ def add_segmentador():
         if quality_segmentadores_col is None:
             return jsonify({
                 "success": False,
-                "error": "Quality_dashboard no disponible"
+                "error": "Quality_Hope.segmentadores no disponible"
             }), 503
 
         quality_segmentadores_col.insert_one({
@@ -425,12 +476,12 @@ def add_segmentador():
         # Agregar a memoria
         CREW_MEMBERS.append(name)
 
-        print(f"✅ Segmentador '{name}' guardado en Quality_dashboard y memoria")
+        print(f"✅ Segmentador '{name}' guardado en Quality_Hope.segmentadores y memoria")
         print(f"📋 Equipo actualizado: {CREW_MEMBERS}")
 
         return jsonify({
             "success": True,
-            "message": f"Segmentador '{name}' agregado y guardado en Quality_dashboard",
+            "message": f"Segmentador '{name}' agregado y guardado en Quality_Hope.segmentadores",
             "segmentador": {
                 "name": name,
                 "role": role,
@@ -448,11 +499,21 @@ def add_segmentador():
 
 @app.route("/api/segmentadores", methods=["GET"])
 def get_segmentadores():
-    """Obtener la lista actual de segmentadores"""
+    """Obtener la lista actual de segmentadores con sus roles"""
     try:
+        roles = {member: get_user_role(member) for member in CREW_MEMBERS}
+        docs = []
+        if quality_segmentadores_col is not None:
+            docs = list(quality_segmentadores_col.find(
+                {}, {"_id": 0, "name": 1, "role": 1, "email": 1}
+            ).sort("name", 1))
+        else:
+            docs = [{"name": m, "role": roles.get(m, "segmentador"), "email": ""} for m in CREW_MEMBERS]
         return jsonify({
             "success": True,
             "segmentadores": CREW_MEMBERS,
+            "roles": roles,
+            "members": docs,
             "total": len(CREW_MEMBERS)
         })
     except Exception as e:
@@ -463,7 +524,7 @@ def get_segmentadores():
 
 @app.route("/api/remove-segmentador", methods=["DELETE"])
 def remove_segmentador():
-    """Eliminar un segmentador del equipo y de Quality_dashboard"""
+    """Eliminar un segmentador del equipo y de Quality_Hope.segmentadores"""
     global CREW_MEMBERS, quality_segmentadores_col
 
     try:
@@ -493,7 +554,7 @@ def remove_segmentador():
         if quality_segmentadores_col is None:
             return jsonify({
                 "success": False,
-                "error": "Quality_dashboard no disponible"
+                "error": "Quality_Hope.segmentadores no disponible"
             }), 503
 
         result = quality_segmentadores_col.delete_one({"name": name})
@@ -501,7 +562,7 @@ def remove_segmentador():
         if result.deleted_count > 0:
             # Eliminar de memoria
             CREW_MEMBERS.remove(name)
-            print(f"✅ Segmentador '{name}' eliminado de Quality_dashboard y memoria")
+            print(f"✅ Segmentador '{name}' eliminado de Quality_Hope.segmentadores y memoria")
 
             return jsonify({
                 "success": True,
@@ -523,7 +584,7 @@ def remove_segmentador():
 
 @app.route("/api/update-segmentador", methods=["PUT"])
 def update_segmentador():
-    """Actualizar datos de un segmentador en Quality_dashboard"""
+    """Actualizar datos de un segmentador en Quality_Hope.segmentadores"""
     global CREW_MEMBERS, quality_segmentadores_col
 
     try:
@@ -569,7 +630,7 @@ def update_segmentador():
         if quality_segmentadores_col is None:
             return jsonify({
                 "success": False,
-                "error": "Quality_dashboard no disponible"
+                "error": "Quality_Hope.segmentadores no disponible"
             }), 503
 
         update_data = {
@@ -613,29 +674,29 @@ def update_segmentador():
 
 @app.route("/api/check-mongo-files", methods=["GET"])
 def check_mongo_files():
-    """Verificar qué archivos están actualmente en training_metrics.masks.files (OPTIMIZADO)"""
+    """Verificar qué archivos están actualmente en Quality_Hope.masks.files (OPTIMIZADO)"""
     global training_masks_col
 
     try:
-        print("🔍 Iniciando verificación de archivos en training_metrics.masks.files...")
+        print("🔍 Iniciando verificación de archivos en Quality_Hope.masks.files...")
 
         # Verificar que la colección esté disponible
         if training_masks_col is None:
             return jsonify({
                 "success": False,
-                "error": "training_metrics.masks.files no disponible"
+                "error": "Quality_Hope.masks.files no disponible"
             }), 503
 
         # Verificar conexión primero
         try:
             # Test de conexión
             training_masks_col.find_one({}, {"_id": 1})
-            print("✅ Conexión a training_metrics establecida")
+            print("✅ Conexión a Quality_Hope.masks.files establecida")
         except Exception as conn_error:
-            print(f"❌ Error de conexión a training_metrics: {conn_error}")
+            print(f"❌ Error de conexión a Quality_Hope.masks.files: {conn_error}")
             return jsonify({
                 "success": False,
-                "error": f"Error de conexión a training_metrics: {str(conn_error)}"
+                "error": f"Error de conexión a Quality_Hope.masks.files: {str(conn_error)}"
             }), 500
 
         # OPTIMIZACIÓN: Solo proyectar campos necesarios y limitar resultados
@@ -647,7 +708,7 @@ def check_mongo_files():
                 {},
                 {"filename": 1, "uploadDate": 1, "metadata.uploaded_by": 1, "length": 1, "_id": 0}
             ).sort("uploadDate", -1).limit(limit))
-            print(f"📊 Se encontraron {len(files)} archivos en training_metrics (límite: {limit})")
+            print(f"📊 Se encontraron {len(files)} archivos en Quality_Hope.masks.files (límite: {limit})")
         except Exception as query_error:
             print(f"❌ Error consultando archivos: {query_error}")
             return jsonify({
@@ -696,9 +757,9 @@ def check_mongo_files():
             "total_files": len(files_info),
             "recent_files": files_info,
             "batch_patterns": batch_patterns,
-            "database": "training_metrics",
+            "database": "Quality_Hope",
             "collection": "masks.files",
-            "message": f"Se encontraron {len(files_info)} archivos en training_metrics.masks.files"
+            "message": f"Se encontraron {len(files_info)} archivos en Quality_Hope.masks.files"
         })
         
     except Exception as e:
@@ -721,7 +782,7 @@ def get_batch_files(batch_id):
         if training_masks_col is None:
             return jsonify({
                 "success": False,
-                "error": "QUALITY_IEMSA.training_metrics.masks.files no disponible"
+                "error": "Quality_Hope.masks.files no disponible"
             }), 503
 
         # Buscar archivos que coincidan con el patrón batch_XX
@@ -773,7 +834,7 @@ def sync_batch_files():
         if training_masks_col is None:
             return jsonify({
                 "success": False,
-                "error": "QUALITY_IEMSA.training_metrics.masks.files no disponible"
+                "error": "Quality_Hope.masks.files no disponible"
             }), 503
 
         # OPTIMIZACIÓN 1: Solo traer campos necesarios de batches
@@ -817,7 +878,7 @@ def sync_batch_files():
         print(f"📊 Buscando archivos para {len(all_numbers)} batches con 1 query...")
         print(f"🔍 Patrón de búsqueda: {mega_pattern[:100]}...")
 
-        # UNA SOLA CONSULTA para todos los archivos desde training_metrics.masks.files
+        # UNA SOLA CONSULTA para todos los archivos desde Quality_Hope.masks.files
         all_files = list(training_masks_col.find(
             {"filename": {"$regex": mega_pattern, "$options": "i"}},
             {"filename": 1, "uploadDate": 1, "_id": 0}  # Solo campos necesarios
@@ -909,10 +970,10 @@ def auto_create_batches():
         if training_masks_col is None:
             return jsonify({
                 "success": False,
-                "error": "QUALITY_IEMSA.training_metrics.masks.files no disponible"
+                "error": "Quality_Hope.masks.files no disponible"
             }), 503
 
-        # OPTIMIZACIÓN: Solo traer filename, no metadata ni length desde training_metrics.masks.files
+        # OPTIMIZACIÓN: Solo traer filename, no metadata ni length desde Quality_Hope.masks.files
         # LÍMITE REDUCIDO: 5000 archivos (reducir carga de memoria)
         files = list(training_masks_col.find(
             {},
@@ -2026,7 +2087,7 @@ def backup_database():
 
         # Generar nombre de archivo
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        filename = f"backup_segmentacion_db_{timestamp}.json"
+        filename = f"backup_Quality_Hope_{timestamp}.json"
 
         # Crear respuesta
         response = app.make_response(
@@ -2135,6 +2196,22 @@ def quick_create_batches():
         print(f"❌ Error en carga rápida: {e}")
         import traceback
         traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/validate-admin-password", methods=["POST"])
+def validate_admin_password():
+    """Validar contraseña de administrador"""
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"success": False, "error": "No se enviaron datos"}), 400
+        password = data.get("password", "")
+        if not password:
+            return jsonify({"success": False, "error": "La contraseña es requerida"}), 400
+        if password == ADMIN_PASSWORD:
+            return jsonify({"success": True, "message": "Contraseña válida"})
+        return jsonify({"success": False, "error": "Contraseña incorrecta"}), 401
+    except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
 
 if __name__ == "__main__":
