@@ -874,22 +874,8 @@
           </div>
         `);
 
-        // Evento de doble clic
-        memberCard.on('dblclick', function() {
-          const memberName = $(this).data('member');
-          showLoadingOverlay();
-          window.location.href = `/dashboard/${encodeURIComponent(memberName)}`;
-        });
-
-        // Efecto hover con estadísticas
-        memberCard.on('mouseenter', function() {
-          $(this).addClass('pulse');
-        }).on('mouseleave', function() {
-          $(this).removeClass('pulse');
-        });
-
-        // Doble clic: admin pide contraseña, segmentador acceso directo
-        memberCard.on('dblclick', function() {
+        // Clic: admin pide contraseña, segmentador acceso directo
+        memberCard.on('click', function() {
           const name = $(this).data('member');
           const role = userRoles[name] || 'segmentador';
           if (role === 'admin') {
@@ -897,6 +883,13 @@
           } else {
             window.location.href = `/dashboard/${encodeURIComponent(name)}`;
           }
+        });
+
+        // Efecto hover
+        memberCard.on('mouseenter', function() {
+          $(this).addClass('pulse');
+        }).on('mouseleave', function() {
+          $(this).removeClass('pulse');
         });
 
         grid.append(memberCard);
