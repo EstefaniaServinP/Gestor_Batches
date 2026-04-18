@@ -32,6 +32,7 @@ DATA_DIRECTORY = os.environ.get("DATA_DIRECTORY", "/home/faservin/american_proje
 
 # Seguridad
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "DeepEye2025")
+PROJECT_NAME = os.environ.get("PROJECT_NAME", "Quality Hope")
 
 # No crear la conexión en import time
 db = None
@@ -133,25 +134,14 @@ def load_segmentadores_from_db():
                 CREW_MEMBERS = [seg["name"] for seg in segmentadores]
                 print(f"✅ {len(CREW_MEMBERS)} segmentadores cargados desde Quality_Hope.segmentadores: {CREW_MEMBERS}")
             else:
-                # Primera vez: guardar los segmentadores iniciales en Quality_Hope.segmentadores
-                initial_segmentadores = ["Mauricio", "Maggie", "Ceci", "Flor", "Ignacio"]
-                for name in initial_segmentadores:
-                    quality_segmentadores_col.insert_one({
-                        "name": name,
-                        "role": "Segmentador",
-                        "email": "",
-                        "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                    })
-                CREW_MEMBERS = initial_segmentadores
-                print(f"✅ Segmentadores iniciales guardados en Quality_Hope.segmentadores: {CREW_MEMBERS}")
+                CREW_MEMBERS = []
+                print("[INFO] Sin segmentadores en BD, iniciando limpio")
         else:
-            # Fallback a lista hardcodeada si Quality_Hope no está disponible
-            CREW_MEMBERS = ["Mauricio", "Maggie", "Ceci", "Flor", "Ignacio"]
-            print(f"⚠️ Quality_Hope.segmentadores no disponible, usando lista por defecto")
+            CREW_MEMBERS = []
+            print("[WARN] Quality_Hope.segmentadores no disponible")
     except Exception as e:
-        # Fallback a lista hardcodeada si hay error
-        CREW_MEMBERS = ["Mauricio", "Maggie", "Ceci", "Flor", "Ignacio"]
-        print(f"⚠️ Error cargando segmentadores desde Quality_Hope.segmentadores: {e}")
+        CREW_MEMBERS = []
+        print(f"[WARN] Error cargando segmentadores: {e}")
 
 # Lista de miembros del equipo (será cargada desde MongoDB en init_db)
 CREW_MEMBERS = []
@@ -2194,6 +2184,427 @@ def quick_create_batches():
 
     except Exception as e:
         print(f"❌ Error en carga rápida: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+@app.route("/api/export/batches", methods=["POST"])
+def export_batches_report():
+    """Exportar reporte de batches en Excel o CSV con filtros aplicados"""
+    global batches_col
+
+    if batches_col is None:
+        return jsonify({"success": False, "error": "No DB connection"}), 503
+
+    try:
+        data = request.json or {}
+        export_format = data.get("format", "excel")  # "excel" o "csv"
+        batch_ids = data.get("batch_ids", [])  # IDs de batches filtrados
+
+        print(f"[STATS] Exportando {len(batch_ids)} batches en formato {export_format}")
+
+        # Si no se proporcionan IDs, exportar TODOS los batches
+        if not batch_ids:
+            # Traer TODOS los batches (no solo asignados)
+            batches = list(batches_col.find({}, {"_id": 0}))
+        else:
+            # Si se proporcionan IDs específicos, traer solo esos
+            batches = list(batches_col.find({
+                "id": {"$in": batch_ids}
+            }, {"_id": 0}))
+
+        # ===========================================================
+        # CALCULAR MÉTRICAS GENERALES
+        # ===========================================================
+        all_batches = list(batches_col.find({}, {"_id": 0, "status": 1, "assignee": 1, "metadata": 1, "specification": 1, "especificacion": 1}))
+
+        total_batches = len(all_batches)
+        completed_batches = sum(1 for b in all_batches if b.get("status") == "S")
+        in_progress_batches = sum(1 for b in all_batches if b.get("status") == "FS")
+        pending_batches = sum(1 for b in all_batches if b.get("status") == "NS")
+
+        # Batches con revisión
+        aprobados = sum(1 for b in all_batches if b.get("metadata", {}).get("review_status") == "aprobado")
+        no_aprobados = sum(1 for b in all_batches if b.get("metadata", {}).get("review_status") == "no_aprobado")
+        sin_revisar = sum(1 for b in all_batches if not b.get("metadata", {}).get("review_status"))
+
+        unassigned_batches = sum(1 for b in all_batches if not b.get("assignee") or b.get("assignee") == "Sin asignar")
+
+        completion_rate = round((completed_batches / total_batches * 100), 1) if total_batches > 0 else 0
+        review_rate = round((aprobados / total_batches * 100), 1) if total_batches > 0 else 0
+
+        # ===========================================================
+        # CALCULAR MÉTRICAS POR EQUIPO
+        # ===========================================================
+        team_stats = {}
+        for batch in all_batches:
+            assignee = batch.get("assignee", "Sin asignar")
+            if not assignee or assignee == "":
+                assignee = "Sin asignar"
+
+            if assignee not in team_stats:
+                team_stats[assignee] = {
+                    "total": 0,
+                    "completed": 0,
+                    "in_progress": 0,
+                    "pending": 0,
+                    "aprobados": 0,
+                    "no_aprobados": 0
+                }
+
+            team_stats[assignee]["total"] += 1
+            status = batch.get("status", "NS")
+            if status == "S":
+                team_stats[assignee]["completed"] += 1
+            elif status == "FS":
+                team_stats[assignee]["in_progress"] += 1
+            elif status == "NS":
+                team_stats[assignee]["pending"] += 1
+
+            review_status = batch.get("metadata", {}).get("review_status", "")
+            if review_status == "aprobado":
+                team_stats[assignee]["aprobados"] += 1
+            elif review_status == "no_aprobado":
+                team_stats[assignee]["no_aprobados"] += 1
+
+        # ===========================================================
+        # CALCULAR MÉTRICAS POR ESPECIFICACIÓN
+        # ===========================================================
+        spec_stats = {}
+        for batch in all_batches:
+            # Usar 'specification' que es el campo correcto en la BD
+            especificacion = batch.get("specification", batch.get("especificacion", "Sin especificación"))
+            if not especificacion or especificacion == "":
+                especificacion = "Sin especificación"
+
+            if especificacion not in spec_stats:
+                spec_stats[especificacion] = {
+                    "total": 0,
+                    "asignados": 0,
+                    "aprobados": 0,
+                    "no_aprobados": 0,
+                    "sin_revisar": 0,
+                    "completados": 0
+                }
+
+            spec_stats[especificacion]["total"] += 1
+
+            # Contar solo batches que tienen un assignee válido
+            assignee = batch.get("assignee", "")
+            if assignee and assignee != "Sin asignar":
+                spec_stats[especificacion]["asignados"] += 1
+
+            status = batch.get("status", "NS")
+            if status == "S":
+                spec_stats[especificacion]["completados"] += 1
+
+            review_status = batch.get("metadata", {}).get("review_status", "")
+            if review_status == "aprobado":
+                spec_stats[especificacion]["aprobados"] += 1
+            elif review_status == "no_aprobado":
+                spec_stats[especificacion]["no_aprobados"] += 1
+            else:
+                spec_stats[especificacion]["sin_revisar"] += 1
+
+        # ===========================================================
+        # PREPARAR DATOS DETALLADOS DE BATCHES
+        # ===========================================================
+        batch_rows = []
+        for batch in batches:
+            # Incluir TODOS los batches, no solo los asignados
+            assignee = batch.get("assignee", "Sin asignar")
+            if not assignee or assignee == "":
+                assignee = "Sin asignar"
+
+            # Obtener el estatus de revisión
+            review_status = batch.get("metadata", {}).get("review_status", "")
+            # Formatear el estatus de revisión para mejor legibilidad
+            review_display = ""
+            if review_status == "aprobado":
+                review_display = "[OK] Aprobado"
+            elif review_status == "no_aprobado":
+                review_display = "[ERROR] No Aprobado"
+            else:
+                review_display = "⏳ Pendiente"
+
+            # Obtener metadatos adicionales
+            metadata = batch.get("metadata", {})
+
+            # Usar 'specification' que es el campo correcto
+            specification = batch.get("specification", batch.get("especificacion", ""))
+
+            row = {
+                "Batch ID": batch.get("id", ""),
+                "Responsable": assignee,
+                "Estatus Segmentación": batch.get("status", "NS"),
+                "Estatus Revisión": review_display,
+                "Especificación": specification,
+                "Mongo Subido": "Sí" if batch.get("mongo_uploaded", False) else "No",
+                "Prioridad": metadata.get("priority", "").capitalize() if metadata.get("priority") else "",
+                "Fecha Asignación": metadata.get("assigned_at", ""),
+                "Fecha Límite": metadata.get("due_date", ""),
+                "Fecha Revisión": metadata.get("reviewed_at", ""),
+                "Path": metadata.get("path", ""),
+                "Comentarios": batch.get("comments", ""),
+                "Carpeta": batch.get("folder", ""),
+            }
+            batch_rows.append(row)
+
+        # Para retrocompatibilidad con CSV
+        rows = batch_rows
+
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+        if export_format == "excel":
+            # Exportar a Excel con múltiples hojas
+            import openpyxl
+            from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+            from openpyxl.utils import get_column_letter
+
+            wb = openpyxl.Workbook()
+
+            # ===============================================================
+            # HOJA 1: RESUMEN GENERAL
+            # ===============================================================
+            ws_resumen = wb.active
+            ws_resumen.title = "Resumen General"
+
+            # Estilos
+            title_fill = PatternFill(start_color="6B46C1", end_color="6B46C1", fill_type="solid")
+            title_font = Font(color="FFFFFF", bold=True, size=14)
+            header_fill = PatternFill(start_color="9333EA", end_color="9333EA", fill_type="solid")
+            header_font = Font(color="FFFFFF", bold=True)
+            value_font = Font(size=12)
+
+            # Título principal
+            ws_resumen.merge_cells("A1:B1")
+            title_cell = ws_resumen["A1"]
+            title_cell.value = f"Reporte General - {PROJECT_NAME}"
+            title_cell.fill = title_fill
+            title_cell.font = title_font
+            title_cell.alignment = Alignment(horizontal="center", vertical="center")
+
+            # Fecha de generación
+            ws_resumen["A2"] = "Fecha de Generación:"
+            ws_resumen["B2"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            ws_resumen["A2"].font = Font(bold=True)
+
+            # Métricas globales
+            current_row = 4
+            ws_resumen[f"A{current_row}"] = "Métrica"
+            ws_resumen[f"B{current_row}"] = "Valor"
+            ws_resumen[f"A{current_row}"].fill = header_fill
+            ws_resumen[f"B{current_row}"].fill = header_fill
+            ws_resumen[f"A{current_row}"].font = header_font
+            ws_resumen[f"B{current_row}"].font = header_font
+
+            metrics_data = [
+                ("Total de Batches", total_batches),
+                ("Batches Completados (S)", completed_batches),
+                ("Batches En Progreso (FS)", in_progress_batches),
+                ("Batches Pendientes (NS)", pending_batches),
+                ("Batches Sin Asignar", unassigned_batches),
+                ("", ""),
+                ("Tasa de Completitud (%)", f"{completion_rate}%"),
+                ("", ""),
+                ("Batches Aprobados", aprobados),
+                ("Batches No Aprobados", no_aprobados),
+                ("Tasa de Aprobación (%)", f"{review_rate}%"),
+            ]
+
+            current_row += 1
+            for metric, value in metrics_data:
+                ws_resumen[f"A{current_row}"] = metric
+                ws_resumen[f"B{current_row}"] = value
+                ws_resumen[f"A{current_row}"].font = value_font
+                ws_resumen[f"B{current_row}"].font = value_font
+                ws_resumen[f"B{current_row}"].alignment = Alignment(horizontal="right")
+                current_row += 1
+
+            # Ajustar anchos
+            ws_resumen.column_dimensions["A"].width = 35
+            ws_resumen.column_dimensions["B"].width = 20
+
+            # ===============================================================
+            # HOJA 2: MÉTRICAS POR SEGMENTADOR
+            # ===============================================================
+            ws_team = wb.create_sheet("Métricas por Segmentador")
+
+            team_headers = ["Responsable", "Número de lotes asignados", "Completados",
+                           "Aprobados", "No Aprobados", "Tasa de Completitud (%)"]
+
+            for col_num, header in enumerate(team_headers, 1):
+                cell = ws_team.cell(row=1, column=col_num)
+                cell.value = header
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+            # Datos del equipo
+            row_num = 2
+            for assignee, stats in sorted(team_stats.items()):
+                completion_pct = round((stats["completed"] / stats["total"] * 100), 1) if stats["total"] > 0 else 0
+
+                ws_team.cell(row=row_num, column=1, value=assignee)  # Responsable
+                ws_team.cell(row=row_num, column=2, value=stats["total"])  # Número de lotes asignados
+                ws_team.cell(row=row_num, column=3, value=stats["completed"])  # Completados
+                ws_team.cell(row=row_num, column=4, value=stats["aprobados"])  # Aprobados
+                ws_team.cell(row=row_num, column=5, value=stats["no_aprobados"])  # No Aprobados
+                ws_team.cell(row=row_num, column=6, value=f"{completion_pct}%")  # Tasa de Completitud
+
+                # Alinear números a la derecha
+                for col_num in range(2, 7):
+                    ws_team.cell(row=row_num, column=col_num).alignment = Alignment(horizontal="right")
+
+                row_num += 1
+
+            # Ajustar anchos de columnas
+            ws_team.column_dimensions["A"].width = 18  # Responsable
+            ws_team.column_dimensions["B"].width = 25  # Número de lotes asignados
+            ws_team.column_dimensions["C"].width = 15  # Completados
+            ws_team.column_dimensions["D"].width = 15  # Aprobados
+            ws_team.column_dimensions["E"].width = 15  # No Aprobados
+            ws_team.column_dimensions["F"].width = 22  # Tasa de Completitud
+
+            # Agregar autofiltros
+            ws_team.auto_filter.ref = f"A1:{get_column_letter(len(team_headers))}{row_num - 1}"
+
+            # ===============================================================
+            # HOJA 3: MÉTRICAS POR ESPECIFICACIÓN
+            # ===============================================================
+            ws_spec = wb.create_sheet("Métricas por Especificación")
+
+            spec_headers = ["Especificación", "Data Total (folders)", "Asignados", "Completados",
+                           "Aprobados", "No Aprobados", "Tasa de Aprobación (%)"]
+
+            for col_num, header in enumerate(spec_headers, 1):
+                cell = ws_spec.cell(row=1, column=col_num)
+                cell.value = header
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+            # Datos por especificación
+            row_num = 2
+            for especificacion, stats in sorted(spec_stats.items()):
+                # Calcular tasa de aprobación sobre el total de batches completados revisados
+                total_revisados = stats["aprobados"] + stats["no_aprobados"]
+                aprobacion_pct = round((stats["aprobados"] / total_revisados * 100), 1) if total_revisados > 0 else 0
+
+                ws_spec.cell(row=row_num, column=1, value=especificacion)  # Especificación
+                ws_spec.cell(row=row_num, column=2, value=stats["total"])  # Data Total (folders)
+                ws_spec.cell(row=row_num, column=3, value=stats["asignados"])  # Asignados
+                ws_spec.cell(row=row_num, column=4, value=stats["completados"])  # Completados
+                ws_spec.cell(row=row_num, column=5, value=stats["aprobados"])  # Aprobados
+                ws_spec.cell(row=row_num, column=6, value=stats["no_aprobados"])  # No Aprobados
+                ws_spec.cell(row=row_num, column=7, value=f"{aprobacion_pct}%")  # Tasa de Aprobación
+
+                # Alinear números a la derecha (excepto especificación que va en columna 1)
+                for col_num in range(2, 8):
+                    ws_spec.cell(row=row_num, column=col_num).alignment = Alignment(horizontal="right")
+
+                row_num += 1
+
+            # Ajustar anchos de columnas
+            ws_spec.column_dimensions["A"].width = 50  # Especificación (más ancho)
+            ws_spec.column_dimensions["B"].width = 20  # Data Total
+            ws_spec.column_dimensions["C"].width = 15  # Asignados
+            ws_spec.column_dimensions["D"].width = 15  # Completados
+            ws_spec.column_dimensions["E"].width = 15  # Aprobados
+            ws_spec.column_dimensions["F"].width = 15  # No Aprobados
+            ws_spec.column_dimensions["G"].width = 22  # Tasa de Aprobación
+
+            # Agregar autofiltros
+            ws_spec.auto_filter.ref = f"A1:{get_column_letter(len(spec_headers))}{row_num - 1}"
+
+            # ===============================================================
+            # HOJA 4: DETALLE DE BATCHES
+            # ===============================================================
+            ws_batches = wb.create_sheet("Batches Detallados")
+
+            # Encabezados con estilo
+            batch_headers = list(batch_rows[0].keys()) if batch_rows else []
+
+            for col_num, header in enumerate(batch_headers, 1):
+                cell = ws_batches.cell(row=1, column=col_num)
+                cell.value = header
+                cell.fill = header_fill
+                cell.font = header_font
+                cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
+            # Datos de batches
+            for row_num, row_data in enumerate(batch_rows, 2):
+                for col_num, header in enumerate(batch_headers, 1):
+                    cell = ws_batches.cell(row=row_num, column=col_num)
+                    cell.value = row_data[header]
+                    cell.alignment = Alignment(vertical="top", wrap_text=True)
+
+            # Ajustar ancho de columnas
+            column_widths = {
+                "Batch ID": 15,
+                "Responsable": 15,
+                "Estatus Segmentación": 18,
+                "Estatus Revisión": 18,
+                "Especificación": 50,  # Más ancho para especificaciones largas
+                "Mongo Subido": 12,
+                "Prioridad": 12,
+                "Fecha Asignación": 16,
+                "Fecha Límite": 16,
+                "Fecha Revisión": 16,
+                "Path": 50,  # Más ancho para rutas
+                "Comentarios": 30,
+                "Carpeta": 40
+            }
+
+            for col_num, header in enumerate(batch_headers, 1):
+                width = column_widths.get(header, 20)
+                ws_batches.column_dimensions[get_column_letter(col_num)].width = width
+
+            # Agregar autofiltros a la tabla
+            if batch_rows:
+                ws_batches.auto_filter.ref = f"A1:{get_column_letter(len(batch_headers))}{len(batch_rows) + 1}"
+
+            # Guardar en memoria
+            output = io.BytesIO()
+            wb.save(output)
+            output.seek(0)
+
+            filename = f"reporte_completo_{timestamp}.xlsx"
+            mimetype = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+
+        else:
+            # Exportar a CSV
+            import csv
+            output = io.StringIO()
+
+            if rows:
+                writer = csv.DictWriter(output, fieldnames=list(rows[0].keys()))
+                writer.writeheader()
+                writer.writerows(rows)
+
+            # Convertir a bytes
+            mem = io.BytesIO()
+            mem.write(output.getvalue().encode('utf-8-sig'))
+            mem.seek(0)
+            output = mem
+
+            filename = f"reporte_batches_{timestamp}.csv"
+            mimetype = 'text/csv'
+
+        if export_format == "excel":
+            print(f"[OK] Reporte completo generado: {len(batch_rows)} batches detallados, métricas del equipo y resumen general en {filename}")
+        else:
+            print(f"[OK] Reporte CSV generado: {len(rows)} batches en {filename}")
+
+        return send_file(
+            output,
+            mimetype=mimetype,
+            as_attachment=True,
+            download_name=filename
+        )
+
+    except Exception as e:
+        print(f"[ERROR] Error exportando reporte: {e}")
         import traceback
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500
