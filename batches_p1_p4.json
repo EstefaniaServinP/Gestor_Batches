@@ -1,0 +1,2405 @@
+{
+  "mode": "add",
+  "batches": [
+    {
+      "id": "p1_cam1_cam2_000001",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000001",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000002",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000002",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000003",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000003",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000004",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000004",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000005",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000005",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000006",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000006",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000007",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000007",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000008",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000008",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000009",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000009",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000010",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000010",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000011",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000011",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000012",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000012",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000013",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000013",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000014",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000014",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000015",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000015",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000016",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000016",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000017",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000017",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000018",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000018",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000019",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000019",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000020",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000020",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000021",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000021",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000022",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000022",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000023",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000023",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000024",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000024",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000025",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000025",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000026",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000026",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000027",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000027",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000028",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000028",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000029",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000029",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p1_cam1_cam2_000030",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p1_cam1_cam2_000030",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo NOK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000001",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000001",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000002",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000002",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000003",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000003",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000004",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000004",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000005",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000005",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000006",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000006",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000007",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000007",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000008",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000008",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000009",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000009",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000010",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000010",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000011",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000011",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000012",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000012",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000013",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000013",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000014",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000014",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000015",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000015",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000016",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000016",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000017",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000017",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000018",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000018",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000019",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000019",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000020",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000020",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000021",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000021",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000022",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000022",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000023",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000023",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000024",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000024",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000025",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000025",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000026",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000026",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000027",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000027",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000028",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000028",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000029",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000029",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p2_cam1_cam2_000030",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p2_cam1_cam2_000030",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos beige (color_hilo OK, alineación_hilo OK, vinil OK, hundimiento NOK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000001",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000001",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000002",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000002",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000003",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000003",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000004",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000004",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000005",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000005",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000006",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000006",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000007",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000007",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000008",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000008",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000009",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000009",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000010",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000010",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000011",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000011",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000012",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000012",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000013",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000013",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000014",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000014",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000015",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000015",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000016",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000016",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000017",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000017",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000018",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000018",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000019",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000019",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000020",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000020",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000021",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000021",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000022",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000022",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000023",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000023",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000024",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000024",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000025",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000025",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000026",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000026",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000027",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000027",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000028",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000028",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000029",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000029",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p3_cam1_cam2_000030",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p3_cam1_cam2_000030",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "media",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos gris (color_hilo OK, alineación_hilo OK, vinil NOK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000001",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000001",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000002",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000002",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000003",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000003",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000004",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000004",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000005",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000005",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000006",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000006",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000007",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000007",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000008",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000008",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000009",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000009",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000010",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000010",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000011",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000011",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000012",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000012",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000013",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000013",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000014",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000014",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000015",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000015",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000016",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000016",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000017",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000017",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000018",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000018",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000019",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000019",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000020",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000020",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000021",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000021",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000022",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000022",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000023",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000023",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000024",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000024",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000025",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000025",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000026",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000026",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000027",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000027",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000028",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000028",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000029",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000029",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    },
+    {
+      "id": "p4_cam1_cam2_000030",
+      "assignee": "",
+      "folder": "/home/faservin/american_project/p4_cam1_cam2_000030",
+      "tasks": [
+        "segmentar",
+        "subir_mascaras",
+        "revisar"
+      ],
+      "specification": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)",
+      "metadata": {
+        "assigned_at": null,
+        "due_date": "",
+        "priority": "alta",
+        "reviewed_at": null
+      },
+      "status": "NS",
+      "mongo_uploaded": false,
+      "comments": "Reposa Brazos negro (color_hilo NOK, alineación_hilo OK, vinil OK, hundimiento OK)"
+    }
+  ]
+}
