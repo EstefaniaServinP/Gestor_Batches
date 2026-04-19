@@ -205,8 +205,11 @@ def masks():
         else:
             return jsonify({"error": "No DB connection to Quality_Hope"}), 503
 
-    # Trae todos los documentos de máscaras desde Quality_Hope.masks.files
+    # Trae documentos de Quality_Hope.masks.files + DB externa del segmentador
     docs = list(training_masks_col.find({}, {"_id": 0, "filename": 1, "uploadDate": 1}))
+    if external_masks_col is not None:
+        ext_docs = list(external_masks_col.find({}, {"_id": 0, "filename": 1, "uploadDate": 1}))
+        docs.extend(ext_docs)
     return render_template("masks.html", files=docs)
 
 @app.route("/metrics")

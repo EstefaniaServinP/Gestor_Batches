@@ -3094,42 +3094,30 @@ Escribe "CONFIRMAR" para proceder:`;
     }
 
     function addInlineEditEvents() {
-      // Evento para cambio de estado de segmentación
-      $('.segmentation-status-select').off('change').on('change', function() {
+      // Usar event delegation en document para que funcione tras re-render de DataTables
+      $(document).off('change', '.segmentation-status-select').on('change', '.segmentation-status-select', function() {
         const batchId = $(this).data('batch-id');
-        const newStatus = $(this).val();
-        updateBatchField(batchId, 'status', newStatus, $(this));
-      });
-      
-      // Evento para cambio de prioridad
-      $('.priority-select').off('change').on('change', function() {
-        const batchId = $(this).data('batch-id');
-        const newPriority = $(this).val();
-        updateBatchField(batchId, 'priority', newPriority, $(this));
+        updateBatchField(batchId, 'status', $(this).val(), $(this));
       });
 
-      // Evento para cambio de revisión (Aprobado/No Aprobado)
-      $('.review-select').off('change').on('change', function() {
+      $(document).off('change', '.priority-select').on('change', '.priority-select', function() {
         const batchId = $(this).data('batch-id');
-        const newReviewStatus = $(this).val();
-        updateBatchField(batchId, 'review_status', newReviewStatus, $(this));
+        updateBatchField(batchId, 'priority', $(this).val(), $(this));
       });
 
-      // Evento para cambio de fecha de revisión
-      $('.review-date-input').off('change').on('change', function() {
+      $(document).off('change', '.review-select').on('change', '.review-select', function() {
         const batchId = $(this).data('batch-id');
-        const newReviewDate = $(this).val();
-        updateBatchField(batchId, 'reviewed_at', newReviewDate, $(this));
+        updateBatchField(batchId, 'review_status', $(this).val(), $(this));
       });
-      
-      // Nota: Batch ID es ahora estático y no editable
-      // Se eliminó la funcionalidad de edición del Batch ID para evitar conflictos
-      
-      // Evento para cambio de comentarios (al perder el foco)
-      $('.comments-input').off('blur').on('blur', function() {
+
+      $(document).off('change', '.review-date-input').on('change', '.review-date-input', function() {
         const batchId = $(this).data('batch-id');
-        const newComments = $(this).val();
-        updateBatchField(batchId, 'comments', newComments, $(this));
+        updateBatchField(batchId, 'reviewed_at', $(this).val(), $(this));
+      });
+
+      $(document).off('blur', '.comments-input').on('blur', '.comments-input', function() {
+        const batchId = $(this).data('batch-id');
+        updateBatchField(batchId, 'comments', $(this).val(), $(this));
       });
     }
 
