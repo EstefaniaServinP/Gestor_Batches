@@ -126,15 +126,16 @@ def init_db():
     # Conexión a DB externa del segmentador (sincronización de máscaras)
     MASKS_DB_NAME = os.environ.get("MASKS_DB", "segmentor_dev")
     MASKS_COLLECTION = os.environ.get("MASKS_COLLECTION", "segmentation_masks.mask.files")
+    MASKS_URI = os.environ.get("MASKS_URI", "mongodb://177.245.246.129:27018")
     try:
         from pymongo import MongoClient
-        ext_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=3000)
+        ext_client = MongoClient(MASKS_URI, serverSelectionTimeoutMS=3000)
         ext_client.admin.command("ping")
         external_masks_col = ext_client[MASKS_DB_NAME][MASKS_COLLECTION]
-        print(f"✅ DB externa de máscaras: {MASKS_DB_NAME}.{MASKS_COLLECTION}")
+        print(f"✅ DB externa de máscaras: {MASKS_URI} → {MASKS_DB_NAME}.{MASKS_COLLECTION}")
     except Exception as e:
         external_masks_col = None
-        print(f"⚠️ DB externa de máscaras no disponible: {e}")
+        print(f"⚠️ DB externa de máscaras no disponible ({MASKS_URI}): {e}")
 
 def load_segmentadores_from_db():
     """Cargar lista de segmentadores desde Quality_Hope.segmentadores"""
