@@ -46,6 +46,7 @@ quality_db = None
 quality_segmentadores_col = None
 training_db = None
 training_masks_col = None
+external_masks_col = None  # DB externa del segmentador
 
 def get_user_role(username):
     """Obtener el rol de un usuario desde la base de datos. Devuelve 'admin' o 'segmentador'."""
@@ -90,6 +91,7 @@ def admin_required(f):
 def init_db():
     global db, batches_col, masks_col, segmentadores_col, CREW_MEMBERS
     global quality_db, quality_segmentadores_col, training_db, training_masks_col
+    global external_masks_col
 
     # Conexión a Quality_Hope (batches, segmentadores, masks, reportes)
     db = get_db(raise_on_fail=False)
@@ -120,6 +122,19 @@ def init_db():
         print("✅ Quality_Hope.masks.files listo")
     else:
         print("⚠️ Quality_Hope.masks.files no disponible")
+
+    # Conexión a DB externa del segmentador (sincronización de máscaras)
+    MASKS_DB_NAME = os.environ.get("MASKS_DB", "segmentor_dev")
+    MASKS_COLLECTION = os.environ.get("MASKS_COLLECTION", "segmentation_masks.mask.files")
+    try:
+        from pymongo import MongoClient
+        ext_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=3000)
+        ext_client.admin.command("ping")
+        external_masks_col = ext_client[MASKS_DB_NAME][MASKS_COLLECTION]
+        print(f"✅ DB externa de máscaras: {MASKS_DB_NAME}.{MASKS_COLLECTION}")
+    except Exception as e:
+        external_masks_col = None
+        print(f"⚠️ DB externa de máscaras no disponible: {e}")
 
 def load_segmentadores_from_db():
     """Cargar lista de segmentadores desde Quality_Hope.segmentadores"""
@@ -814,43 +829,39 @@ def get_batch_files(batch_id):
 
 @app.route("/api/sync-batch-files", methods=["POST"])
 def sync_batch_files():
-    """Sincronizar batches con archivos (OPTIMIZADO: 1 query en lugar de 4500+)"""
-    global training_masks_col
+    """Sincronizar batches con archivos — revisa Quality_Hope y DB externa del segmentador"""
+    global training_masks_col, external_masks_col
 
     try:
-        print("🔄 Iniciando sincronización OPTIMIZADA de archivos con batches...")
+        print("🔄 Iniciando sincronización de archivos con batches...")
 
-        # Verificar que training_masks_col esté disponible
-        if training_masks_col is None:
+        if training_masks_col is None and external_masks_col is None:
             return jsonify({
                 "success": False,
-                "error": "Quality_Hope.masks.files no disponible"
+                "error": "Ninguna colección de máscaras disponible"
             }), 503
 
-        # OPTIMIZACIÓN 1: Solo traer campos necesarios de batches
+        # Traer solo campos necesarios de batches
         batches = list(batches_col.find({}, {"id": 1, "mongo_uploaded": 1, "_id": 0}))
 
-        # OPTIMIZACIÓN 2: Extraer todos los identificadores de batch de una vez
         import re
-        batch_numbers = {}
+
+        # Construir identificadores por batch — soporta batch_XXX y pN_cam1_cam2_NNNNNN
+        batch_identifiers = {}
         for batch in batches:
             batch_id = batch["id"]
-            # Extraer el identificador completo después de "batch_"
-            # Ejemplos: batch_20250909T0034 -> 20250909T0034
-            #           batch_123 -> 123
-            match = re.search(r'batch_(.+)', batch_id, re.IGNORECASE)
-            if match:
-                batch_numbers[batch_id] = match.group(1)
+            # Formato pN_cam1_cam2_NNNNNN → usar el ID completo
+            if re.match(r'^p\d+_', batch_id):
+                batch_identifiers[batch_id] = batch_id
             else:
-                # Fallback: extraer solo números si no sigue el patrón batch_XXX
-                match_num = re.search(r'(\d+)', batch_id)
-                if match_num:
-                    batch_numbers[batch_id] = match_num.group(1)
+                # Formato batch_XXX → extraer sufijo
+                match = re.search(r'batch_(.+)', batch_id, re.IGNORECASE)
+                if match:
+                    batch_identifiers[batch_id] = match.group(1)
+                else:
+                    batch_identifiers[batch_id] = batch_id
 
-        # OPTIMIZACIÓN 3: UNA SOLA QUERY para TODOS los archivos
-        # Construir un regex que busque TODOS los números de batch
-        all_numbers = list(batch_numbers.values())
-        if not all_numbers:
+        if not batch_identifiers:
             return jsonify({
                 "success": True,
                 "batches_updated": 0,
@@ -858,38 +869,40 @@ def sync_batch_files():
                 "message": "No hay batches para sincronizar"
             })
 
-        # Crear regex que busque cualquier identificador de batch
-        # Escapar caracteres especiales en los identificadores
-        escaped_numbers = [re.escape(num) for num in all_numbers]
-        numbers_pattern = "|".join(escaped_numbers)
-        # Buscar patrones: masks_batch_XXXX, batch_XXXX, Batch_XXXX, masks_XXXX
+        # Construir patrón regex para una sola query
+        escaped = [re.escape(v) for v in batch_identifiers.values()]
+        numbers_pattern = "|".join(escaped)
         mega_pattern = f"(masks_)?(batch_|Batch_)?({numbers_pattern})"
 
-        print(f"📊 Buscando archivos para {len(all_numbers)} batches con 1 query...")
-        print(f"🔍 Patrón de búsqueda: {mega_pattern[:100]}...")
+        print(f"📊 Buscando en Quality_Hope y DB externa para {len(batch_identifiers)} batches...")
 
-        # UNA SOLA CONSULTA para todos los archivos desde Quality_Hope.masks.files
-        all_files = list(training_masks_col.find(
-            {"filename": {"$regex": mega_pattern, "$options": "i"}},
-            {"filename": 1, "uploadDate": 1, "_id": 0}  # Solo campos necesarios
-        ).sort("uploadDate", -1))
+        # Query a Quality_Hope.masks.files
+        all_files = []
+        if training_masks_col is not None:
+            qh_files = list(training_masks_col.find(
+                {"filename": {"$regex": mega_pattern, "$options": "i"}},
+                {"filename": 1, "uploadDate": 1, "_id": 0}
+            ).sort("uploadDate", -1))
+            all_files.extend(qh_files)
+            print(f"  Quality_Hope: {len(qh_files)} archivos")
 
-        print(f"✅ Encontrados {len(all_files)} archivos en total")
+        # Query a DB externa del segmentador
+        if external_masks_col is not None:
+            ext_files = list(external_masks_col.find(
+                {"filename": {"$regex": mega_pattern, "$options": "i"}},
+                {"filename": 1, "uploadDate": 1, "_id": 0}
+            ).sort("uploadDate", -1))
+            all_files.extend(ext_files)
+            print(f"  DB externa: {len(ext_files)} archivos")
 
-        # OPTIMIZACIÓN 4: Mapear archivos a batches en memoria (rápido)
+        print(f"✅ Total archivos encontrados: {len(all_files)}")
+
+        # Mapear archivos a batches en memoria
         batch_file_map = {}
-        for batch_id, batch_identifier in batch_numbers.items():
-            batch_file_map[batch_id] = []
-
-            # Buscar archivos que contengan el identificador del batch
-            # Verificar coincidencia exacta del identificador
-            for file in all_files:
-                filename = file.get("filename", "")
-                # Buscar el identificador completo en el nombre del archivo
-                # Ejemplo: batch_20250909T0034 debe coincidir con masks_batch_20250909T0034
-                if batch_identifier in filename:
-                    batch_file_map[batch_id].append(file)
-                    print(f"✅ Archivo '{filename}' coincide con batch '{batch_id}' (identificador: {batch_identifier})")
+        for batch_id, identifier in batch_identifiers.items():
+            batch_file_map[batch_id] = [
+                f for f in all_files if identifier in f.get("filename", "")
+            ]
 
         # OPTIMIZACIÓN 5: Actualizar batches en bulk
         updated_batches = 0
